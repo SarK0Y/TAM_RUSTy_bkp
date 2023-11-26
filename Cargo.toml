@@ -1,0 +1,10 @@
+[package]
+name = "sark0y_tam_rst"
+version = "0.1.0"
+edition = "2021"
+authors = ["Evgeney Knyazhev (SarK0Y) <sark0y@protonmail.com>"]
+license-file = "LICENSE"
+readme = "README.md"
+crate_type = ["staticlib"]
+[dependencies]
+cli-table = "0.4.7"
