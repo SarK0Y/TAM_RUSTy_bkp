@@ -8,3 +8,4 @@ readme = "README.md"
 crate_type = ["staticlib"]
 [dependencies]
 cli-table = "0.4.7"
+once_cell = "1.18.0"
