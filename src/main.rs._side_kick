@@ -1,0 +1,136 @@
+#![allow(non_camel_case_types)]
+#![allow(non_snake_case)]
+#![allow(dead_code)]
+#![allow(unused)]
+#![allow(unused_variables)]
+#![allow(non_upper_case_globals)]
+pub const STOP_CODE_: i64 = 1;
+pub const KONSOLE_TITLE_: i64 = 2;
+pub const LEFT_SHIFT_4_CUR_: i64 = 3;
+pub const CUR_CUR_POS_: i64 = 4;
+pub const NUM_PAGE_: i64 = 5;
+pub const NUM_COLS_: i64 = 6;
+pub const COL_WIDTH_: i64 = 7;
+pub const NUM_ROWS_: i64 = 8;
+pub const NUM_SPACES_: i64 = 9;
+pub const NUM_FILES_: i64 = 10;
+pub const COUNT_PAGES_: i64 = 11;
+pub const NEWS_BAR_: i64 = 12;
+pub const ASK_USER_: i64 = 13;
+pub const dontDelFromTableJustMark_: i64 = 14;
+pub const RUNNING_: i64 = 15;
+pub const VIEWER_: i64 = 16;
+pub const MODE2RUN_: i64 = 17;
+pub const PRNT_: i64 = 18;
+pub const FULL_PATH_: i64 = 19;
+use std::env;
+use once_cell::unsync::OnceCell;
+use std::cell::Cell;
+use std::thread;
+use threadpool::{ThreadPool, Builder};
+use std::sync::mpsc;
+use std::process::Command;
+struct child2run{
+    running: i64,
+    viewer: i64,
+    mode2run: i64,
+    prnt: i64,
+    full_path: i64
+}
+struct enum_page_struct{
+    stop_code: i64,
+    konsole_title: i64,
+    left_shift_4_cur: i64,
+    cur_cur_pos: i64,
+    num_page: i64,
+    num_cols: i64,
+    col_width: i64,
+    num_rows: i64,
+    num_spaces: i64,
+    num_files: i64,
+    count_pages: i64,
+    news_bar: i64,
+    question_to_User: i64,
+    c2r: child2run
+}
+
+fn set(item: i64) -> i64{
+    return item * -1;
+}
+fn this_item_takes_global_val(id: i64) -> i64 {
+    return set(id);
+}
+unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -> String
+{
+    let vec_str: Vec<String> = vec![val.to_string()];
+    static mut STOP_CODE: OnceCell<String> = OnceCell::new(); // 1
+    static mut KONSOLE_TITLE: OnceCell<String> = OnceCell::new(); // 2
+    static mut LEFT_SHIFT_4_CUR: Cell<i64> = Cell::new(0); // 3
+    static mut CUR_CUR_POS: Cell<i64> = Cell::new(0); //4
+    static mut NUM_PAGE: Cell<i64> = Cell::new(0); //5
+    static mut NUM_COLS: Cell<i64> = Cell::new(3); //6
+    static mut COL_WIDTH: Cell<i64> = Cell::new(70); //7
+    static mut NUM_ROWS: Cell<i64> = Cell::new(9); //8
+    static mut NUM_SPACES: Cell<i64> = Cell::new(4); //9
+    static mut NUM_FILES: Cell<i64> = Cell::new(0); //10
+    static mut COUNT_PAGES: Cell<i64> = Cell::new(0); //11
+    static mut NEWS_BAR: OnceCell<String> = OnceCell::new(); //12
+    static mut ASK_USER: OnceCell<String> = OnceCell::new(); //13
+    static mut dontDelFromTableJustMark: Cell<bool> = Cell::new(true); //14
+    static mut RUNNING: OnceCell<Vec<Command>> = OnceCell::new(); //15
+    static mut VIEWER: Cell<i64> = Cell::new(0); //16
+    static mut MODE2RUN: OnceCell<(String, String)> = OnceCell::new(); //17
+    static mut PRNT: OnceCell<String> = OnceCell::new(); //18
+    static mut FULL_PATH: OnceCell<String> = OnceCell::new(); //19
+    let _ = STOP_CODE.set("∇\n".to_string());
+    //let fn_ptr_get_string: fn(&str) -> String = get_string;
+    if id_of_val == 1 {
+        return STOP_CODE.get().unwrap().to_string();
+    }
+     if id_of_val == -1 {STOP_CODE.take(); let _ = STOP_CODE.set(val.to_string()); return "ok".to_string();}
+    return "none".to_string();
+}
+struct ret0 {
+    s: [char; 512],
+    res: bool
+}
+#[inline(always)]
+fn find_files(path: &str, in_name: &str, path_2_tmp_file: &str) -> Vec<String>{
+let mut list_of_found_files: Vec<String> = vec![];
+return list_of_found_files;
+}
+fn get_arg_in_cmd(key: &str) -> ret0{
+let mut s: [char; 512] = ['\0'; 512];
+let mut ret: ret0 = ret0{s, res: false};
+let args: Vec<_> = env::args().collect();
+let args_2_str = args.as_slice();
+for i in 1..args.len(){
+    if args_2_str[i] == key {
+        let arr: Vec<char> = (args[i + 1]).chars().collect();
+        if arr.len() > 512 {
+            for i in 0..511{
+               ret.s[i] = arr[i];
+            }
+        } else{
+            for i in 0..arr.len(){
+               ret.s[i] = arr[i];
+            }
+        }
+        ret.res = true;
+        return ret;
+}
+}
+ret.res = false;
+return ret;
+}
+fn main (){
+let x: i64= 5;
+let out: ret0 = get_arg_in_cmd("-tst");
+let out1: ret0 = get_arg_in_cmd("-тст");
+println!("argument from cmd (-tst) {}", String::from_iter(out.s));
+println!("argument from cmd (-тст) {}", String::from_iter(out1.s));
+unsafe {println!("get stop code {}", page_struct("", 1, 0));}
+unsafe {println!("set stop code {}", page_struct("777", set(1), 0));}
+unsafe {println!("get stop code {}", page_struct("", 1, 0));}
+return;
+}
