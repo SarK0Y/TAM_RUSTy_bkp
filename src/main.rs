@@ -8,77 +8,16 @@
 mod exts;
 use exts::*;
 use globs::add_2_main0_list;
-use_all!();
-struct child2run{
-    running: i64,
-    viewer: i64,
-    mode2run: i64,
-    prnt: String,
-    full_path: String
-}
-struct page_struct{
-    stop_code: String,
-    konsole_title: String,
-    left_shift_4_cur: i64,
-    cur_cur_pos: i64,
-    num_page: i64,
-    num_cols: i64,
-    col_width: i64,
-    num_rows: i64,
-    num_spaces: i64,
-    num_files: i64,
-    count_pages: i64,
-    news_bar: String,
-    ask_User: String,
-    c2r: child2run
-}
 
+use crate::func_id::{build_page, init_page_struct};
+use_all!();
 fn set(item: i64) -> i64{
     return item * -1;
 }
 fn this_item_takes_global_val(id: i64) -> i64 {
     return set(id);
 }
-unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -> String
-{
-    let vec_str: Vec<String> = vec![val.to_string()];
-    static mut STOP_CODE: OnceCell<String> = OnceCell::new(); // 1
-    static mut KONSOLE_TITLE: OnceCell<String> = OnceCell::new(); // 2
-    static mut LEFT_SHIFT_4_CUR: i64 = 0; // 3
-    static mut CUR_CUR_POS: i64 = 0; //4
-    static mut NUM_PAGE: i64 = 0; //5
-    static mut NUM_COLS: i64 = 3; //6
-    static mut COL_WIDTH: i64 = 70; //7
-    static mut NUM_ROWS: i64 = 9; //8
-    static mut NUM_SPACES: i64 = 4; //9
-    static mut NUM_FILES: i64 = 0; //10
-    static mut COUNT_PAGES: i64 = 0; //11
-    static mut NEWS_BAR: OnceCell<String> = OnceCell::new(); //12
-    static mut ASK_USER: OnceCell<String> = OnceCell::new(); //13
-    static mut dontDelFromTableJustMark: bool = true; //14
-    static mut RUNNING: OnceCell<Vec<Command>> = OnceCell::new(); //15
-    static mut VIEWER: i64 = 0; //16
-    static mut MODE2RUN: OnceCell<(String, String)> = OnceCell::new(); //17
-    static mut PRNT: OnceCell<String> = OnceCell::new(); //18
-    static mut FULL_PATH: OnceCell<String> = OnceCell::new(); //19
-    static mut MAINPATH: OnceCell<String> = OnceCell::new(); //20
-    static mut FOUND_FILES: OnceCell<String> = OnceCell::new(); //21
-    static mut TMP_DIR: OnceCell<String> = OnceCell::new(); //22
-    //let mut tst: String = "5".to_string();
-    let _ = STOP_CODE.set("∇\n".to_string());
-    //let fn_ptr_get_string: fn(&str) -> String = get_string;
-    if id_of_val == ps::STOP_CODE_ {
-        return STOP_CODE.get().unwrap().to_string();
-    }
-    if id_of_val == set(ps::STOP_CODE_) {STOP_CODE.take(); let _ = STOP_CODE.set(val.to_string()); return "ok".to_string();}
-    if id_of_val == ps::MAINPATH_ {if MAINPATH.get() != None{return MAINPATH.get().unwrap().to_string();}}
-    if id_of_val == set(ps::MAINPATH_) {MAINPATH.take(); let _ = MAINPATH.set(val.to_string()); return "ok".to_string();}
-    if id_of_val == ps::FOUND_FILES_ {return FOUND_FILES.get().unwrap().to_string();}
-    if id_of_val == set(ps::FOUND_FILES_) {FOUND_FILES.take(); let _ = FOUND_FILES.set(val.to_string()); return "ok".to_string();}
-    if id_of_val == ps::TMP_DIR_ {return TMP_DIR.get().unwrap().to_string();}
-    if id_of_val == set(ps::TMP_DIR_) {TMP_DIR.take(); let _ = TMP_DIR.set(val.to_string()); return "ok".to_string();}
-    return "none".to_string();
-}
+
 struct ret0 {
     s: [char; 512],
     res: bool
@@ -145,12 +84,14 @@ let path_2_found_files_list = format!("{}/TAM_{}/found_files", path_2_shm, prope
 let err_msg = format!("{} can't be created", path_2_found_files_list);
 let run_shell4 = Command::new("touch").arg("-f").arg(&path_2_found_files_list).output().expect(&err_msg.bold().red());
 if checkArg("-dbg"){println!("shell out = {:?}", run_shell4)};
-unsafe{page_struct(&path_2_found_files_list, set(ps::FOUND_FILES_), func_id);}
+unsafe{page_struct(&path_2_found_files_list, set(ps::FOUND_FILES_), func_id);
+       page_struct("empty", set(ps::KONSOLE_TITLE_), func_id);}
+    set_main0_as_front();
     return true;
 }
 fn errMsg_dbg(msg: &str, val_func_id: i64, delay: f64) {
     if delay == -1.0{
-        let msg = format!("{} said: {}", func_id::get_func_name(val_func_id as u64), msg);
+        let msg = format!("{} said: {}", func_id::get_func_name(val_func_id), msg);
         println!("{}", msg.bold().red());}
 }
 fn check_substr(orig: &String, probe: &str, start_from: usize) -> bool{
@@ -217,7 +158,7 @@ fn form_grep_cmd(in_name: &String) -> String{
 }
 fn mk_cmd_file(cmd: String) -> String{
 let func_id = 4;
-let path_2_cmd = format!("{}/cmd.sh", unsafe{page_struct("", ps::TMP_DIR_, func_id)});
+let path_2_cmd = format!("{}/cmd.sh", unsafe{page_struct("", ps::TMP_DIR_, func_id).str_});
 let err_msg = format!("failed create {}", &path_2_cmd);
 let mut make_cmd_file = File::create(&path_2_cmd).expect(&err_msg.bold().red());
 errMsg_dbg(&path_2_cmd, func_id, -1.0);
@@ -231,8 +172,8 @@ let func_id = 5;
 let fstdout: String; 
 let path_2_cmd = mk_cmd_file(cmd);
 let mut stderr_path = "stderr".to_string();
-stderr_path = format!("{}stderr", unsafe{page_struct("", ps::MAINPATH_, -1)});
-let path_2_list_of_found_files = format!("{}", unsafe{page_struct("", ps::FOUND_FILES_, -1)});
+stderr_path = format!("{}stderr", unsafe{page_struct("", ps::MAINPATH_, -1).str_});
+let path_2_list_of_found_files = format!("{}", unsafe{page_struct("", ps::FOUND_FILES_, -1).str_});
 fstdout = String::from(path_2_list_of_found_files); 
 errMsg_dbg(&stderr_path, func_id, -1.0);
 errMsg_dbg(&fstdout, func_id, -1.0);
@@ -254,7 +195,7 @@ if run_command.status.success(){
 true
 }
 fn read_midway_data() -> bool{
-    let filename = format!("{}/found_files", unsafe{page_struct("", ps::TMP_DIR_, -1)});
+    let filename = format!("{}/found_files", unsafe{page_struct("", ps::TMP_DIR_, -1).str_});
     let file = File::open(filename).unwrap();
     let reader = BufReader::new(file);
     for (/*indx*/_, line) in reader.lines().enumerate() {
@@ -268,11 +209,10 @@ fn read_midway_data() -> bool{
 fn find_files(path: &str, mut in_name: String, path_2_tmp_file: &str) -> bool{
 let func_id: i64 = 2;
 let mut list_of_found_files: Vec<String> = vec![]; 
-let stopCode: String; 
 if in_name.len() == 0{in_name = put_in_name();}
 else{in_name = format!("|{}", form_grep_cmd(&in_name));}
-unsafe {stopCode = page_struct("", ps::STOP_CODE_,-1);}
-let cmd: String = format!("#!/bin/bash\nfind -L '{path}' -type f{in_name};echo '{stopCode}';notify-send 'hi the'; touch -f ./tst");
+let stopCode: String = unsafe {page_struct("", ps::STOP_CODE_,-1).str_};
+let cmd: String = format!("#!/bin/bash\nfind -L '{path}' -type f{in_name};echo '\n{stopCode}\n';notify-send 'hi the'; touch -f ./tst");
 run_cmd(cmd);
 return true;
 }
@@ -307,14 +247,16 @@ let out: ret0 = get_arg_in_cmd("-tst");
 let out1: ret0 = get_arg_in_cmd("-тст");
 println!("argument from cmd (-tst) {}", String::from_iter(out.s));
 println!("argument from cmd (-тст) {}", String::from_iter(out1.s));
-unsafe {println!("get stop code {}", page_struct("", 1, 0));}
-unsafe {println!("set stop code {}", page_struct("777", set(1), 0));}
-unsafe {println!("get stop code {}", page_struct("", 1, 0));}
+unsafe {println!("get stop code {}", page_struct("", 1, 0).str_);}
+//unsafe {println!("set stop code {}", page_struct("777", set(1), 0).str_);}
+unsafe {println!("get stop code {}", page_struct("", 1, 0).str_);}
 let mut path: String = String::from("~/");
 if checkArg("-path"){path = String::from_iter(get_arg_in_cmd("-path").s);}
 if checkArg("-path0"){path = String::from_iter(get_arg_in_cmd("-path0").s);}
 println!("run find_files status {}", find_files(path.as_str(), "".to_string(), ""));
 read_midway_data();
 println!("len of main0 list {}", len_of_main0_list());
+let ps__ = ps::init_page_struct();
+pg::build_page(ps__);
 return;
 }
