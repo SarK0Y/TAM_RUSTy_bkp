@@ -1,4 +1,7 @@
-use once_cell::sync::OnceCell;
+use chrono::format;
+
+use crate::{exts::globs_uses, run_cmd0};
+self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
 pub const FILTERED_: i64 =  3;
@@ -10,7 +13,66 @@ pub const DEL: i64 =  8;
 pub const GET: i64 =  9;
 pub const LEN: i64 =  10;
 pub const SET_FRONT_LIST: i64 =  11;
-pub fn cmp_str(str1: &str, str2: &str) -> i64{
+pub fn rm_char_from_string(indx: usize, origString: &String) -> String{
+    let len = origString.len(); let mut ret = String::new();
+    for i in 0..len{
+        if i != indx{let char1 = origString.chars().nth(i).unwrap(); ret.push(char1);}
+    }
+    ret
+}
+pub fn unblock_fd(fd: RawFd) -> io::Result<()> {
+    let flags = unsafe { fcntl(fd, F_GETFL, 0) };
+    if flags < 0 {return Err(io::Error::last_os_error());}
+    let flags = flags | O_NONBLOCK;
+    let res = unsafe { fcntl(fd, F_SETFL, flags) };
+    if res != 0 {return Err(io::Error::last_os_error());}
+    Ok(())
+}
+pub fn ins_last_char_to_string1_from_string1(indx: usize, origString: String) -> String{
+    let mut len = origString.len(); if len == 0 {return origString.to_string();}
+     let mut ret = String::new();
+    let char0: char =match origString.chars().nth(len - 1){
+        Some(ch) => ch,
+        _ => {/*println!("kkkkkkkkk");*/ return origString.to_string();}
+    };
+    let msg = format!("'ins_last_char_to_string1_from_string1 indx {} orig{} char0 {} orig len {}'", indx, origString, char0, len);
+    //run_cmd0(&msg);
+    println!("{}", &msg);
+    for i in 0..len{
+        let char1: char = origString.chars().nth(i).unwrap();
+        if i != indx{ret.push(char1);}
+        else {ret.push(char0);}
+        println!("{}", char1);
+    }
+    println!("ret {}", ret);
+    ret
+}
+pub fn eq_str(str1: &str, str2: &str) -> i64{
+let str1_len = str1.len();
+let str2_len = str2.len();
+if str1_len == 0 || str2_len == 0{return i64::MIN}
+let mut result: i64 = 0;
+let mut i: usize = 0;
+while i < str1_len && i < str2_len {
+    if str1.chars().nth(i) == None || str1.chars().nth(i) == None{break;}
+    if crate::dirty!(){ println!("eq_str char1 {:?} to char2 {:?} i {}", str1.chars().nth(i), str2.chars().nth(i), i);}
+    let a = str1.chars().nth(i).unwrap();
+    let b = str2.chars().nth(i).unwrap();
+    if a < b {
+        result = -1;
+        break;
+    } 
+    if a > b {
+        result = 1;
+        break;
+    }
+    i += 1;
+}
+result
+}
+pub fn eq_ansi_str(str1: &str, str2: &str) -> i64{
+let mut ansi_str1 = str1.bytes(); //ANSIString::from(str1);
+let mut ansi_str2 = str2.bytes(); //ANSIString::from(str2);
 let str1_len = str1.len();
 let str2_len = str2.len();
 if str1_len == 0 || str2_len == 0{return i64::MIN}
@@ -18,14 +80,17 @@ if str1_len == 0 || str2_len == 0{return i64::MIN}
 let mut result: i64 = 0;
 let mut i: usize = 0;
 while i < str1_len && i < str2_len {
-    if str1.chars().nth(i) == None || str1.chars().nth(i) == None{return i64::MAX;}
-    //println!("cmp_str char1 to char2 {:?}, {:?}", str1.chars().nth(i), str2.chars().nth(i));
-    let a = str1.chars().nth(i).unwrap();
-    let b = str2.chars().nth(i).unwrap();
+    let char_of_str1 = ansi_str1.next();
+    let char_of_str2 = ansi_str2.next();
+    if char_of_str1 == None || char_of_str2 == None{println!("char is None"); break;}
+    if crate::dirty!(){ println!("eq_ansi_str char1 {:?} to char2 {:?} i {}", str1.chars().nth(i), str2.chars().nth(i), i);}
+    let a = char_of_str1.unwrap();
+    let b = char_of_str2.unwrap();
     if a < b {
         result = -1;
         break;
-    } else if a > b {
+    } 
+    if a > b {
         result = 1;
         break;
     }

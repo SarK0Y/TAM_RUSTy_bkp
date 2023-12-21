@@ -12,7 +12,7 @@ use std::fmt;
 use std::fs;
 use std::fs::File;
 use cli_table::format;
-use once_cell::unsync::OnceCell;
+use once_cell::sync::OnceCell;
 use std::cell::Cell;
 use std::str::Split;
 use std::thread;
@@ -23,24 +23,35 @@ use std::process::{Command, Stdio};
 use std::path::Path;
 use num_traits::cast::ToPrimitive;
 use std::io::{BufRead, BufReader};
+use std::os::unix::io::{AsRawFd, RawFd};
 #[path = "func_id.rs"]
-mod func_id;
+mod func_id18;
+use func_id18::*;
 #[path = "globs.rs"]
-mod globs;
-use crate::globs::*;   
+mod globs18;   
 #[path = "page_struct_.rs"]
-mod ps;    
-use ps::page_struct_ret;
-use ps::page_struct;
+mod ps18;
+use ps18::*;
 #[path = "pg.rs"]
-mod pg;
-/*#[path = "mcrs.rs"]
-mod mcrs;
-use mcrs::*;*/
-    };
+mod pg18;
+use pg18::*;
+#[path = "update.rs"]
+mod update18;
+#[macro_use]
+#[path = "mcrs.rs"]
+mod mcrs18;
+use mcrs18::*;
+use dirty;
+use getStop_code__;
+use set_prnt_;
+#[path = "core.rs"]
+mod core18;
+use core18::*;
+    }
 }
 macro_rules! pg_uses {
     () => {
+const id: u64 = 1407;
 use std::env;
 use colored::Colorize;
 use substring::Substring;
@@ -52,8 +63,12 @@ use std::any::{self, type_name};
 use std::fmt;
 use std::fs;
 use std::fs::File;
+use std::os::unix::io::FromRawFd;
+use std::io::Read;
+use termios::{Termios, TCSANOW, ECHO, ICANON, tcsetattr};
 use cli_table::format;
-use cli_table::{format::Justify, print_stdout, Cell, Style, Table};
+use cli_table::{format::Justify, Cell, Style, Table};
+use cli_table::print_stdout;
 use std::str::Split;
 use std::thread;
 use threadpool::{ThreadPool, Builder};
@@ -63,24 +78,81 @@ use std::process::{Command, Stdio};
 use std::path::Path;
 use num_traits::cast::ToPrimitive;
 use std::io::{BufRead, BufReader};
+use std::os::fd::AsFd;
+use ansi_term::ANSIString;
+use if_chain::if_chain;
 #[path = "func_id.rs"]
-mod func_id;
+mod func_id0;
 #[path = "globs.rs"]
-mod globs;
-use crate::globs::*;
-#[path = "page_struct_.rs"]
-mod ps;    
-use crate::ps::*;
+mod globs0;
+//use crate::globs::*;  
+//use crate::ps::*;
 #[macro_use]
 #[path = "mcrs.rs"]
-mod mcrs;
+mod mcrs0;
 use getStop_code__;
+use dirty;
+#[path = "keycodes.rs"]
+mod kcode;
 use cli_table::CellStruct;
 use once_cell::sync::OnceCell;   
     };
 }
 macro_rules! page_struct_uses {
     () => {
+const id: u64 = 1307;
+use std::env;
+use colored::Colorize;
+use substring::Substring;
+use std::str::{self, from_utf8};
+use std::string;
+use chrono::{DateTime, Local};
+use std::io::{self, Write};
+use std::any::{self, type_name};
+use std::fmt;
+use std::fs;
+use std::fs::File;
+use cli_table::format;
+use once_cell::sync::OnceCell;
+use std::cell::Cell;
+use std::str::Split;
+use std::thread;
+use threadpool::{ThreadPool, Builder};
+use std::sync::mpsc;
+use std::ffi::CString;
+use std::process::{Command, Stdio};
+use std::path::Path;
+use num_traits::cast::ToPrimitive;
+use std::io::{BufRead, BufReader};
+use std::sync::RwLock;
+#[macro_use]
+#[path = "mcrs.rs"]
+mod mcrs909;
+use set_prnt_;
+    };
+}
+macro_rules! globs_uses {
+    () => {
+    use ansi_term::ANSIString;
+    use once_cell::sync::OnceCell;
+    use libc::{fcntl, F_GETFL, F_SETFL, O_NONBLOCK};
+    use std::io::{self, ErrorKind, Read};
+    use std::os::unix::io::{AsRawFd, RawFd};
+    #[macro_use]
+    #[path = "mcrs.rs"]
+    mod mcrs13;
+  //  use dirty;
+    }
+}
+macro_rules! mcrs_uses {
+    () => {
+//#[path = "page_struct_.rs"]
+
+
+    };
+}
+macro_rules! update_uses {
+    () => {
 use std::env;
 use colored::Colorize;
 use substring::Substring;
@@ -104,16 +176,60 @@ use std::process::{Command, Stdio};
 use std::path::Path;
 use num_traits::cast::ToPrimitive;
 use std::io::{BufRead, BufReader};
+use std::thread::spawn;
 #[path = "func_id.rs"]
-mod func_id;
+mod func_id17;
 #[path = "globs.rs"]
-mod globs;
+mod globs17;
 #[path = "page_struct_.rs"]
-//mod ps;    
-use crate::globs::*;   
-    };
+mod ps0;  
+#[path = "pg.rs"]
+mod pg17;
+use crate::get_arg_in_cmd;
+}; }
+macro_rules! core_use {
+    () => {
+use std::env;
+use colored::Colorize;
+use substring::Substring;
+use std::str::{self, from_utf8};
+use std::string;
+use chrono::{DateTime, Local};
+use std::io::{self, Write};
+use std::any::{self, type_name};
+use std::fmt;
+use std::fs;
+use std::fs::File;
+use cli_table::format;
+use once_cell::unsync::OnceCell;
+use std::cell::Cell;
+use std::str::Split;
+use std::thread;
+use threadpool::{ThreadPool, Builder};
+use std::sync::mpsc;
+use std::ffi::CString;
+use std::process::{Command, Stdio};
+use std::path::Path;
+use num_traits::cast::ToPrimitive;
+use std::io::{BufRead, BufReader};
+use std::thread::spawn;
+#[path = "page_struct_.rs"]
+mod ps21;
+#[path = "func_id.rs"]
+mod func_id21;
+use func_id21::*;
+#[path = "globs.rs"]
+mod globs21;
+use globs21::*;
+#[path = "pg.rs"]
+mod pg21;
+use pg21::*;
+};
 }
-
+pub(crate) use core_use;
+pub(crate) use update_uses;
+pub(crate) use mcrs_uses;
 pub(crate) use use_all;
 pub(crate) use page_struct_uses;
 pub(crate) use pg_uses;
+pub(crate) use  globs_uses;
