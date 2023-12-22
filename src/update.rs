@@ -30,14 +30,14 @@ pub(crate) fn main_update(){
 
 }
 pub(crate) fn prime(){
-    crate::initSession();
+    //crate::initSession();
     main_update();
 println!("len of main0 list {}", globs17::len_of_main0_list());
-    let builder = thread::Builder::new().stack_size(8 * 1024 * 1024);
+    let builder = thread::Builder::new().stack_size(8 * 1024 * 1024).name("manage_page".to_string());
 let handler = builder.spawn(|| {
 let ps__: crate::_page_struct = crate::init_page_struct();
 crate::manage_pages(ps__);
-
+println!("stop manage_page");
 }).unwrap();
     handler.join().unwrap();
     println!("len of main0 list {}", globs17::len_of_main0_list());

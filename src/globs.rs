@@ -35,17 +35,22 @@ pub fn ins_last_char_to_string1_from_string1(indx: usize, origString: String) ->
         Some(ch) => ch,
         _ => {/*println!("kkkkkkkkk");*/ return origString.to_string();}
     };
+    if crate::dirty!(){
     let msg = format!("'ins_last_char_to_string1_from_string1 indx {} orig{} char0 {} orig len {}'", indx, origString, char0, len);
     //run_cmd0(&msg);
     println!("{}", &msg);
+    }
     for i in 0..len{
         let char1: char = origString.chars().nth(i).unwrap();
         if i != indx{ret.push(char1);}
         else {ret.push(char0);}
-        println!("{}", char1);
+       // println!("{}", char1);
     }
-    println!("ret {}", ret);
+    ////println!("ret {}", ret);
     ret
+}
+pub(crate) fn print_type_of<T>(_: &T) {
+println!("{}", std::any::type_name::<T>())
 }
 pub fn eq_str(str1: &str, str2: &str) -> i64{
 let str1_len = str1.len();

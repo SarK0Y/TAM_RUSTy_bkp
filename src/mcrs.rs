@@ -19,3 +19,11 @@ macro_rules! set_prnt_ {
         *PRNT.write().unwrap() = $x.to_string();
     };
 }
+macro_rules! close_termios__ {
+    (termios: expr) => {
+       let res = match tcsetattr(stdin_fd, TCSANOW, &$termios){
+        Err(e) => {format!("{}", e)},
+        Ok(len) => {format!("{:?}", len)}
+    }
+    };
+}

@@ -43,6 +43,7 @@ mod mcrs18;
 use mcrs18::*;
 use dirty;
 use getStop_code__;
+use close_termios__;
 use set_prnt_;
 #[path = "core.rs"]
 mod core18;
@@ -81,10 +82,10 @@ use std::io::{BufRead, BufReader};
 use std::os::fd::AsFd;
 use ansi_term::ANSIString;
 use if_chain::if_chain;
-#[path = "func_id.rs"]
-mod func_id0;
-#[path = "globs.rs"]
-mod globs0;
+//#[path = "func_id.rs"]
+//mod func_id0;
+//#[path = "globs.rs"]
+//mod globs0;
 //use crate::globs::*;  
 //use crate::ps::*;
 #[macro_use]
@@ -92,6 +93,7 @@ mod globs0;
 mod mcrs0;
 use getStop_code__;
 use dirty;
+use close_termios__;
 #[path = "keycodes.rs"]
 mod kcode;
 use cli_table::CellStruct;

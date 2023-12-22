@@ -94,11 +94,11 @@ pub(crate) fn INS(val: &str) -> bool{
         //  if get_prnt(func_id) == new_string{break;}
       //}
       //set_prompt(&new_string, func_id);
-       //io::stdout().flush();
-      print!("{}", get_prnt(func_id));
+      io::stdout().flush().unwrap();
+    //  print!("{}", get_prnt(func_id));
       cur_cur_pos += 1;
       set_cur_cur_pos(cur_cur_pos as i64, func_id);
-      print!("{}]", get_cur_cur_pos(func_id));
+      //print!("{}]", get_cur_cur_pos(func_id));
       true
 }
 pub(crate) fn press_DEL(val: &str) -> page_struct_ret{return unsafe{page_struct("prnt", 0, __DEL)}}
@@ -200,13 +200,12 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     }
     if val != "prnt" {break 'no_val 101;}
     if id_of_caller == __BKSP{
-      crate::run_cmd0("notify-send bksp".to_string());
+      //crate::run_cmd0("notify-send bksp".to_string());
       let cur_cur_pos = (get_cur_cur_pos(func_id) - 1) as usize;
-      let mut string1 = PRNT.read().unwrap().to_string();
-      string1.push_str(val);
-      let new_string = crate::globs18::ins_last_char_to_string1_from_string1(cur_cur_pos, string1);
+      let len = PRNT.read().unwrap().len() - 1;
+      let mut string1 = PRNT.read().unwrap().substring(0, len).to_string();
       //loop {
-          set_prnt(&new_string, func_id);
+          set_prnt(&string1, func_id);
       set_cur_cur_pos(cur_cur_pos as i64, func_id);
       ps_ret.str_= "ok".to_string(); return ps_ret;
     }
@@ -223,11 +222,8 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     }
     11    
     };
-    if id_of_val == PRNT_  {ps_ret.str_ = PRNT.read().unwrap().to_string()/*String::from(PRNT.get().unwrap())*/;
-      let prnt = format!("notify-send 'prnt {} len {}'", PRNT.read().unwrap().to_string(), PRNT.read().unwrap().len());
-      crate::run_cmd(prnt); return ps_ret;}
-    if id_of_val == crate::set(PRNT_) {crate::set_prnt_!(val);
-      crate::run_cmd("notify-send 'set prnt'".to_string()); ps_ret.str_= "ok".to_string(); prnt_set =true; return ps_ret;}
+    if id_of_val == PRNT_  {ps_ret.str_ = PRNT.read().unwrap().to_string()/*String::from(PRNT.get().unwrap())*/; return ps_ret;}
+    if id_of_val == crate::set(PRNT_) {crate::set_prnt_!(val); ps_ret.str_= "ok".to_string(); prnt_set =true; return ps_ret;}
     if id_of_val == NUM_PAGE_ {ps_ret.int = NUM_PAGE; return ps_ret;}
     if id_of_val == crate::set(NUM_PAGE_) {NUM_PAGE = i64::from_str_radix(val, 10).expect("failed number of a page"); return ps_ret;}
     if id_of_val == NUM_COLS_ {ps_ret.int = NUM_COLS; return ps_ret;}

@@ -1,4 +1,4 @@
-use crate::exts::pg_uses;
+use crate::{exts::pg_uses, ps18::set_prnt};
 self::pg_uses!();
 
 fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -11,7 +11,7 @@ fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
 }
 pub(crate) 
 fn build_page(ps: &mut crate::_page_struct){
-    let func_id = func_id0::build_page;
+    let func_id = crate::func_id18::build_page;
     let mut num_page; if ps.num_page != i64::MAX{num_page = ps.num_page;}else{num_page = crate::get_num_page(func_id);}
     let mut num_cols; if ps.num_cols != i64::MAX{num_cols = ps.num_cols;}else{num_cols = crate::get_num_cols(func_id);}
     let mut num_rows; if ps.num_rows != i64::MAX{num_rows = ps.num_rows;}else{num_rows = crate::get_num_rows(func_id);}
@@ -25,7 +25,7 @@ fn build_page(ps: &mut crate::_page_struct){
             let cell_num = j + num_cols * i + num_page;
             let mut res: String ="".to_string();
             let full_path_fn = move || -> String {for i in 0..1_000_000_000 {
-              res = globs0::get_item_from_front_list(cell_num);
+              res = crate::globs18::get_item_from_front_list(cell_num);
               if res != "front list is empty"{return res;}
             // println!("build_page - probe 0");
             } return "".to_string()};
@@ -35,10 +35,10 @@ fn build_page(ps: &mut crate::_page_struct){
             macro_rules! filename_str0{
                 () => {String::from(filename.file_name().unwrap().to_str().unwrap()).as_str()};
             }
-            if globs0::eq_str(stopCode.as_str(), filename.as_os_str().to_str().unwrap()) == 0 && stopCode.len() == filename.as_os_str().to_str().unwrap().len() {println!("{}", "caught".bold().green()); 
+            if crate::globs18::eq_str(stopCode.as_str(), filename.as_os_str().to_str().unwrap()) == 0 && stopCode.len() == filename.as_os_str().to_str().unwrap().len() {println!("{}", "caught".bold().green()); 
              time_to_stop = true; break;}
             if crate::dirty!(){
-               println!("cmp_str res {}", globs0::eq_str(stopCode.as_str(), filename.as_os_str().to_str().unwrap()));
+               println!("cmp_str res {}", crate::globs18::eq_str(stopCode.as_str(), filename.as_os_str().to_str().unwrap()));
                println!("stop code {}, len {}; str {}, len {}", stopCode, stopCode.as_str().len(), filename.as_os_str().to_str().unwrap(), filename.as_os_str().to_str().unwrap().len());
                println!("{:?}", filename.file_name());
             }
@@ -58,9 +58,19 @@ fn build_page(ps: &mut crate::_page_struct){
     
 }
 
+fn end_termios(termios: &Termios){
+  let res = match tcsetattr(0, TCSANOW, &termios){
+        Err(e) => {format!("{}", e)},
+        Ok(len) => {format!("{:?}", len)}
+    };
+    io::stdout().flush().unwrap();
+}
+fn clear_screen(){
+    crate::run_cmd_str("clear");
+}
 pub(crate) 
 fn hotKeys( Key: &mut String) -> String{
-    let func_id = func_id0::hotKeys;
+    let func_id = crate::func_id18::hotKeys;
     let mut stdin = io::stdin();
     let stdin_fd = 0;
     let mut stdout = io::stdout();
@@ -73,14 +83,14 @@ fn hotKeys( Key: &mut String) -> String{
     writeIn_stdin.write(&enter);
     println!("gotta enter");
 };
-loop {
-     let termios = Termios::from_fd(stdin_fd).unwrap();
+let termios = Termios::from_fd(stdin_fd).unwrap();
     let mut new_termios = termios.clone(); 
-    new_termios.c_lflag &= !(ICANON); 
+    new_termios.c_lflag &= !(ICANON | ECHO); 
      let res = match tcsetattr(stdin_fd, TCSANOW, &new_termios){
         Err(e) => {format!("{}", e)},
         Ok(len) => {format!("kkkkkkkkkkk {:#?}", len)}
     };
+loop {
     stdout.lock().flush().unwrap();
     let red_stdin = stdin.read(&mut stdin_buf);
     if crate::dirty!() {println!("len of red {:?}", red_stdin.unwrap());}
@@ -89,14 +99,14 @@ loop {
         _ => ""
     };
     Key.clear(); Key.push_str(str0);
-    if globs0::eq_ansi_str(&kcode::F1, Key.as_str()) == 0{crate::run_cmd0("notify-send F1 pressed".to_string());} 
+    if crate::globs18::eq_ansi_str(&kcode::F12, Key.as_str()) == 0{end_termios(&termios); set_prnt("", func_id); return "go2 0".to_string();} 
     let ansiKey: u8 = match Key.as_str().bytes().next(){
         Some(val) => val,
         _ => 255
     };
     if crate::dirty!(){println!("ansi {}, Key {:?}", ansiKey, Key);}
     if kcode::ENTER == ansiKey{let p = crate::get_prnt(func_id); println!("p {} mp {}", p, crate::get_mainpath(func_id)); return p;} 
-    if kcode::BACKSPACE == ansiKey{crate::press_BKSP();} 
+    if kcode::BACKSPACE == ansiKey{crate::press_BKSP(); return "go2 0".to_string();} 
     if kcode::ESCAPE == ansiKey{println!("esc pressed");}
     if kcode::TAB == ansiKey{println!("tab pressed");}  
    Key.push_str(&str0);
@@ -117,7 +127,7 @@ let mut bal =String::new();
         //set_prnt(&bal, -1);
         build_page(&mut ps);
         exec_cmd(custom_input(&mut Key));
-        count += 1;
+        clear_screen();
         //crate::run_cmd0("clear".to_string());
     }
 }
@@ -136,7 +146,7 @@ pub(crate) fn form_cmd_line(prompt: String, prnt: String){
     print!("{}", print_whole_line);
 }
 pub(crate) fn form_cmd_line_default(){
-    let func_id = func_id0::form_cmd_line_default;
+    let func_id = crate::func_id18::form_cmd_line_default;
     let prompt = crate::get_prompt(func_id); let prnt = crate::get_prnt(func_id);
     let whole_line_len = prompt.len() + prnt.len() + 2;
     wipe_cmd_line(whole_line_len);
@@ -147,8 +157,8 @@ pub(crate) fn custom_input(Key: &mut String) -> String{
     return hotKeys(Key);
 }
 fn exec_cmd(cmd: String){
-    let func_id = func_id0::exec_cmd;
-    println!("cmd {} func {}, prnt {}", cmd, func_id0::get_func_name(func_id), crate::get_prnt(func_id));
+    let func_id = crate::func_id18::exec_cmd;
+    //println!("cmd {} func {}, prnt {}", cmd, crate::func_id18::get_func_name(func_id), crate::get_prnt(func_id));
     if cmd == "np"{
         let num_page = crate::get_num_page(func_id) + 1;
         crate::set_num_page(num_page, func_id);

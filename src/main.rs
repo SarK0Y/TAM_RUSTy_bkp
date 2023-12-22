@@ -41,6 +41,7 @@ Command::new("chmod").arg("700").arg(&path_2_cmd).output().expect("");
 core18::errMsg_dbg(&cmd, func_id, -1.0);
 path_2_cmd.to_string()
 }
+pub(crate) fn run_cmd_str(cmd: &str) ->bool{return run_cmd0(cmd.to_string());} 
 pub fn run_cmd0(cmd: String) -> bool{
 let func_id = 5;
 let fstdout: String; 
@@ -144,14 +145,15 @@ ret.res = false;
 return ret;
 }
 fn main (){
- stacker::maybe_grow( 8*1024*1024, 32*1024*1024, || {
+// stacker::maybe_grow( 8*1024*1024, 32*1024*1024, || {
     // guaranteed to have at least 32K of stack
+    initSession();
 let x: i64= 5;
-let out: core18::ret0 = get_arg_in_cmd("-tst");
+let out: core18::ret0 = get_arg_in_cmd("-");
 let out1: core18::ret0 = get_arg_in_cmd("-тст");
 println!("argument from cmd (-tst) {}", String::from_iter(out.s));
 println!("argument from cmd (-тст) {}", String::from_iter(out1.s));
-unsafe {println!("get stop code {}", ps18::page_struct("", 1, 0).str_);}
+unsafe {println!("get stotstp code {}", ps18::page_struct("", 1, 0).str_);}
 //unsafe {println!("set stop code {}", page_struct("777", set(1), 0).str_);}
 unsafe {println!("get stop code {}", ps18::page_struct("", 1, 0).str_);}
 let mut path: String = String::from("~/");
@@ -161,6 +163,6 @@ update18::prime();
 let mut Key: String = "tst".blink().to_string();
 println!("Key is {}", Key);
 ps18::set_prnt("thr main", -1);
-});
+//});
 return;
 }
