@@ -111,6 +111,54 @@ pub(crate) fn check_substr(orig: &String, probe: &str, start_from: usize) -> boo
      }
      return true;
 }
+
+fn end_termios(termios: &Termios){
+  let res = match tcsetattr(0, TCSANOW, &termios){
+        Err(e) => {format!("{}", e)},
+        Ok(len) => {format!("{:?}", len)}
+    };
+    io::stdout().flush().unwrap();
+}
+pub(crate) fn getch() -> char{
+let mut ch: char ='\0';
+ let mut stdin = io::stdin();
+    let stdin_fd = 0;
+    let mut stdout = io::stdout();
+    let mut stdin_buf: [u8; 4] =[0;4];
+    let termios = Termios::from_fd(stdin_fd).unwrap();
+    let mut new_termios = termios.clone();
+    stdout.lock().flush().unwrap(); 
+    new_termios.c_lflag &= !(ICANON | ECHO); 
+    let enter = ||
+{
+    let enter: [u8; 1] = [13; 1];
+    let mut writeIn_stdin = unsafe {File::from_raw_fd(0/*stdin*/)};
+    writeIn_stdin.write(&enter);
+    println!("gotta enter");
+};
+loop {
+    let res = match tcsetattr(stdin_fd, TCSANOW, &new_termios){
+        Err(e) => {format!("{}", e)},
+        Ok(len) => {format!("kkkkkkkkkkk {:#?}", len)}
+    };
+    let red_stdin = stdin.read(&mut stdin_buf);
+    end_termios(&termios);
+    stdout.lock().flush().unwrap();
+    if crate::dirty!() {println!("len of red {:?}", red_stdin.unwrap());}
+    let str0 = match str::from_utf8(&stdin_buf){
+        Ok(s) => s,
+        _ => ""
+    };
+    let msg = format!("getch {}", str0);
+    achtung(&msg);
+    if stdin_buf != [0; 4]{return str0.chars().nth(0).unwrap()}
+}
+ch
+}
+pub(crate) fn achtung(msg: &str){
+    let msg = format!("notify-send '{}'", msg);
+    crate::run_cmd_str(&msg);
+}
 pub(crate)
 fn check_substring(orig: String, probe: String, start_from: usize) -> bool{
     let substr: &str= &orig.as_str();

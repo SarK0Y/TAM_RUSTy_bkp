@@ -1,4 +1,4 @@
-use crate::{exts::pg_uses, ps18::set_prnt};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt}};
 self::pg_uses!();
 
 fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -58,66 +58,35 @@ fn build_page(ps: &mut crate::_page_struct){
     
 }
 
-fn end_termios(termios: &Termios){
-  let res = match tcsetattr(0, TCSANOW, &termios){
-        Err(e) => {format!("{}", e)},
-        Ok(len) => {format!("{:?}", len)}
-    };
-    io::stdout().flush().unwrap();
-}
 fn clear_screen(){
     crate::run_cmd_str("clear");
 }
 pub(crate) 
-fn hotKeys( Key: &mut String) -> String{
+fn hotKeys() -> String{
+    let mut Key =String::from("");
     let func_id = crate::func_id18::hotKeys;
-    let mut stdin = io::stdin();
-    let stdin_fd = 0;
-    let mut stdout = io::stdout();
-    let mut stdin_buf: [u8; 4] =[0;4];
+   
     let mut cmd = String::new();
-    let enter = ||
-{
-    let enter: [u8; 1] = [13; 1];
-    let mut writeIn_stdin = unsafe {File::from_raw_fd(0/*stdin*/)};
-    writeIn_stdin.write(&enter);
-    println!("gotta enter");
-};
-let termios = Termios::from_fd(stdin_fd).unwrap();
-    let mut new_termios = termios.clone(); 
-    new_termios.c_lflag &= !(ICANON | ECHO); 
-     let res = match tcsetattr(stdin_fd, TCSANOW, &new_termios){
-        Err(e) => {format!("{}", e)},
-        Ok(len) => {format!("kkkkkkkkkkk {:#?}", len)}
-    };
-loop {
-    stdout.lock().flush().unwrap();
-    let red_stdin = stdin.read(&mut stdin_buf);
-    if crate::dirty!() {println!("len of red {:?}", red_stdin.unwrap());}
-    let str0 = match str::from_utf8(&stdin_buf){
-        Ok(s) => s,
-        _ => ""
-    };
-    Key.clear(); Key.push_str(str0);
-    if crate::globs18::eq_ansi_str(&kcode::F12, Key.as_str()) == 0{end_termios(&termios); set_prnt("", func_id); return "go2 0".to_string();} 
+
+    Key.push(crate::getch());
+    if crate::globs18::eq_ansi_str(&kcode::F12, Key.as_str()) == 0{crate::run_cmd_str("notify-send F12"); 
+        crate::set_cur_cur_pos(0, func_id); set_prnt("", func_id); return "go2 0".to_string();} 
     let ansiKey: u8 = match Key.as_str().bytes().next(){
         Some(val) => val,
-        _ => 255
+        _ => 0
     };
+    if ansiKey == 0{return crate::get_prnt(func_id);}
     if crate::dirty!(){println!("ansi {}, Key {:?}", ansiKey, Key);}
-    if kcode::ENTER == ansiKey{let p = crate::get_prnt(func_id); println!("p {} mp {}", p, crate::get_mainpath(func_id)); return p;} 
+    if kcode::ENTER == ansiKey{return crate::get_prnt(func_id);} 
     if kcode::BACKSPACE == ansiKey{crate::press_BKSP(); return "go2 0".to_string();} 
     if kcode::ESCAPE == ansiKey{println!("esc pressed");}
     if kcode::TAB == ansiKey{println!("tab pressed");}  
-   Key.push_str(&str0);
-   crate::INS(&str0);
+   crate::INS(&Key);
        // enter();
-        let res = match tcsetattr(stdin_fd, TCSANOW, &termios){
-        Err(e) => {format!("{}", e)},
-        Ok(len) => {format!("{:?}", len)}
-    };
-}
-"none00000000".to_string();
+    let cur_cur_pos = get_cur_cur_pos(func_id);
+    let prompt = format!("{} {}", crate::get_prompt(func_id), cur_cur_pos);
+    set_prompt(&prompt, func_id);
+return "ok".to_string();
 }
 pub fn manage_pages(mut ps: crate::_page_struct){
 let mut Key: String = "".to_string(); 
@@ -126,7 +95,7 @@ let mut bal =String::new();
     loop{
         //set_prnt(&bal, -1);
         build_page(&mut ps);
-        exec_cmd(custom_input(&mut Key));
+        exec_cmd(custom_input());
         clear_screen();
         //crate::run_cmd0("clear".to_string());
     }
@@ -152,9 +121,9 @@ pub(crate) fn form_cmd_line_default(){
     wipe_cmd_line(whole_line_len);
     form_cmd_line(prompt, prnt)
 }
-pub(crate) fn custom_input(Key: &mut String) -> String{
+pub(crate) fn custom_input() -> String{
     form_cmd_line_default();
-    return hotKeys(Key);
+    return hotKeys();
 }
 fn exec_cmd(cmd: String){
     let func_id = crate::func_id18::exec_cmd;
@@ -163,4 +132,6 @@ fn exec_cmd(cmd: String){
         let num_page = crate::get_num_page(func_id) + 1;
         crate::set_num_page(num_page, func_id);
     }
+      let num_page = crate::get_num_page(func_id) + 1;
+        crate::set_num_page(num_page, func_id);
 }

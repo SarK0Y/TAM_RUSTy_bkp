@@ -102,7 +102,6 @@ use once_cell::sync::OnceCell;
 }
 macro_rules! page_struct_uses {
     () => {
-const id: u64 = 1307;
 use std::env;
 use colored::Colorize;
 use substring::Substring;
@@ -196,6 +195,9 @@ use colored::Colorize;
 use substring::Substring;
 use std::str::{self, from_utf8};
 use std::string;
+use termios::{Termios, TCSANOW, ECHO, ICANON, tcsetattr};
+use std::io::{BufRead, BufReader};
+use std::os::unix::io::{AsRawFd, RawFd};
 use chrono::{DateTime, Local};
 use std::io::{self, Write};
 use std::any::{self, type_name};
@@ -213,7 +215,8 @@ use std::ffi::CString;
 use std::process::{Command, Stdio};
 use std::path::Path;
 use num_traits::cast::ToPrimitive;
-use std::io::{BufRead, BufReader};
+use std::os::fd::FromRawFd;
+use std::io::Read;
 use std::thread::spawn;
 #[path = "page_struct_.rs"]
 mod ps21;

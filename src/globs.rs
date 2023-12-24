@@ -28,6 +28,21 @@ pub fn unblock_fd(fd: RawFd) -> io::Result<()> {
     if res != 0 {return Err(io::Error::last_os_error());}
     Ok(())
 }
+pub fn bksp(origString: String) -> String{
+       let mut len = origString.chars().count(); if len == 0 {return origString.to_string();}
+     let mut ret = String::new();
+     len -= 1;
+    for i in 0..len{
+        let char1: char = match origString.chars().nth(i){
+            Some(ch) => ch,
+            _ => {crate::run_cmd_str("notify-send bksp"); return ret}
+        };
+        crate::run_cmd_str("notify-send ended_bksp");
+        ret.push(char1);
+    }
+    ////println!("ret {}", ret);
+    ret
+}
 pub fn ins_last_char_to_string1_from_string1(indx: usize, origString: String) -> String{
     let mut len = origString.len(); if len == 0 {return origString.to_string();}
      let mut ret = String::new();

@@ -75,6 +75,7 @@ pub(crate) fn init_page_struct() -> _page_struct{
    ps_new
 }
 pub(crate) fn INS(val: &str) -> bool{
+  if val == ""{return false}
   let func_id = crate::func_id18::INS_;
   let mut cur_cur_pos = get_cur_cur_pos(func_id) as usize;
       let mut string1 = "".to_string();
@@ -84,20 +85,21 @@ pub(crate) fn INS(val: &str) -> bool{
         if prnt0 != "none"{break 'ret prnt0.as_str()}
       } };
       string1.push_str(prnt);
-      print!("{}", string1);
       string1.push_str(val);
       let new_string = crate::globs18::ins_last_char_to_string1_from_string1(cur_cur_pos, string1);
-      print!("{}", new_string);
       //loop {
           set_prnt(&new_string, func_id);
           set_prompt("tsssssst", func_id);
         //  if get_prnt(func_id) == new_string{break;}
       //}
       //set_prompt(&new_string, func_id);
-      io::stdout().flush().unwrap();
+    //  io::stdout().flush().unwrap();
     //  print!("{}", get_prnt(func_id));
+   /* let err_msg = format!("cur_cur_pos as i64 {} as usize {}", cur_cur_pos as i64, cur_cur_pos).blink().red().bold(); 
+     if cur_cur_pos > 1000{panic!("{}", err_msg);}*/
       cur_cur_pos += 1;
       set_cur_cur_pos(cur_cur_pos as i64, func_id);
+      crate::achtung("fn ins");
       //print!("{}]", get_cur_cur_pos(func_id));
       true
 }
@@ -135,6 +137,7 @@ pub(crate) unsafe fn page_struct_int(val: i64, val_id: i64, caller_id: i64) -> i
     static mut NUM_SPACES: i64 = 4; //9
     static mut NUM_FILES: i64 = 0; //10
     static mut COUNT_PAGES: i64 = 0; //11
+    NUM_PAGE = 1;
     if val_id == NUM_PAGE_ {return NUM_PAGE}
     if val_id == crate::set(NUM_PAGE_) {NUM_PAGE = val; println!("hhhhhhhhhhhhhhhhh"); return val;}
     if val_id == NUM_COLS_ {return NUM_COLS}
@@ -200,13 +203,13 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     }
     if val != "prnt" {break 'no_val 101;}
     if id_of_caller == __BKSP{
+      if PRNT.read().unwrap().len() == 0 {set_cur_cur_pos(0, func_id); ps_ret.str_= "ok".to_string(); return ps_ret}
       //crate::run_cmd0("notify-send bksp".to_string());
-      let cur_cur_pos = (get_cur_cur_pos(func_id) - 1) as usize;
       let len = PRNT.read().unwrap().len() - 1;
-      let mut string1 = PRNT.read().unwrap().substring(0, len).to_string();
       //loop {
-          set_prnt(&string1, func_id);
-      set_cur_cur_pos(cur_cur_pos as i64, func_id);
+        let new_prnt = crate::globs18::bksp(PRNT.read().unwrap().to_string());
+        crate::set_prnt_!(new_prnt);
+      set_cur_cur_pos(len as i64, func_id);
       ps_ret.str_= "ok".to_string(); return ps_ret;
     }
     if id_of_caller == __DEL{
