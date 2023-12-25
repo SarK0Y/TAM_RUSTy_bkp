@@ -119,12 +119,12 @@ fn end_termios(termios: &Termios){
     };
     io::stdout().flush().unwrap();
 }
-pub(crate) fn getch() -> char{
-let mut ch: char ='\0';
+pub(crate) fn getkey() -> String{
+let mut Key: String ="".to_string();
  let mut stdin = io::stdin();
     let stdin_fd = 0;
     let mut stdout = io::stdout();
-    let mut stdin_buf: [u8; 4] =[0;4];
+    let mut stdin_buf: [u8; 6] =[0;6];
     let termios = Termios::from_fd(stdin_fd).unwrap();
     let mut new_termios = termios.clone();
     stdout.lock().flush().unwrap(); 
@@ -142,20 +142,65 @@ loop {
         Ok(len) => {format!("kkkkkkkkkkk {:#?}", len)}
     };
     let red_stdin = stdin.read(&mut stdin_buf);
-    end_termios(&termios);
     stdout.lock().flush().unwrap();
+    end_termios(&termios);
     if crate::dirty!() {println!("len of red {:?}", red_stdin.unwrap());}
     let str0 = match str::from_utf8(&stdin_buf){
         Ok(s) => s,
         _ => ""
     };
-    let msg = format!("getch {}", str0);
+    let msg = format!("getch {} {:?}", str0, stdin_buf);
     achtung(&msg);
-    if stdin_buf != [0; 4]{return str0.chars().nth(0).unwrap()}
+    if stdin_buf != [0; 6]{
+        let mut i = 0;
+        loop{
+            let ch = match str0.chars().nth(i){
+                Some(ch) => ch,
+                _ => return Key
+            };
+        Key.push(ch);
+        i += 1;}}
+}
+Key
+}
+pub(crate) fn getch() -> char{
+let mut ch: char ='\0';
+ let mut stdin = io::stdin();
+    let stdin_fd = 0;
+    let mut stdout = io::stdout();
+    let mut stdin_buf: [u8; 6] =[0;6];
+    let termios = Termios::from_fd(stdin_fd).unwrap();
+    let mut new_termios = termios.clone();
+    stdout.lock().flush().unwrap(); 
+    new_termios.c_lflag &= !(ICANON | ECHO); 
+    let enter = ||
+{
+    let enter: [u8; 1] = [13; 1];
+    let mut writeIn_stdin = unsafe {File::from_raw_fd(0/*stdin*/)};
+    writeIn_stdin.write(&enter);
+    println!("gotta enter");
+};
+loop {
+    let res = match tcsetattr(stdin_fd, TCSANOW, &new_termios){
+        Err(e) => {format!("{}", e)},
+        Ok(len) => {format!("kkkkkkkkkkk {:#?}", len)}
+    };
+    let red_stdin = stdin.read(&mut stdin_buf);
+    stdout.lock().flush().unwrap();
+    end_termios(&termios);
+    if crate::dirty!() {println!("len of red {:?}", red_stdin.unwrap());}
+    let str0 = match str::from_utf8(&stdin_buf){
+        Ok(s) => s,
+        _ => ""
+    };
+    let msg = format!("getch {} {:?}", str0, stdin_buf);
+    achtung(&msg);
+    if stdin_buf != [0; 6]{return str0.chars().nth(0).unwrap()}
 }
 ch
 }
 pub(crate) fn achtung(msg: &str){
+    if !crate::checkArg("-dbg") | !crate::checkArg("-use-achtung"){return;}
     let msg = format!("notify-send '{}'", msg);
     crate::run_cmd_str(&msg);
 }

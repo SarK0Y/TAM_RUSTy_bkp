@@ -1,5 +1,7 @@
 mod exts;
 use exts::page_struct_uses;
+
+use crate::pg18::repeat_char;
 self::page_struct_uses!();
 pub const STOP_CODE_: i64 = 1;
 pub const KONSOLE_TITLE_: i64 = 2;
@@ -139,7 +141,7 @@ pub(crate) unsafe fn page_struct_int(val: i64, val_id: i64, caller_id: i64) -> i
     static mut COUNT_PAGES: i64 = 0; //11
     NUM_PAGE = 1;
     if val_id == NUM_PAGE_ {return NUM_PAGE}
-    if val_id == crate::set(NUM_PAGE_) {NUM_PAGE = val; println!("hhhhhhhhhhhhhhhhh"); return val;}
+    if val_id == crate::set(NUM_PAGE_) {NUM_PAGE = val; return val;}
     if val_id == NUM_COLS_ {return NUM_COLS}
     if val_id == crate::set(NUM_COLS_) {NUM_COLS = val; return val;}
     if val_id == NUM_ROWS_ {return NUM_ROWS}
@@ -153,6 +155,25 @@ pub(crate) unsafe fn page_struct_int(val: i64, val_id: i64, caller_id: i64) -> i
     if val_id ==  LEFT_SHIFT_4_CUR_ {return LEFT_SHIFT_4_CUR as i64}
     if val_id == crate::set(LEFT_SHIFT_4_CUR_) {LEFT_SHIFT_4_CUR = val as usize; return val;}
  return -1;  
+}
+pub(crate) unsafe fn shift_cursor_of_prnt(shift: i64, func_id: i64) -> String{ // shift == 0 to get cursor position, -1 to move left for one char, 1 to move right
+  static mut num_of_shifts: usize = 0;
+  let mut ret = String::from("");
+  if shift == 0{
+  macro_rules! shift {
+      () => {
+      repeat_char(num_of_shifts, "\x1b[D").as_str()      
+      };
+  }
+    ret = get_prnt(-2);
+    ret.push_str(shift!());
+    return ret
+  }
+  if shift == -1 {let len = get_prnt(func_id).chars().count() + 1; if num_of_shifts < len {num_of_shifts += 1;}else{num_of_shifts = len;}}
+  if shift ==  1 {
+    if num_of_shifts > 0 {num_of_shifts -= 1;}
+  }
+  ret
 }
 pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -> page_struct_ret
 {

@@ -35,9 +35,8 @@ pub fn bksp(origString: String) -> String{
     for i in 0..len{
         let char1: char = match origString.chars().nth(i){
             Some(ch) => ch,
-            _ => {crate::run_cmd_str("notify-send bksp"); return ret}
+            _ => {return ret}
         };
-        crate::run_cmd_str("notify-send ended_bksp");
         ret.push(char1);
     }
     ////println!("ret {}", ret);

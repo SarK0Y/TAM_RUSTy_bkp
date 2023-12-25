@@ -1,4 +1,4 @@
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt}};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt}, core18::achtung};
 self::pg_uses!();
 
 fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -63,12 +63,26 @@ fn clear_screen(){
 }
 pub(crate) 
 fn hotKeys() -> String{
-    let mut Key =String::from("");
+    let mut Key =String::new();
     let func_id = crate::func_id18::hotKeys;
-   
     let mut cmd = String::new();
-
-    Key.push(crate::getch());
+    Key.push_str(crate::getkey().as_str());
+    if crate::globs18::eq_ansi_str(&kcode::DOWN_ARROW, Key.as_str()) == 0 {
+        return "go2 0".to_string();
+    }
+    if crate::globs18::eq_ansi_str(&kcode::UP_ARROW, Key.as_str()) == 0 {
+        return "go2 0".to_string();
+    }
+    if crate::globs18::eq_ansi_str(&kcode::RIGHT_ARROW, Key.as_str()) == 0 {
+        achtung(Key.as_str());
+        unsafe {shift_cursor_of_prnt(1, func_id);}
+        return "go2 0".to_string();
+    }
+    if crate::globs18::eq_ansi_str(&kcode::LEFT_ARROW, Key.as_str()) == 0 {
+    unsafe {shift_cursor_of_prnt(-1, func_id);}
+    //io::stdout().lock().flush().unwrap();
+    achtung("left arrow");
+    return "go2 0".to_string();}
     if crate::globs18::eq_ansi_str(&kcode::F12, Key.as_str()) == 0{crate::run_cmd_str("notify-send F12"); 
         crate::set_cur_cur_pos(0, func_id); set_prnt("", func_id); return "go2 0".to_string();} 
     let ansiKey: u8 = match Key.as_str().bytes().next(){
@@ -116,7 +130,7 @@ pub(crate) fn form_cmd_line(prompt: String, prnt: String){
 }
 pub(crate) fn form_cmd_line_default(){
     let func_id = crate::func_id18::form_cmd_line_default;
-    let prompt = crate::get_prompt(func_id); let prnt = crate::get_prnt(func_id);
+    let prompt = crate::get_prompt(func_id); let prnt = unsafe {crate::shift_cursor_of_prnt(0, func_id)};
     let whole_line_len = prompt.len() + prnt.len() + 2;
     wipe_cmd_line(whole_line_len);
     form_cmd_line(prompt, prnt)
