@@ -178,7 +178,7 @@ pub(crate) unsafe fn shift_cursor_of_prnt(shift: i64, func_id: i64) -> shift_cur
     ret.str__.push_str(shift!());
     return ret
   }
-  if shift == -1 {let len = get_prnt(func_id).chars().count() + 1; if num_of_shifts < len {num_of_shifts += 1;}else{num_of_shifts = len;}}
+  if shift == -1 {let len = get_prnt(func_id).chars().count(); if num_of_shifts <= len {num_of_shifts += 1;}else{num_of_shifts = len;}}
   if shift ==  1 {
     if num_of_shifts > 0 {num_of_shifts -= 1;}
   }

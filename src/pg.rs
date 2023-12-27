@@ -1,4 +1,4 @@
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt}, core18::achtung, globs18::ins_last_char_to_string1_from_string1};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt}, core18::achtung, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string}};
 self::pg_uses!();
 
 fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -91,7 +91,14 @@ fn hotKeys() -> String{
     if crate::globs18::eq_ansi_str(&kcode::F12, Key.as_str()) == 0{
         unsafe {shift_cursor_of_prnt(0, func_id)};
         crate::run_cmd_str("notify-send F12"); 
-        crate::set_cur_cur_pos(0, func_id); set_prnt("", func_id); return "go2 0".to_string();} 
+        set_prnt("", func_id); return "go2 0".to_string();} 
+    if crate::globs18::eq_ansi_str(&kcode::DELETE, Key.as_str()) == 0{
+        let shift = unsafe {shift_cursor_of_prnt(1, func_id).shift};
+        let mut indx = get_prnt(func_id).chars().count();
+        if shift <= indx {indx -= shift;}
+        let prnt = rm_char_from_string(indx, &get_prnt(func_id));
+        set_prnt(prnt.as_str(), func_id);
+        return "go2 0".to_string();} 
     let ansiKey: u8 = match Key.as_str().bytes().next(){
         Some(val) => val,
         _ => 0
@@ -136,10 +143,11 @@ pub(crate) fn form_cmd_line_default(){
     let func_id = crate::func_id18::form_cmd_line_default;
     let prompt = crate::get_prompt(func_id); let mut ret = unsafe {crate::shift_cursor_of_prnt(0, func_id)};
     let mut prnt = ret.str__;
-    prnt.push('👈');
     let len = get_prnt(func_id).chars().count();
-    if ret.shift < len {ret.shift = len - ret.shift;} 
-    prnt = ins_last_char_to_string1_from_string1(ret.shift, prnt);
+    if ret.shift == len {prnt = format!("👈{}", prnt)}
+    else if ret.shift < len {ret.shift = len - ret.shift;
+    prnt.push('👈');
+    prnt = ins_last_char_to_string1_from_string1(ret.shift, prnt);}
     let whole_line_len = prompt.len() + prnt.len() + 2;
 
     wipe_cmd_line(whole_line_len);

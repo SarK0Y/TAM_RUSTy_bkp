@@ -40,7 +40,7 @@ pub fn bksp() -> String{
      let prnt = get_prnt(-3);
      if len > 0 {len -= 1;}
     let mut indx = unsafe {shift_cursor_of_prnt(2, -2).shift};
-    if indx < len {indx = len - indx;}
+    if indx <= len {indx = len - indx;}
     ret = rm_char_from_string(indx, &get_prnt(-3));
         ////println!("ret {}", ret);
     ret
