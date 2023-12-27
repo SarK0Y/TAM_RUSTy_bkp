@@ -1,6 +1,6 @@
 use chrono::format;
 
-use crate::{exts::globs_uses, run_cmd0};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt}};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -14,9 +14,15 @@ pub const GET: i64 =  9;
 pub const LEN: i64 =  10;
 pub const SET_FRONT_LIST: i64 =  11;
 pub fn rm_char_from_string(indx: usize, origString: &String) -> String{
-    let len = origString.len(); let mut ret = String::new();
+    let len = origString.chars().count(); let mut ret = String::new();
     for i in 0..len{
-        if i != indx{let char1 = origString.chars().nth(i).unwrap(); ret.push(char1);}
+        if i != indx{
+         let char1: char = match origString.chars().nth(i){
+            Some(ch) => ch,
+            _ => {return ret}
+        };
+        ret.push(char1);
+        }
     }
     ret
 }
@@ -28,24 +34,22 @@ pub fn unblock_fd(fd: RawFd) -> io::Result<()> {
     if res != 0 {return Err(io::Error::last_os_error());}
     Ok(())
 }
-pub fn bksp(origString: String) -> String{
-       let mut len = origString.chars().count(); if len == 0 {return origString.to_string();}
+pub fn bksp() -> String{
+       let mut len = get_prnt(-3).chars().count(); if len == 0 {return get_prnt(-3).to_string();}
      let mut ret = String::new();
-     len -= 1;
-    for i in 0..len{
-        let char1: char = match origString.chars().nth(i){
-            Some(ch) => ch,
-            _ => {return ret}
-        };
-        ret.push(char1);
-    }
-    ////println!("ret {}", ret);
+     let prnt = get_prnt(-3);
+     if len > 0 {len -= 1;}
+    let mut indx = unsafe {shift_cursor_of_prnt(2, -2).shift};
+    if indx < len {indx = len - indx;}
+    ret = rm_char_from_string(indx, &get_prnt(-3));
+        ////println!("ret {}", ret);
     ret
 }
 pub fn ins_last_char_to_string1_from_string1(indx: usize, origString: String) -> String{
-    let mut len = origString.len(); if len == 0 {return origString.to_string();}
+    let mut len = origString.chars().count(); if len == 0 || len == 1 || indx == len -1 {return origString.to_string();}
      let mut ret = String::new();
-    let char0: char =match origString.chars().nth(len - 1){
+     len -= 1; 
+    let char0: char =match origString.chars().nth(len){
         Some(ch) => ch,
         _ => {/*println!("kkkkkkkkk");*/ return origString.to_string();}
     };
@@ -54,10 +58,10 @@ pub fn ins_last_char_to_string1_from_string1(indx: usize, origString: String) ->
     //run_cmd0(&msg);
     println!("{}", &msg);
     }
-    for i in 0..len{
+    for i in 0..len {
         let char1: char = origString.chars().nth(i).unwrap();
-        if i != indx{ret.push(char1);}
-        else {ret.push(char0);}
+        if i == indx{ret.push(char0);}
+        ret.push(char1);
        // println!("{}", char1);
     }
     ////println!("ret {}", ret);

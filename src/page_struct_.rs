@@ -33,6 +33,10 @@ pub struct page_struct_ret{
    pub str_: String,
    pub int: i64
 }
+pub struct shift_cur_struct{
+  pub shift: usize,
+  pub str__: String
+}
 pub struct child2run{
    pub running: i64,
    pub viewer: i64,
@@ -79,7 +83,9 @@ pub(crate) fn init_page_struct() -> _page_struct{
 pub(crate) fn INS(val: &str) -> bool{
   if val == ""{return false}
   let func_id = crate::func_id18::INS_;
-  let mut cur_cur_pos = get_cur_cur_pos(func_id) as usize;
+  let mut cur_cur_pos = get_prnt(func_id).chars().count();
+  let shift = unsafe {shift_cursor_of_prnt(2, func_id).shift};
+  if cur_cur_pos >= shift {cur_cur_pos -= shift;}
       let mut string1 = "".to_string();
       let mut prnt0: String;
       let prnt = 'ret: {loop{
@@ -156,17 +162,20 @@ pub(crate) unsafe fn page_struct_int(val: i64, val_id: i64, caller_id: i64) -> i
     if val_id == crate::set(LEFT_SHIFT_4_CUR_) {LEFT_SHIFT_4_CUR = val as usize; return val;}
  return -1;  
 }
-pub(crate) unsafe fn shift_cursor_of_prnt(shift: i64, func_id: i64) -> String{ // shift == 0 to get cursor position, -1 to move left for one char, 1 to move right
-  static mut num_of_shifts: usize = 0;
-  let mut ret = String::from("");
+pub(crate) unsafe fn shift_cursor_of_prnt(shift: i64, func_id: i64) -> shift_cur_struct{ // shift == 0 to get cursor position, -1 to move left for one char, 1 to move right /
+  static mut num_of_shifts: usize = 0;                                          // i64::MIN to set num_of_shifts = 0, 2 to ret num_of_shifts w/ no string
+  let mut str__ = String::from("");
+  let mut ret = shift_cur_struct{shift: num_of_shifts, str__: str__};
+  if shift == i64::MIN{num_of_shifts = 0;}
+  if shift == 2 {return ret;}
   if shift == 0{
   macro_rules! shift {
       () => {
       repeat_char(num_of_shifts, "\x1b[D").as_str()      
       };
   }
-    ret = get_prnt(-2);
-    ret.push_str(shift!());
+    ret.str__ = get_prnt(-2);
+    ret.str__.push_str(shift!());
     return ret
   }
   if shift == -1 {let len = get_prnt(func_id).chars().count() + 1; if num_of_shifts < len {num_of_shifts += 1;}else{num_of_shifts = len;}}
@@ -228,7 +237,7 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
       //crate::run_cmd0("notify-send bksp".to_string());
       let len = PRNT.read().unwrap().len() - 1;
       //loop {
-        let new_prnt = crate::globs18::bksp(PRNT.read().unwrap().to_string());
+        let new_prnt = crate::globs18::bksp();
         crate::set_prnt_!(new_prnt);
       set_cur_cur_pos(len as i64, func_id);
       ps_ret.str_= "ok".to_string(); return ps_ret;

@@ -128,7 +128,7 @@ let mut Key: String ="".to_string();
     let termios = Termios::from_fd(stdin_fd).unwrap();
     let mut new_termios = termios.clone();
     stdout.lock().flush().unwrap(); 
-    new_termios.c_lflag &= !(ICANON | ECHO); 
+    new_termios.c_lflag &= !(ICANON /*| ECHO*/); 
     let enter = ||
 {
     let enter: [u8; 1] = [13; 1];
@@ -142,7 +142,7 @@ loop {
         Ok(len) => {format!("kkkkkkkkkkk {:#?}", len)}
     };
     let red_stdin = stdin.read(&mut stdin_buf);
-    stdout.lock().flush().unwrap();
+    //stdout.lock().flush().unwrap();
     end_termios(&termios);
     if crate::dirty!() {println!("len of red {:?}", red_stdin.unwrap());}
     let str0 = match str::from_utf8(&stdin_buf){
@@ -158,6 +158,7 @@ loop {
                 Some(ch) => ch,
                 _ => return Key
             };
+        if ch == '\0' {return Key;}
         Key.push(ch);
         i += 1;}}
 }

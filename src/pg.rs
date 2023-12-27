@@ -1,4 +1,4 @@
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt}, core18::achtung};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt}, core18::achtung, globs18::ins_last_char_to_string1_from_string1};
 self::pg_uses!();
 
 fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -67,6 +67,11 @@ fn hotKeys() -> String{
     let func_id = crate::func_id18::hotKeys;
     let mut cmd = String::new();
     Key.push_str(crate::getkey().as_str());
+    if crate::globs18::eq_ansi_str(&kcode::F1, Key.as_str()) == 0 {
+        let msg = get_prnt(func_id);
+        crate::achtung(msg.as_str());
+        return "go2 0".to_string();
+    } 
     if crate::globs18::eq_ansi_str(&kcode::DOWN_ARROW, Key.as_str()) == 0 {
         return "go2 0".to_string();
     }
@@ -75,15 +80,17 @@ fn hotKeys() -> String{
     }
     if crate::globs18::eq_ansi_str(&kcode::RIGHT_ARROW, Key.as_str()) == 0 {
         achtung(Key.as_str());
-        unsafe {shift_cursor_of_prnt(1, func_id);}
+        unsafe {shift_cursor_of_prnt(1, func_id).shift};
         return "go2 0".to_string();
     }
     if crate::globs18::eq_ansi_str(&kcode::LEFT_ARROW, Key.as_str()) == 0 {
-    unsafe {shift_cursor_of_prnt(-1, func_id);}
+    unsafe {shift_cursor_of_prnt(-1, func_id).shift};
     //io::stdout().lock().flush().unwrap();
     achtung("left arrow");
     return "go2 0".to_string();}
-    if crate::globs18::eq_ansi_str(&kcode::F12, Key.as_str()) == 0{crate::run_cmd_str("notify-send F12"); 
+    if crate::globs18::eq_ansi_str(&kcode::F12, Key.as_str()) == 0{
+        unsafe {shift_cursor_of_prnt(0, func_id)};
+        crate::run_cmd_str("notify-send F12"); 
         crate::set_cur_cur_pos(0, func_id); set_prnt("", func_id); return "go2 0".to_string();} 
     let ansiKey: u8 = match Key.as_str().bytes().next(){
         Some(val) => val,
@@ -97,9 +104,6 @@ fn hotKeys() -> String{
     if kcode::TAB == ansiKey{println!("tab pressed");}  
    crate::INS(&Key);
        // enter();
-    let cur_cur_pos = get_cur_cur_pos(func_id);
-    let prompt = format!("{} {}", crate::get_prompt(func_id), cur_cur_pos);
-    set_prompt(&prompt, func_id);
 return "ok".to_string();
 }
 pub fn manage_pages(mut ps: crate::_page_struct){
@@ -130,8 +134,14 @@ pub(crate) fn form_cmd_line(prompt: String, prnt: String){
 }
 pub(crate) fn form_cmd_line_default(){
     let func_id = crate::func_id18::form_cmd_line_default;
-    let prompt = crate::get_prompt(func_id); let prnt = unsafe {crate::shift_cursor_of_prnt(0, func_id)};
+    let prompt = crate::get_prompt(func_id); let mut ret = unsafe {crate::shift_cursor_of_prnt(0, func_id)};
+    let mut prnt = ret.str__;
+    prnt.push('👈');
+    let len = get_prnt(func_id).chars().count();
+    if ret.shift < len {ret.shift = len - ret.shift;} 
+    prnt = ins_last_char_to_string1_from_string1(ret.shift, prnt);
     let whole_line_len = prompt.len() + prnt.len() + 2;
+
     wipe_cmd_line(whole_line_len);
     form_cmd_line(prompt, prnt)
 }
