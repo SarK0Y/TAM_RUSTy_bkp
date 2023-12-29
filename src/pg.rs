@@ -1,4 +1,4 @@
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt}, core18::{achtung, errMsg_dbg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string}};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path}, core18::{achtung, errMsg_dbg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string}, split_once};
 self::pg_uses!();
 
 fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -49,11 +49,11 @@ fn build_page(ps: &mut crate::_page_struct){
             row_cpy.push(filename_str);
         }
         let count_pages = crate::get_num_files(func_id) / num_items_on_pages;
-        println!("num page {}, num pages {}", num_page, count_pages);
         pg.push(move_out_of_scope(&mut row_cpy));
         if time_to_stop {break;}
     }
     //println!("{}", pg.table().display().unwrap());
+    println!("Full path: {}", crate::get_full_path(func_id));
     print_stdout(pg.table().bold(true).foreground_color(Some(cli_table::Color::Blue)));
     
 }
@@ -183,5 +183,16 @@ fn exec_cmd(cmd: String){
             crate::set_prnt("caught", func_id);
                 let num_page = crate::get_num_page(func_id) + 1;
         crate::set_num_page(num_page, func_id);
+    }
+      if cmd.as_str().substring(0, 2) == "fp"{
+        let (_, opt) = split_once(cmd.as_str(), " ");
+        if opt == "none" {set_full_path("wrong use of fp: fp <indx of file>", func_id); return;}
+        let file_indx: i64 = match i64::from_str_radix(&opt, 10){
+            Ok(val) => val,
+            _ => {set_full_path("wrong use of fp: fp <indx of file>", func_id); return}
+        };
+        let file_full_name =  crate::globs18::get_item_from_front_list(file_indx);
+        set_full_path(&file_full_name, func_id);
+        return;
     }
 }

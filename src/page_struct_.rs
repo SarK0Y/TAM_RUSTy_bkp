@@ -117,6 +117,8 @@ pub(crate) fn press_BKSP() -> page_struct_ret{return unsafe{page_struct("prnt", 
 pub(crate) fn get_mainpath(func_id: i64) -> String{return unsafe{page_struct("", MAINPATH_, func_id).str_}}
 pub(crate) fn get_prnt(func_id: i64) -> String{return unsafe{page_struct("", PRNT_, func_id).str_}}
 pub(crate) fn set_prnt(val: &str, func_id: i64) -> String{return unsafe{page_struct(val, crate::set(PRNT_), func_id).str_}}
+pub(crate) fn get_full_path(func_id: i64) -> String{return unsafe{page_struct("", FULL_PATH_, func_id).str_}}
+pub(crate) fn set_full_path(val: &str, func_id: i64) -> String{return unsafe{page_struct(val, crate::set(FULL_PATH_), func_id).str_}}
 pub(crate) fn get_prompt(func_id: i64) -> String{return unsafe{page_struct("", PROMPT_, func_id).str_}}
 pub(crate) fn set_prompt(val: &str, func_id: i64) -> String{return unsafe{page_struct(val, crate::set(PROMPT_), func_id).str_}}
 /*------------------------------------------------------------------------------------------------------------------------ */
@@ -220,6 +222,7 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     if fst_run {
       println!("fst func id {}", id_of_caller);
       let _ = STOP_CODE.set("∇".to_string());
+      FULL_PATH.set("".to_string());
      // let msg = format!("notify-send 'once prnt {}'", PRNT.get().unwrap()[0]);
      // crate::run_cmd0(msg);
       let _ = PROMPT.set("prob".to_string());
@@ -270,6 +273,8 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     if id_of_val == crate::set(STOP_CODE_) {STOP_CODE.take(); let _ = STOP_CODE.set(val.to_string()); ps_ret.str_= "ok".to_string(); return ps_ret;}
     if id_of_val == PROMPT_ {ps_ret.str_ =PROMPT.get().unwrap().to_string(); return ps_ret;}
     if id_of_val == crate::set(PROMPT_) {PROMPT.take(); let _ =PROMPT.set(val.to_string()); ps_ret.str_= "ok".to_string(); return ps_ret;}
+    if id_of_val == FULL_PATH_ {ps_ret.str_ =FULL_PATH.get().unwrap().to_string(); return ps_ret;}
+    if id_of_val == crate::set(FULL_PATH_) {FULL_PATH.take(); let _ =FULL_PATH.set(val.to_string()); ps_ret.str_= "ok".to_string(); return ps_ret;}
     if id_of_val == MAINPATH_ {if MAINPATH.get() != None{ps_ret.str_ = MAINPATH.get().unwrap().to_string(); return ps_ret;}}
     if id_of_val == crate::set(MAINPATH_) {MAINPATH.take(); let _ = MAINPATH.set(val.to_string());  ps_ret.str_= "ok".to_string(); return ps_ret;}
     if id_of_val == FOUND_FILES_ {ps_ret.str_ = FOUND_FILES.get().unwrap().to_string(); return ps_ret;}

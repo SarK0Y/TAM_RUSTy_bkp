@@ -10,10 +10,16 @@ mod exts;
 use exts::*;
 use_all!();
 
-fn split_once(in_string: &str, delim: &str) -> (String, String) {
+pub(crate) fn split_once(in_string: &str, delim: &str) -> (String, String) {
 let mut splitter = in_string.splitn(2, delim);
-let first = splitter.next().unwrap();
-let second = splitter.next().unwrap();
+let first = match splitter.next(){
+    Some(val) => val,
+    _ => return ("none".to_string(), "none".to_string())
+};
+let second = match splitter.next(){
+    Some(val) => val,
+    _ => return (first.to_string(), "none".to_string())
+};
 return  (first.to_string(), second.to_string());
 }
 fn form_grep_cmd(in_name: &String) -> String{
