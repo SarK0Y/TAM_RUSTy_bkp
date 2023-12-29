@@ -1,4 +1,4 @@
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path}, core18::{achtung, errMsg_dbg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string}, split_once};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user}, core18::{achtung, errMsg_dbg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string}, split_once};
 self::pg_uses!();
 
 fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -55,7 +55,7 @@ fn build_page(ps: &mut crate::_page_struct){
     //println!("{}", pg.table().display().unwrap());
     println!("Full path: {}", crate::get_full_path(func_id));
     print_stdout(pg.table().bold(true).foreground_color(Some(cli_table::Color::Blue)));
-    
+    println!("{}", crate::get_ask_user(func_id));
 }
 
 fn clear_screen(){
@@ -180,9 +180,14 @@ fn exec_cmd(cmd: String){
         return;
     }
     if crate::globs18::eq_ansi_str(cmd.as_str().substring(0, 3), "go2") == 0{
-            crate::set_prnt("caught", func_id);
-                let num_page = crate::get_num_page(func_id) + 1;
-        crate::set_num_page(num_page, func_id);
+        let (_, opt) = split_once(cmd.as_str(), " ");
+        if opt == "none" {set_ask_user("wrong use of go2: go2 <indx of page>", func_id); return;}
+        let pg_num: i64 = match i64::from_str_radix(&opt, 10){
+            Ok(val) => val,
+            _ => {set_ask_user("wrong use of go2: go2 <indx of page>", func_id); return}
+        };
+        crate::set_num_page(pg_num, func_id);
+        return;
     }
       if cmd.as_str().substring(0, 2) == "fp"{
         let (_, opt) = split_once(cmd.as_str(), " ");
