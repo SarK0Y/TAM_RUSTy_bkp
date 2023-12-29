@@ -1,4 +1,4 @@
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt}, core18::achtung, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string}};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt}, core18::{achtung, errMsg_dbg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string}};
 self::pg_uses!();
 
 fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -73,32 +73,32 @@ fn hotKeys() -> String{
         return "go2 0".to_string();
     } 
     if crate::globs18::eq_ansi_str(&kcode::DOWN_ARROW, Key.as_str()) == 0 {
-        return "go2 0".to_string();
+        return "pp".to_string();
     }
     if crate::globs18::eq_ansi_str(&kcode::UP_ARROW, Key.as_str()) == 0 {
-        return "go2 0".to_string();
+        return "np".to_string();
     }
     if crate::globs18::eq_ansi_str(&kcode::RIGHT_ARROW, Key.as_str()) == 0 {
         achtung(Key.as_str());
         unsafe {shift_cursor_of_prnt(1, func_id).shift};
-        return "go2 0".to_string();
+        return "cr".to_string();
     }
     if crate::globs18::eq_ansi_str(&kcode::LEFT_ARROW, Key.as_str()) == 0 {
     unsafe {shift_cursor_of_prnt(-1, func_id).shift};
     //io::stdout().lock().flush().unwrap();
     achtung("left arrow");
-    return "go2 0".to_string();}
+    return "cl".to_string();}
     if crate::globs18::eq_ansi_str(&kcode::F12, Key.as_str()) == 0{
         unsafe {shift_cursor_of_prnt(0, func_id)};
         crate::run_cmd_str("notify-send F12"); 
-        set_prnt("", func_id); return "go2 0".to_string();} 
+        set_prnt("", func_id); return "f12".to_string();} 
     if crate::globs18::eq_ansi_str(&kcode::DELETE, Key.as_str()) == 0{
         let shift = unsafe {shift_cursor_of_prnt(1, func_id).shift};
         let mut indx = get_prnt(func_id).chars().count();
         if shift <= indx {indx -= shift;}
         let prnt = rm_char_from_string(indx, &get_prnt(func_id));
         set_prnt(prnt.as_str(), func_id);
-        return "go2 0".to_string();} 
+        return "del".to_string();} 
     let ansiKey: u8 = match Key.as_str().bytes().next(){
         Some(val) => val,
         _ => 0
@@ -106,7 +106,7 @@ fn hotKeys() -> String{
     if ansiKey == 0{return crate::get_prnt(func_id);}
     if crate::dirty!(){println!("ansi {}, Key {:?}", ansiKey, Key);}
     if kcode::ENTER == ansiKey{return crate::get_prnt(func_id);} 
-    if kcode::BACKSPACE == ansiKey{crate::press_BKSP(); return "go2 0".to_string();} 
+    if kcode::BACKSPACE == ansiKey{crate::press_BKSP(); return "bksp".to_string();} 
     if kcode::ESCAPE == ansiKey{println!("esc pressed");}
     if kcode::TAB == ansiKey{println!("tab pressed");}  
    crate::INS(&Key);
@@ -157,13 +157,31 @@ pub(crate) fn custom_input() -> String{
     form_cmd_line_default();
     return hotKeys();
 }
+pub(crate) unsafe fn exec_cmd_cnt(count_: bool) -> u64{
+    static mut count: u64 = 0;
+    if count_ {count += 1;}
+    count
+}
 fn exec_cmd(cmd: String){
     let func_id = crate::func_id18::exec_cmd;
     //println!("cmd {} func {}, prnt {}", cmd, crate::func_id18::get_func_name(func_id), crate::get_prnt(func_id));
+    
     if cmd == "np"{
+        unsafe{exec_cmd_cnt(true)};
         let num_page = crate::get_num_page(func_id) + 1;
         crate::set_num_page(num_page, func_id);
+        return;
     }
-      let num_page = crate::get_num_page(func_id) + 1;
+    if crate::globs18::eq_ansi_str(cmd.as_str().substring(0, 2), "pp") == 0{
+       // unsafe{exec_cmd_cnt(true)};
+        let mut num_page = crate::get_num_page(func_id);
+        if num_page > 0{num_page -= 1;}
         crate::set_num_page(num_page, func_id);
+        return;
+    }
+    if crate::globs18::eq_ansi_str(cmd.as_str().substring(0, 3), "go2") == 0{
+            crate::set_prnt("caught", func_id);
+                let num_page = crate::get_num_page(func_id) + 1;
+        crate::set_num_page(num_page, func_id);
+    }
 }

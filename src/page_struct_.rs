@@ -145,7 +145,6 @@ pub(crate) unsafe fn page_struct_int(val: i64, val_id: i64, caller_id: i64) -> i
     static mut NUM_SPACES: i64 = 4; //9
     static mut NUM_FILES: i64 = 0; //10
     static mut COUNT_PAGES: i64 = 0; //11
-    NUM_PAGE = 1;
     if val_id == NUM_PAGE_ {return NUM_PAGE}
     if val_id == crate::set(NUM_PAGE_) {NUM_PAGE = val; return val;}
     if val_id == NUM_COLS_ {return NUM_COLS}

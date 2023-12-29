@@ -121,14 +121,15 @@ fn end_termios(termios: &Termios){
 }
 pub(crate) fn getkey() -> String{
 let mut Key: String ="".to_string();
+let xccnt = unsafe{exec_cmd_cnt(false)};
  let mut stdin = io::stdin();
     let stdin_fd = 0;
-    let mut stdout = io::stdout();
+    let mut stdout = io::stdout(); 
     let mut stdin_buf: [u8; 6] =[0;6];
     let termios = Termios::from_fd(stdin_fd).unwrap();
     let mut new_termios = termios.clone();
     stdout.lock().flush().unwrap(); 
-    new_termios.c_lflag &= !(ICANON /*| ECHO*/); 
+    new_termios.c_lflag &= !(ICANON | ECHO); 
     let enter = ||
 {
     let enter: [u8; 1] = [13; 1];

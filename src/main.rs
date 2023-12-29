@@ -5,6 +5,7 @@
 #![allow(unused_variables)]
 #![allow(non_upper_case_globals)]
 #![allow(while_true)]
+#[allow(arithmetic_overflow)]
 mod exts;
 use exts::*;
 use_all!();
@@ -148,7 +149,6 @@ fn main (){
 // stacker::maybe_grow( 8*1024*1024, 32*1024*1024, || {
     // guaranteed to have at least 32K of stack
     initSession();
-let x: i64= 5;
 let out: core18::ret0 = get_arg_in_cmd("-");
 let out1: core18::ret0 = get_arg_in_cmd("-тст");
 println!("argument from cmd (-tst) {}", String::from_iter(out.s));
