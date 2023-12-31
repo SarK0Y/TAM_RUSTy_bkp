@@ -212,7 +212,7 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     static mut ASK_USER: OnceCell<String> = OnceCell::new(); //13
     static mut dontDelFromTableJustMark: bool = true; //14
     static mut RUNNING: OnceCell<Vec<Command>> = OnceCell::new(); //15
-    static mut VIEWER: i64 = 0; //16
+    static mut VIEWER: OnceCell<Vec<String>> = OnceCell::new(); //16
     static mut MODE2RUN: OnceCell<(String, String)> = OnceCell::new(); //17
     static mut PRNT: RwLock<String> = RwLock::new(String::new()); //18
     static mut PROMPT: OnceCell<String> = OnceCell::new(); //
@@ -260,8 +260,11 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     }
     11    
     };
+    let cpy: fn(&String) -> String = |val: &String| -> String{return val.to_string();}; 
     if id_of_val == PRNT_  {ps_ret.str_ = PRNT.read().unwrap().to_string()/*String::from(PRNT.get().unwrap())*/; return ps_ret;}
     if id_of_val == crate::set(PRNT_) {crate::set_prnt_!(val); ps_ret.str_= "ok".to_string(); prnt_set =true; return ps_ret;}
+    if id_of_val == VIEWER_  {ps_ret.str_ = cpy(&VIEWER.get().unwrap()[usize::from_str_radix(val, 10).unwrap()]);/*String::from(PRNT.get().unwrap())*/; return ps_ret;}
+    if id_of_val == crate::set(VIEWER_) {VIEWER.get_mut().unwrap().push(val.to_string()); ps_ret.str_= "ok".to_string(); prnt_set =true; return ps_ret;}
     if id_of_val == NUM_PAGE_ {ps_ret.int = NUM_PAGE; return ps_ret;}
     if id_of_val == crate::set(NUM_PAGE_) {NUM_PAGE = i64::from_str_radix(val, 10).expect("failed number of a page"); return ps_ret;}
     if id_of_val == NUM_COLS_ {ps_ret.int = NUM_COLS; return ps_ret;}
