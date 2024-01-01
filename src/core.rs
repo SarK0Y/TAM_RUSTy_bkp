@@ -2,6 +2,8 @@
 #[path = "exts.rs"]
 mod exts;
 use exts::*;
+
+use self::ps21::set_ask_user;
 core_use!();
 pub(crate) fn initSession() -> bool{
     let func_id = 1;
@@ -70,7 +72,11 @@ pub(crate) fn errMsg_dbg(msg: &str, val_func_id: i64, delay: f64) {
     if !checkArg("-dbg") {return}
     if delay == -1.0{
         let msg = format!("{} said: {}", crate::func_id18::get_func_name(val_func_id), msg);
-        println!("{}", msg.bold().red());}
+        set_ask_user(&msg.bold().red(), val_func_id);}
+}
+pub(crate) fn errMsg(msg: &str, val_func_id: i64) {
+        let msg = format!("{} said: {}", crate::func_id18::get_func_name(val_func_id), msg);
+        set_ask_user(&msg.bold().red(), val_func_id);
 }
 pub(crate) fn checkArg(key: &str) -> bool{
     let len_of_cmd_line = env::args().len();
