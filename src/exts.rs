@@ -1,5 +1,7 @@
+#![feature(trace_macros)]
 macro_rules! use_all {
     () => {
+//trace_macros!(true);
 use std::env;
 use colored::Colorize;
 use substring::Substring;
@@ -24,6 +26,8 @@ use std::path::Path;
 use num_traits::cast::ToPrimitive;
 use std::io::{BufRead, BufReader};
 use std::os::unix::io::{AsRawFd, RawFd};
+#[path = "switch.rs"]
+mod swtch;
 #[path = "func_id.rs"]
 mod func_id18;
 use func_id18::*;

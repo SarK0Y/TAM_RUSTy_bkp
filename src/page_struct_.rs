@@ -1,7 +1,7 @@
 mod exts;
 use exts::page_struct_uses;
 
-use crate::pg18::repeat_char;
+use crate::{pg18::repeat_char, swtch::set_o_get_usize};
 self::page_struct_uses!();
 pub const STOP_CODE_: i64 = 1;
 pub const KONSOLE_TITLE_: i64 = 2;
@@ -29,6 +29,7 @@ pub const TMP_DIR_: i64 = 22;
 pub const __BKSP: i64 = 23; // caller's id
 pub const __DEL: i64 = 24;
 pub const __INS: i64 = 25;
+pub const NUM_OF_VIEWERS: i64 = 26;
 pub struct page_struct_ret{
    pub str_: String,
    pub int: i64
@@ -212,7 +213,7 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     static mut ASK_USER: OnceCell<String> = OnceCell::new(); //13
     static mut dontDelFromTableJustMark: bool = true; //14
     static mut RUNNING: OnceCell<Vec<Command>> = OnceCell::new(); //15
-    static mut VIEWER: i64 = 0; //16
+    static mut VIEWER: OnceCell<Vec<String>> = OnceCell::new(); //16
     static mut MODE2RUN: OnceCell<(String, String)> = OnceCell::new(); //17
     static mut PRNT: RwLock<String> = RwLock::new(String::new()); //18
     static mut PROMPT: OnceCell<String> = OnceCell::new(); //
@@ -226,6 +227,8 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
       let _ = STOP_CODE.set("∇".to_string());
       FULL_PATH.set("".to_string());
       ASK_USER.set("".to_string());
+      let mut viewer_vec: Vec<String> = Vec::new();
+      VIEWER.set(viewer_vec);
      // let msg = format!("notify-send 'once prnt {}'", PRNT.get().unwrap()[0]);
      // crate::run_cmd0(msg);
       let _ = PROMPT.set("prob".to_string());
@@ -260,8 +263,15 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     }
     11    
     };
+    let cpy: fn(&String) -> String = |val: &String| -> String{return val.to_string();}; 
     if id_of_val == PRNT_  {ps_ret.str_ = PRNT.read().unwrap().to_string()/*String::from(PRNT.get().unwrap())*/; return ps_ret;}
     if id_of_val == crate::set(PRNT_) {crate::set_prnt_!(val); ps_ret.str_= "ok".to_string(); prnt_set =true; return ps_ret;}
+    if id_of_val == NUM_OF_VIEWERS  {ps_ret.int = VIEWER.get().unwrap().len().to_i64().unwrap(); return ps_ret;}
+    if id_of_val == VIEWER_  {
+      let indx = set_o_get_usize(usize::MAX, id_of_caller);
+      if !indx.1{ps_ret.str_= "none".to_string(); return ps_ret;} let indx = indx.0;
+      ps_ret.str_ = cpy(&VIEWER.get().unwrap()[indx]);/*String::from(PRNT.get().unwrap())*/; return ps_ret;}
+    if id_of_val == crate::set(VIEWER_) {VIEWER.get_mut().unwrap().push(val.to_string()); ps_ret.str_= "ok".to_string(); prnt_set =true; return ps_ret;}
     if id_of_val == NUM_PAGE_ {ps_ret.int = NUM_PAGE; return ps_ret;}
     if id_of_val == crate::set(NUM_PAGE_) {NUM_PAGE = i64::from_str_radix(val, 10).expect("failed number of a page"); return ps_ret;}
     if id_of_val == NUM_COLS_ {ps_ret.int = NUM_COLS; return ps_ret;}
