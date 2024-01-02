@@ -19,7 +19,7 @@ pub(crate) unsafe fn swtch_fn(indx: i8, cmd: String){
         fn_.set(fn_vec); fst_run = false;
     }
 }
-pub(crate) fn viewer(cmd: String) -> bool{
+pub(crate) fn run_viewer(cmd: String) -> bool{
     let func_id = crate::func_id18::viewer_;
     let  (app_indx, file_indx) = crate::split_once(&cmd, " ");
     if app_indx == "none" || file_indx == "none"{
@@ -40,7 +40,7 @@ pub(crate) fn get_viewer(indx: usize, func_id: i64, thread_safe: bool) -> String
     if ret.1{return unsafe{crate::page_struct("", crate::VIEWER_, func_id_loc).str_};}
 "locked".to_string()
 }
-pub(crate) fn get_num_of_viewers(val: &str, func_id: i64) -> i64{return unsafe{crate::page_struct(val, crate::NUM_OF_VIEWERS, func_id).int}}
+pub(crate) fn get_num_of_viewers(func_id: i64) -> i64{return unsafe{crate::page_struct("", crate::NUM_OF_VIEWERS, func_id).int}}
 pub(crate) fn add_viewer(val: &str, func_id: i64) -> String{return unsafe{crate::page_struct(val, crate::set(crate::VIEWER_), func_id).str_}}
 pub(crate) unsafe fn set_o_get_usize(val: usize, func_id: i64) -> (usize, bool){
     static mut owner_id: i64 = i64::MIN;
@@ -64,7 +64,7 @@ pub(crate) fn get_rnd_u64() -> (u64, bool){
     };
     let mut buf: [u8; 8] = [0; 8]; get_rnd_device.read(&mut buf);
     let mut rnd_u64: u64 = 0;
-    for i in 0..buf.len() + 1{
+    for i in 0..buf.len()-1{
         rnd_u64 += u64::from(buf.get(i).unwrap() << i*8);
     }
     return (rnd_u64, true)
@@ -72,10 +72,16 @@ pub(crate) fn get_rnd_u64() -> (u64, bool){
 pub(crate) fn form_list_of_viewers(){
 let args: Vec<_> = crate::env::args().collect();
 let arg = args.as_slice();
-for i in 1..args.len() + 1{
+for i in 1..args.len(){
     if arg[i] == "-view_w" || arg[i] == "-view-w" {
         let viewer: String = (args[i + 1]).chars().collect();
         add_viewer(&viewer, -1);
     }
 }
+}
+pub(crate) fn print_viewers(){
+let num_of_viewers = get_num_of_viewers(-1).to_usize().unwrap();
+    for i in 0..num_of_viewers{
+        println!("{}", get_viewer(i, -1, true));
+    }
 }

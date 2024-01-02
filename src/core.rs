@@ -66,6 +66,7 @@ unsafe{crate::page_struct(&path_2_found_files_list, set(crate::FOUND_FILES_), fu
        crate::page_struct("empty", set(crate::KONSOLE_TITLE_), func_id);}
     crate::globs18::set_main0_as_front();
     crate::set_prnt("test typing", func_id);
+    crate::swtch::form_list_of_viewers();
     return true;
 }
 pub(crate) fn errMsg_dbg(msg: &str, val_func_id: i64, delay: f64) {

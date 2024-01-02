@@ -132,7 +132,7 @@ let mut s: [char; 512] = ['\0'; 512];
 let mut ret: core18::ret0 = core18::ret0{s, res: false};
 let args: Vec<_> = env::args().collect();
 let args_2_str = args.as_slice();
-for i in 1..args.len() + 1{
+for i in 1..args.len(){
     if args_2_str[i] == key {
         let arr: Vec<char> = (args[i + 1]).chars().collect();
         if arr.len() > 512 {

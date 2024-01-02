@@ -227,6 +227,8 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
       let _ = STOP_CODE.set("∇".to_string());
       FULL_PATH.set("".to_string());
       ASK_USER.set("".to_string());
+      let mut viewer_vec: Vec<String> = Vec::new();
+      VIEWER.set(viewer_vec);
      // let msg = format!("notify-send 'once prnt {}'", PRNT.get().unwrap()[0]);
      // crate::run_cmd0(msg);
       let _ = PROMPT.set("prob".to_string());

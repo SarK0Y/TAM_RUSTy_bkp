@@ -53,6 +53,7 @@ fn build_page(ps: &mut crate::_page_struct){
         if time_to_stop {break;}
     }
     //println!("{}", pg.table().display().unwrap());
+    crate::swtch::print_viewers();
     println!("Full path: {}", crate::get_full_path(func_id));
     print_stdout(pg.table().bold(true).foreground_color(Some(cli_table::Color::Blue)));
     println!("{}", crate::get_ask_user(func_id));
