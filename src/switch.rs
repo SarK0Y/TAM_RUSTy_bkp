@@ -65,7 +65,8 @@ pub(crate) fn get_rnd_u64() -> (u64, bool){
     let mut buf: [u8; 8] = [0; 8]; get_rnd_device.read(&mut buf);
     let mut rnd_u64: u64 = 0;
     for i in 0..buf.len()-1{
-        rnd_u64 += u64::from(buf.get(i).unwrap() << i*8);
+        let shl = u64::from(*buf.get(i).unwrap());
+        rnd_u64 += u64::from(shl << i*8);
     }
     return (rnd_u64, true)
 }
