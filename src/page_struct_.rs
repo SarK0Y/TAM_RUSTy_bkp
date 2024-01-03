@@ -1,7 +1,5 @@
 mod exts;
 use exts::page_struct_uses;
-
-use crate::{pg18::repeat_char, swtch::set_o_get_usize};
 self::page_struct_uses!();
 pub const STOP_CODE_: i64 = 1;
 pub const KONSOLE_TITLE_: i64 = 2;
@@ -268,7 +266,7 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     if id_of_val == crate::set(PRNT_) {crate::set_prnt_!(val); ps_ret.str_= "ok".to_string(); prnt_set =true; return ps_ret;}
     if id_of_val == NUM_OF_VIEWERS  {ps_ret.int = VIEWER.get().unwrap().len().to_i64().unwrap(); return ps_ret;}
     if id_of_val == VIEWER_  {
-      let indx = set_o_get_usize(usize::MAX, id_of_caller);
+      let indx = share_usize(usize::MAX, id_of_caller);
       if !indx.1{ps_ret.str_= "none".to_string(); return ps_ret;} let indx = indx.0;
       ps_ret.str_ = cpy(&VIEWER.get().unwrap()[indx]);/*String::from(PRNT.get().unwrap())*/; return ps_ret;}
     if id_of_val == crate::set(VIEWER_) {VIEWER.get_mut().unwrap().push(val.to_string()); ps_ret.str_= "ok".to_string(); prnt_set =true; return ps_ret;}
