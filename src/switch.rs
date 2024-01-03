@@ -10,7 +10,7 @@ use std::{
     }
 };
 
-use crate::{core18::errMsg, ps18::set_ask_user};
+use crate::{core18::errMsg, ps18::{set_ask_user, get_full_path}, globs18::get_item_from_front_list, func_id18::{viewer_, mk_cmd_file_}};
 pub(crate) unsafe fn swtch_fn(indx: i8, cmd: String){
     static mut fst_run: bool = true;
     static mut fn_indx: u8 = 0;
@@ -36,8 +36,11 @@ pub(crate) fn run_viewer(cmd: String) -> bool{
         Ok(v) => v,
         _ => return msg()
     };
-    let file_indx = crate::globs18::get_proper_indx(file_indx);
-    false
+    let file_indx = crate::globs18::get_proper_indx(file_indx).to_i64().unwrap();
+    let filename = get_item_from_front_list(file_indx);
+    let viewer = get_viewer(app_indx, -1, true);
+    let cmd = format!("{} {} > /dev/null 2>&1", viewer, filename);
+    return crate::run_cmd0(cmd)
 }
 pub(crate) fn get_viewer(indx: usize, func_id: i64, thread_safe: bool) -> String{
     let mut func_id_loc = func_id;
