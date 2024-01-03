@@ -72,6 +72,30 @@ if run_command.status.success(){
 }
 true
 }
+pub(crate) fn run_cmd_viewer(cmd: String) -> bool{
+let func_id = func_id18::run_cmd_viewer_;
+set_ask_user(cmd.as_str(), func_id);
+let fstdout: String; 
+let path_2_cmd = mk_cmd_file(cmd);
+let mut stderr_path = "stderr".to_string();
+stderr_path = format!("{}stderr", unsafe{ps18::page_struct("", ps18::MAINPATH_, -1).str_});
+let path_2_list_of_found_files = format!("{}", unsafe{ps18::page_struct("", ps18::FOUND_FILES_, -1).str_});
+core18::errMsg_dbg(&stderr_path, func_id, -1.0);
+let fstderr = File::create(stderr_path).unwrap();
+//let mut fstdout0 = io::BufReader::new(fstdout0);
+//errMsg_dbg(&in_name, func_id, -1.0);
+let run_command = Command::new("bash").arg("-c").arg(path_2_cmd)//.arg(";echo").arg(stopCode)
+//let run_command = Command::new(cmd)
+    .stderr(fstderr)
+    .output()
+    .expect("can't run command in run_cmd_viewer");
+if run_command.status.success(){
+    io::stdout().write_all(&run_command.stdout).unwrap();
+    io::stderr().write_all(&run_command.stderr).unwrap();
+    return false;
+}
+true
+}
 pub fn run_cmd(cmd: String) -> bool{
 let func_id = 5;
 let fstdout: String; 

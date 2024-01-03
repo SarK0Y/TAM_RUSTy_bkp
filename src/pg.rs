@@ -1,4 +1,4 @@
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user}, core18::{achtung, errMsg_dbg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string}, split_once};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user}, core18::{achtung, errMsg_dbg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string}, split_once, swtch::{run_viewer, swtch_fn}};
 self::pg_uses!();
 
 fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -201,4 +201,5 @@ fn exec_cmd(cmd: String){
         set_full_path(&file_full_name, func_id);
         return;
     }
+    unsafe {swtch_fn(-1, cmd)}
 }

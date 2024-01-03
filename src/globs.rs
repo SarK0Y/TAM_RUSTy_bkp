@@ -130,7 +130,7 @@ pub fn len_of_main0_list() -> String{
 pub fn len_of_front_list() -> String{
     return unsafe{lists("", FRONT_, 0, LEN)}
 }
-fn get_proper_indx(indx: i64) -> usize{
+pub(crate) fn get_proper_indx(indx: i64) -> usize{
     let mut proper_indx: usize = 0;
     let mut len: i64 = 0;
     if indx > 0{proper_indx = indx as usize;}

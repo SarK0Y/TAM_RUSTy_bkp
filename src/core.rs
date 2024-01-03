@@ -102,8 +102,12 @@ pub(crate) struct ret0 {
    pub res: bool
 }
 pub(crate) fn escape_symbs(str0: &String) -> String{
-    let strr = str0.as_str();
+    let  strr = str0.as_str();
     let strr = strr.replace("-", r"\-");
+    let strr = strr.replace(" ", r"\ ");
+    let strr = strr.replace("$", r"\$");
+    let strr = strr.replace("'", r"\'");
+    let strr = strr.replace("`", r"\`");
     return strr.to_string();
 }
 
