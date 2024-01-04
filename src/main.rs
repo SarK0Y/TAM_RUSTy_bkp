@@ -126,12 +126,15 @@ true
 }
 fn read_midway_data() -> bool{
     let func_id = func_id18::read_midway_data_;
+    let mut added_indx = 0usize;
     loop {
         let stopCode = getStop_code__!();
         let filename = format!("{}/found_files", unsafe{ps18::page_struct("", ps18::TMP_DIR_, -1).str_});
         let file = File::open(filename).unwrap();
         let reader = BufReader::new(file);
     for (indx, line) in reader.lines().enumerate() {
+        if indx <= added_indx {continue;}
+        added_indx = indx;
         let line = line.unwrap();
         let ret = globs18::add_2_main0_list(&line);
         ps18::set_num_files(func_id); 

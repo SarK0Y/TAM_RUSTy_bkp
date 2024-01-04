@@ -112,6 +112,7 @@ for i in 1..args.len(){
 pub(crate) fn print_viewers(){
 let num_of_viewers = get_num_of_viewers(-1).to_usize().unwrap();
     for i in 0..num_of_viewers{
-        println!("{}: {}", i, get_viewer(i, -1, true));
+        print!("|||{}: {}", i, get_viewer(i, -1, true));
     }
+    println!("")
 }

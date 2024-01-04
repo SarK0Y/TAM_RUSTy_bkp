@@ -145,7 +145,7 @@ pub(crate) fn form_cmd_line_default(){
     let prompt = crate::get_prompt(func_id); let mut ret = unsafe {crate::shift_cursor_of_prnt(0, func_id)};
     let mut prnt = ret.str__;
     let len = get_prnt(func_id).chars().count();
-    if ret.shift == len {prnt = format!("👈{}", prnt)}
+    if ret.shift == len {prnt = format!("👉{}", prnt)}
     else if ret.shift < len {ret.shift = len - ret.shift;
     prnt.push('👈');
     prnt = ins_last_char_to_string1_from_string1(ret.shift, prnt);}
