@@ -67,7 +67,7 @@ pub(crate) fn init_page_struct() -> _page_struct{
    let stop_code = unsafe {page_struct("", STOP_CODE_, func_id.to_i64().unwrap()).str_};
    let konsole_title = unsafe {page_struct("", KONSOLE_TITLE_, func_id.to_i64().unwrap()).str_};
    let left_shift_4_cur =0i64; let cur_cur_pos = 0i64; let num_page = 0i64; let num_cols = 3i64;
-   let col_width = 70i64; let num_rows = 9i64; let num_spaces = 0i64; let num_files = 0i64;
+   let col_width = 43i64; let num_rows = 9i64; let num_spaces = 0i64; let num_files = 0i64;
    let count_pages = 0i64;
    let news_bar = unsafe {page_struct("", NEWS_BAR_, func_id.to_i64().unwrap()).str_};
    let ask_user = unsafe {page_struct("", ASK_USER_, func_id.to_i64().unwrap()).str_};
@@ -138,6 +138,8 @@ pub(crate) fn get_num_files(func_id: i64) ->i64{return unsafe{page_struct_int(0,
 pub(crate) fn set_num_files(func_id: i64) ->i64{
    let len_of_front = i64::from_str_radix(crate::globs18::len_of_front_list().as_str(), 10).unwrap(); 
    return unsafe{page_struct_int(len_of_front, crate::set(NUM_FILES_), func_id)};}
+pub(crate) fn get_col_width(func_id: i64) -> i64{return unsafe{page_struct_int(0, COL_WIDTH_, func_id)}}
+pub(crate) fn set_col_width(val: i64, func_id: i64) -> i64{return unsafe{page_struct_int(val, crate::set(COL_WIDTH_), func_id)}}
 pub(crate) fn get_num_rows(func_id: i64) -> i64{return unsafe{page_struct_int(0, NUM_ROWS_, func_id)}}
 pub(crate) fn set_num_rows(val: i64, func_id: i64) -> i64{return unsafe{page_struct_int(val, crate::set(NUM_ROWS_), func_id)}}
 pub(crate) fn get_cur_cur_pos(func_id: i64) -> i64{return unsafe{page_struct_int(0, CUR_CUR_POS_, func_id)}}
@@ -149,7 +151,7 @@ pub(crate) unsafe fn page_struct_int(val: i64, val_id: i64, caller_id: i64) -> i
     static mut CUR_CUR_POS: usize = 0; //4
     static mut NUM_PAGE: i64 = 0; //5
     static mut NUM_COLS: i64 = 3; //6
-    static mut COL_WIDTH: i64 = 70; //7
+    static mut COL_WIDTH: i64 = 55; //7
     static mut NUM_ROWS: i64 = 9; //8
     static mut NUM_SPACES: i64 = 4; //9
     static mut NUM_FILES: i64 = 0; //10
@@ -168,6 +170,8 @@ pub(crate) unsafe fn page_struct_int(val: i64, val_id: i64, caller_id: i64) -> i
     if val_id == crate::set(CUR_CUR_POS_) {CUR_CUR_POS = val as usize; return val;}
     if val_id ==  LEFT_SHIFT_4_CUR_ {return LEFT_SHIFT_4_CUR as i64}
     if val_id == crate::set(LEFT_SHIFT_4_CUR_) {LEFT_SHIFT_4_CUR = val as usize; return val;}
+    if val_id == COL_WIDTH_ {return COL_WIDTH}
+    if val_id == crate::set(COL_WIDTH_) {COL_WIDTH = val; return val;}
  return -1;  
 }
 pub(crate) unsafe fn shift_cursor_of_prnt(shift: i64, func_id: i64) -> shift_cur_struct{ // shift == 0 to get cursor position, -1 to move left for one char, 1 to move right /
