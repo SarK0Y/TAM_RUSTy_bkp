@@ -22,8 +22,9 @@ fn build_page(ps: &mut crate::_page_struct){
    // pg.table().forecolor(Color::red());
    let ret_err = std::ffi::OsString::from("nff");
     for j in 0..num_rows{
+        row_cpy.clear();
         for i in 0..num_cols{
-            let cell_num = j + num_cols * i + num_page;
+            let cell_num = j + num_rows * i + num_page;
             let mut res: String ="".to_string();
             let full_path_fn = move || -> String {for i in 0..1_000_000_000 {
               res = crate::globs18::get_item_from_front_list(cell_num);
