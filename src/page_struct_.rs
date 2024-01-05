@@ -151,7 +151,7 @@ pub(crate) unsafe fn page_struct_int(val: i64, val_id: i64, caller_id: i64) -> i
     static mut CUR_CUR_POS: usize = 0; //4
     static mut NUM_PAGE: i64 = 0; //5
     static mut NUM_COLS: i64 = 3; //6
-    static mut COL_WIDTH: i64 = 70; //7
+    static mut COL_WIDTH: i64 = 55; //7
     static mut NUM_ROWS: i64 = 9; //8
     static mut NUM_SPACES: i64 = 4; //9
     static mut NUM_FILES: i64 = 0; //10

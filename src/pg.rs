@@ -1,4 +1,4 @@
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width}, core18::{achtung, errMsg_dbg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string}, split_once, swtch::{run_viewer, swtch_fn}};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width}, core18::{achtung, errMsg_dbg, ins_newlines}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr}, split_once, swtch::{run_viewer, swtch_fn}};
 self::pg_uses!();
 
 fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -20,6 +20,7 @@ fn build_page(ps: &mut crate::_page_struct){
     let mut pg: Vec<Vec<CellStruct>> = Vec::new();  let mut row: Vec<CellStruct> = Vec::new(); let mut row_cpy: Vec<String> = Vec::new();
     //let mut row: OnceCell<Vec<CellStruct>> = OnceCell::new(); row.set(row_nested);
    // pg.table().forecolor(Color::red());
+   let ret_err = std::ffi::OsString::from("nff");
     for j in 0..num_rows{
         for i in 0..num_cols{
             let cell_num = j + num_cols * i + num_page;
@@ -33,8 +34,12 @@ fn build_page(ps: &mut crate::_page_struct){
             //println!("build_page - probe 1");
             let filename = Path::new(&full_path);
             macro_rules! filename_str0{
-                () => {String::from(filename.file_name().unwrap().to_str().unwrap()).as_str()};
+                () => {String::from(match filename.file_name(){
+                    Some(f) => f,
+                    _ => &ret_err
+                }.to_str().unwrap()).as_str()};
             }
+            if filename_str0!() == "nff"{println!("No files found"); unsafe {libc::exit(-1);}}
             if crate::globs18::eq_str(stopCode.as_str(), filename.as_os_str().to_str().unwrap()) == 0 && stopCode.len() == filename.as_os_str().to_str().unwrap().len() {println!("{}", "caught".bold().green()); 
              time_to_stop = true; break;}
             if crate::dirty!(){
@@ -43,9 +48,8 @@ fn build_page(ps: &mut crate::_page_struct){
                println!("{:?}", filename.file_name());
             }
             let mut fixed_filename: String = filename_str0!().to_string();
-            fixed_filename.push('\n');
-            let fixed_filename = ins_last_char_to_string1_from_string1(get_col_width(func_id).to_usize().unwrap(), fixed_filename);
-            if filename.is_dir(){filename_str =format!("{}: {}", cell_num, fixed_filename);}
+            ins_newlines(get_col_width(func_id).to_usize().unwrap(), &mut fixed_filename);
+            if filename.is_dir(){filename_str =format!("{}: {}/", cell_num, fixed_filename);}
             else{filename_str = format!("{}: {}", cell_num, fixed_filename);}
             if filename_str == stopCode{return;}
             row_cpy.push(filename_str);

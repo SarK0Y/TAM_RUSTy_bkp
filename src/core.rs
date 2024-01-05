@@ -239,3 +239,11 @@ pub(crate) fn put_in_name() -> String{
     }
     return ret;
 }
+pub(crate) fn ins_newlines(len_of_line: usize, origString: &mut String) {
+    let num_of_loops = origString.len() / len_of_line;
+    for i in 1..num_of_loops{
+        let indx = i * len_of_line;
+        origString.push('\n');
+        ins_last_char_to_string1_from_string1_ptr(indx, origString);
+    }
+}
