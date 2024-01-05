@@ -1,5 +1,7 @@
 mod exts;
 use exts::page_struct_uses;
+
+use crate::{globs18::len_of_front_list, func_id18};
 self::page_struct_uses!();
 pub const STOP_CODE_: i64 = 1;
 pub const KONSOLE_TITLE_: i64 = 2;
@@ -126,12 +128,18 @@ pub(crate) fn set_prompt(val: &str, func_id: i64) -> String{return unsafe{page_s
 pub(crate) fn get_num_cols(func_id: i64) -> i64{return unsafe{page_struct_int(0, NUM_COLS_, func_id)}}
 pub(crate) fn set_num_cols(val: i64, func_id: i64) -> i64{return unsafe{page_struct_int(val, crate::set(NUM_COLS_), func_id)}}
 pub(crate) fn get_num_page(func_id: i64) -> i64{return unsafe{page_struct_int(0, NUM_PAGE_, func_id)}}
-pub(crate) fn set_num_page(val: i64, func_id: i64) -> i64{return unsafe{page_struct_int(val, crate::set(NUM_PAGE_), func_id)}}
+pub(crate) fn set_num_page(val: i64, func_id: i64) -> i64{
+  let last_pg = where_is_last_pg();
+  let mut proper_val = val;
+  if val > last_pg {proper_val = last_pg;}
+  return unsafe{page_struct_int(proper_val, crate::set(NUM_PAGE_), func_id)}}
 pub(crate) fn get_num_pages(func_id: i64) -> i64{return unsafe{page_struct_int(0, COUNT_PAGES_, func_id)}}
 pub(crate) fn get_num_files(func_id: i64) ->i64{return unsafe{page_struct_int(0, NUM_FILES_, func_id)}}
 pub(crate) fn set_num_files(func_id: i64) ->i64{
    let len_of_front = i64::from_str_radix(crate::globs18::len_of_front_list().as_str(), 10).unwrap(); 
    return unsafe{page_struct_int(len_of_front, crate::set(NUM_FILES_), func_id)};}
+pub(crate) fn get_col_width(func_id: i64) -> i64{return unsafe{page_struct_int(0, COL_WIDTH_, func_id)}}
+pub(crate) fn set_col_width(val: i64, func_id: i64) -> i64{return unsafe{page_struct_int(val, crate::set(COL_WIDTH_), func_id)}}
 pub(crate) fn get_num_rows(func_id: i64) -> i64{return unsafe{page_struct_int(0, NUM_ROWS_, func_id)}}
 pub(crate) fn set_num_rows(val: i64, func_id: i64) -> i64{return unsafe{page_struct_int(val, crate::set(NUM_ROWS_), func_id)}}
 pub(crate) fn get_cur_cur_pos(func_id: i64) -> i64{return unsafe{page_struct_int(0, CUR_CUR_POS_, func_id)}}
@@ -162,6 +170,8 @@ pub(crate) unsafe fn page_struct_int(val: i64, val_id: i64, caller_id: i64) -> i
     if val_id == crate::set(CUR_CUR_POS_) {CUR_CUR_POS = val as usize; return val;}
     if val_id ==  LEFT_SHIFT_4_CUR_ {return LEFT_SHIFT_4_CUR as i64}
     if val_id == crate::set(LEFT_SHIFT_4_CUR_) {LEFT_SHIFT_4_CUR = val as usize; return val;}
+    if val_id == COL_WIDTH_ {return COL_WIDTH}
+    if val_id == crate::set(COL_WIDTH_) {COL_WIDTH = val; return val;}
  return -1;  
 }
 pub(crate) unsafe fn shift_cursor_of_prnt(shift: i64, func_id: i64) -> shift_cur_struct{ // shift == 0 to get cursor position, -1 to move left for one char, 1 to move right /
@@ -297,4 +307,14 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     if id_of_val == KONSOLE_TITLE_ {ps_ret.str_ =KONSOLE_TITLE.get().unwrap().to_string(); return ps_ret;}
     if id_of_val == crate::set(KONSOLE_TITLE_) {KONSOLE_TITLE.take(); let _ = KONSOLE_TITLE.set(val.to_string()); ps_ret.str_= "ok".to_string(); return ps_ret;}
      ps_ret.str_= "none".to_string(); return ps_ret;
+}
+pub(crate) fn where_is_last_pg() -> i64{
+  let func_id = func_id18::where_is_last_pg_;
+  let len = i64::from_str_radix(&len_of_front_list(), 10).unwrap();
+  let num_rows = get_num_rows(func_id);
+  let num_cols = get_num_cols(func_id);
+  let mut last_pg: i64 = len / (num_cols * num_rows);
+  let mut residue = last_pg * num_cols * num_rows;
+  if residue < len {last_pg += 1;}
+  last_pg
 }

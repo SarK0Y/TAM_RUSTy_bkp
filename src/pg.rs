@@ -1,4 +1,4 @@
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user}, core18::{achtung, errMsg_dbg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string}, split_once};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width}, core18::{achtung, errMsg_dbg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string}, split_once, swtch::{run_viewer, swtch_fn}};
 self::pg_uses!();
 
 fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -42,9 +42,11 @@ fn build_page(ps: &mut crate::_page_struct){
                println!("stop code {}, len {}; str {}, len {}", stopCode, stopCode.as_str().len(), filename.as_os_str().to_str().unwrap(), filename.as_os_str().to_str().unwrap().len());
                println!("{:?}", filename.file_name());
             }
-            if filename.file_name() == None{println!("{}", "caught".bold().blue()); break;}
-            if filename.is_dir(){filename_str =format!("{}: {}", cell_num, filename_str0!());}
-            else{filename_str = format!("{}: {}", cell_num, filename_str0!());}
+            let mut fixed_filename: String = filename_str0!().to_string();
+            fixed_filename.push('\n');
+            let fixed_filename = ins_last_char_to_string1_from_string1(get_col_width(func_id).to_usize().unwrap(), fixed_filename);
+            if filename.is_dir(){filename_str =format!("{}: {}", cell_num, fixed_filename);}
+            else{filename_str = format!("{}: {}", cell_num, fixed_filename);}
             if filename_str == stopCode{return;}
             row_cpy.push(filename_str);
         }
@@ -145,7 +147,7 @@ pub(crate) fn form_cmd_line_default(){
     let prompt = crate::get_prompt(func_id); let mut ret = unsafe {crate::shift_cursor_of_prnt(0, func_id)};
     let mut prnt = ret.str__;
     let len = get_prnt(func_id).chars().count();
-    if ret.shift == len {prnt = format!("👈{}", prnt)}
+    if ret.shift == len {prnt = format!("👉{}", prnt)}
     else if ret.shift < len {ret.shift = len - ret.shift;
     prnt.push('👈');
     prnt = ins_last_char_to_string1_from_string1(ret.shift, prnt);}
@@ -201,4 +203,5 @@ fn exec_cmd(cmd: String){
         set_full_path(&file_full_name, func_id);
         return;
     }
+    unsafe {swtch_fn(-1, cmd)}
 }

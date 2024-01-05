@@ -11,14 +11,17 @@ use std::{
 };
 
 use crate::{core18::errMsg, ps18::{set_ask_user, get_full_path}, globs18::get_item_from_front_list, func_id18::{viewer_, mk_cmd_file_}};
-pub(crate) unsafe fn swtch_fn(indx: i8, cmd: String){
+pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
     static mut fst_run: bool = true;
-    static mut fn_indx: u8 = 0;
+    static mut fn_indx: usize = 0;
     static mut fn_: OnceCell<Vec<fn(String) -> bool>> = OnceCell::new();
     if fst_run{
         let fn_vec: Vec<fn(String) -> bool> = Vec::new();
         fn_.set(fn_vec); fst_run = false;
+        fn_.get_mut().unwrap().push(run_viewer);
     }
+    if indx > -1{fn_indx = indx.to_usize().unwrap(); return;}
+    fn_.get().unwrap()[fn_indx](cmd);
 }
 pub(crate) fn run_viewer(cmd: String) -> bool{
     let func_id = crate::func_id18::viewer_;
@@ -37,10 +40,10 @@ pub(crate) fn run_viewer(cmd: String) -> bool{
         _ => return msg()
     };
     let file_indx = crate::globs18::get_proper_indx(file_indx).to_i64().unwrap();
-    let filename = get_item_from_front_list(file_indx);
+    let filename = crate::escape_symbs(&get_item_from_front_list(file_indx));
     let viewer = get_viewer(app_indx, -1, true);
     let cmd = format!("{} {} > /dev/null 2>&1", viewer, filename);
-    return crate::run_cmd0(cmd)
+    return crate::run_cmd_viewer(cmd)
 }
 pub(crate) fn get_viewer(indx: usize, func_id: i64, thread_safe: bool) -> String{
     let mut func_id_loc = func_id;
@@ -109,6 +112,7 @@ for i in 1..args.len(){
 pub(crate) fn print_viewers(){
 let num_of_viewers = get_num_of_viewers(-1).to_usize().unwrap();
     for i in 0..num_of_viewers{
-        println!("{}: {}", i, get_viewer(i, -1, true));
+        print!("|||{}: {}", i, get_viewer(i, -1, true));
     }
+    println!("")
 }
