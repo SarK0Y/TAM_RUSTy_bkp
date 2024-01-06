@@ -63,3 +63,45 @@ let handler = builder.spawn(|| {
     // thread code
 }).unwrap();
 handler.join().unwrap();}
+/*********** dirt ****************** */
+fn cpy_tbl(tbl: &Vec<Vec<CellStruct>>) -> Vec<Vec<CellStruct>>{
+    let mut tbl0: Vec<Vec<CellStruct>> = Vec::new();
+    //let mut get 
+    for i in 0..tbl.len(){
+        tbl0.push(match tbl.get(i){
+            Some(v) => move_out_of_scope(&mut v),
+            _ => return tbl0
+        });
+    }
+    tbl0
+}
+fn cpy_row(row: &Vec<CellStruct>) -> Vec<CellStruct>{
+    let mut row_: Vec<CellStruct> = Vec::new(); 
+    for i in 0..row.len(){
+        let tst: str = row[i];
+        //let mut cell = CellStruct::cell(row[i].cell());
+        //row_.push(cell);
+    }
+    row.clear();
+    row_
+}
+fn cpy_tbl(tbl: &Vec<Vec<CellStruct>>) -> Vec<Vec<CellStruct>>{
+    let mut tbl0: Vec<Vec<CellStruct>> = Vec::new();
+    //let mut get 
+    for i in 0..tbl.len(){
+        tbl0.push(match tbl.get(i){
+            Some(v) => cpy_row(& v),
+            _ => return tbl0
+        });
+    }
+    tbl0
+}
+fn make_rows(rows: &mut Vec<Vec<CellStruct>>, pg: &mut Vec<Vec<CellStruct>>, row_cpy: &mut Vec<String>){
+    rows.push(move_out_of_scope(row_cpy));
+}
+fn print_rows(rows: &mut Vec<TableStruct>){
+    let count_rows = rows.len();
+    for i in 0..count_rows{
+        print_stdout(rows[i].table().bold(true).foreground_color(Some(cli_table::Color::Blue)));
+    }
+}

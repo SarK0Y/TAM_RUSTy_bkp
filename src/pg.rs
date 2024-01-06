@@ -1,4 +1,6 @@
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files}, core18::{achtung, errMsg_dbg, ins_newlines}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr}, split_once, swtch::{run_viewer, swtch_fn}};
+use cli_table::TableStruct;
+
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list}, split_once, swtch::{run_viewer, swtch_fn}};
 self::pg_uses!();
 
 fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -9,10 +11,14 @@ fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
     row.clear();
     row_
 }
+
 pub(crate) 
 fn build_page(ps: &mut crate::_page_struct){
     let func_id = crate::func_id18::build_page;
     let mut try_entry = 0usize;
+    let mut count_down_files = get_num_files(func_id);
+    let mut indx = count_down_files;
+    let num_files = indx;
     while try_entry < 1_000_000 {
         if get_num_files(func_id) == 0i64 {continue;}
         try_entry += 1;
@@ -25,21 +31,25 @@ fn build_page(ps: &mut crate::_page_struct){
     let num_items_on_pages = num_cols * num_rows; let stopCode: String = crate::getStop_code__!();
     num_page *= num_cols * num_rows; let mut filename_str: String; let mut time_to_stop = false;
     let mut pg: Vec<Vec<CellStruct>> = Vec::new();  let mut row: Vec<CellStruct> = Vec::new(); let mut row_cpy: Vec<String> = Vec::new();
+    let mut rows: Vec<Vec<String>> = Vec::new();
     //let mut row: OnceCell<Vec<CellStruct>> = OnceCell::new(); row.set(row_nested);
    // pg.table().forecolor(Color::red());
+    crate::swtch::print_viewers();
+    crate::swtch::print_pg_info();
+    println!("Full path: {}", crate::get_full_path(func_id));
     for j in 0..num_rows{
-        row_cpy.clear();
         for i in 0..num_cols{
-            let cell_num = j + num_rows * i + num_page;
+            indx = j + num_rows * i + num_page;
+            //indx = num_files - count_down_files;
             let mut res: String ="".to_string();
             let full_path_fn = move || -> String {for i in 0..1_000_000_000 {
-              res = crate::globs18::get_item_from_front_list(cell_num);
+              res = crate::globs18::get_item_from_front_list(indx);
               if res != "front list is empty"{return res;}
             // println!("build_page - probe 0");
             } return "".to_string()};
             let full_path = full_path_fn();
             let err_ret = std::ffi::OsString::from("");
-            let mut end_all_loop = || -> &std::ffi::OsString{time_to_stop = true; return &err_ret};
+            let mut end_all_loop = || -> &std::ffi::OsString{time_to_stop = true; achtung("end all_loops"); return &err_ret};
             //println!("build_page - probe 1");
             let filename = Path::new(&full_path);
             macro_rules! filename_str0{
@@ -57,25 +67,26 @@ fn build_page(ps: &mut crate::_page_struct){
             }
             let mut fixed_filename: String = filename_str0!().to_string();
             ins_newlines(get_col_width(func_id).to_usize().unwrap(), &mut fixed_filename);
-            if filename.is_dir(){filename_str =format!("{}: {}/", cell_num, fixed_filename);}
-            else{filename_str = format!("{}: {}", cell_num, fixed_filename);}
+            if filename.is_dir(){filename_str =format!("{}: {}/", indx, fixed_filename);}
+            else{filename_str = format!("{}: {}", indx, fixed_filename);}
             if filename_str == stopCode{return;}
             row_cpy.push(filename_str);
-            if time_to_stop {break;}
+            count_down_files -= 1;
+            if count_down_files <= 0 {time_to_stop = true; break;}
         }
         let count_pages = crate::get_num_files(func_id) / num_items_on_pages;
-        pg.push(move_out_of_scope(&mut row_cpy));
+        let mut tbl: Vec<Vec<CellStruct>> = Vec::new();
+        tbl.push(move_out_of_scope(&mut row_cpy));
+        print_stdout(tbl.table());
+        pg.clear();
         if time_to_stop {break;}
     }
     //println!("{}", pg.table().display().unwrap());
-    crate::swtch::print_viewers();
-    crate::swtch::print_pg_info();
-    println!("Full path: {}", crate::get_full_path(func_id));
-    print_stdout(pg.table().bold(true).foreground_color(Some(cli_table::Color::Blue)));
     println!("{}", crate::get_ask_user(func_id));
 }
 
 fn clear_screen(){
+    if checkArg("-dbg") || checkArg("-dirty"){return;}
     crate::run_cmd_str("clear");
 }
 pub(crate) 

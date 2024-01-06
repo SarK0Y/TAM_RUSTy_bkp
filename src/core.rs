@@ -213,7 +213,7 @@ loop {
 ch
 }
 pub(crate) fn achtung(msg: &str){
-    if !crate::checkArg("-dbg") | !crate::checkArg("-use-achtung"){return;}
+    if !crate::checkArg("-dbg") || !crate::checkArg("-use-achtung"){return;}
     let msg = format!("notify-send '{}'", msg);
     crate::run_cmd_str(&msg);
 }
