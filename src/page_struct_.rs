@@ -67,7 +67,7 @@ pub(crate) fn init_page_struct() -> _page_struct{
    let stop_code = unsafe {page_struct("", STOP_CODE_, func_id.to_i64().unwrap()).str_};
    let konsole_title = unsafe {page_struct("", KONSOLE_TITLE_, func_id.to_i64().unwrap()).str_};
    let left_shift_4_cur =0i64; let cur_cur_pos = 0i64; let num_page = 0i64; let num_cols = 3i64;
-   let col_width = 70i64; let num_rows = 9i64; let num_spaces = 0i64; let num_files = 0i64;
+   let col_width = 43i64; let num_rows = 9i64; let num_spaces = 0i64; let num_files = 0i64;
    let count_pages = 0i64;
    let news_bar = unsafe {page_struct("", NEWS_BAR_, func_id.to_i64().unwrap()).str_};
    let ask_user = unsafe {page_struct("", ASK_USER_, func_id.to_i64().unwrap()).str_};
@@ -135,6 +135,9 @@ pub(crate) fn set_num_page(val: i64, func_id: i64) -> i64{
   return unsafe{page_struct_int(proper_val, crate::set(NUM_PAGE_), func_id)}}
 pub(crate) fn get_num_pages(func_id: i64) -> i64{return unsafe{page_struct_int(0, COUNT_PAGES_, func_id)}}
 pub(crate) fn get_num_files(func_id: i64) ->i64{return unsafe{page_struct_int(0, NUM_FILES_, func_id)}}
+pub(crate) fn fix_num_files(func_id: i64) ->i64{
+   let len_of_front = i64::from_str_radix(crate::globs18::len_of_front_list().as_str(), 10).unwrap() - 1; 
+   return unsafe{page_struct_int(len_of_front, crate::set(NUM_FILES_), func_id)};}
 pub(crate) fn set_num_files(func_id: i64) ->i64{
    let len_of_front = i64::from_str_radix(crate::globs18::len_of_front_list().as_str(), 10).unwrap(); 
    return unsafe{page_struct_int(len_of_front, crate::set(NUM_FILES_), func_id)};}

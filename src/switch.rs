@@ -10,7 +10,7 @@ use std::{
     }
 };
 
-use crate::{core18::errMsg, ps18::{set_ask_user, get_full_path}, globs18::get_item_from_front_list, func_id18::{viewer_, mk_cmd_file_}};
+use crate::{core18::errMsg, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files}, globs18::get_item_from_front_list, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}};
 pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
     static mut fst_run: bool = true;
     static mut fn_indx: usize = 0;
@@ -115,4 +115,11 @@ let num_of_viewers = get_num_of_viewers(-1).to_usize().unwrap();
         print!("|||{}: {}", i, get_viewer(i, -1, true));
     }
     println!("")
+}
+pub fn print_pg_info(){
+    let num_page = get_num_page(-1);
+    let num_files = get_num_files(-1);
+    let last_pg = crate::where_is_last_pg();
+    let info = format!("Number of files/pages {}/{} p. {}", num_files, last_pg, num_page);
+    println!("{}", info);
 }

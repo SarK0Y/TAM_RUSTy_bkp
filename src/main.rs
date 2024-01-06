@@ -133,13 +133,13 @@ fn read_midway_data() -> bool{
         let file = File::open(filename).unwrap();
         let reader = BufReader::new(file);
     for (indx, line) in reader.lines().enumerate() {
-        if indx <= added_indx {continue;}
+        if indx <= added_indx && added_indx > 0{continue;}
         added_indx = indx;
         let line = line.unwrap();
-        let ret = globs18::add_2_main0_list(&line);
+        let ret = globs18::add_2_main0_list(&line); // todo => add_2_front_list
         ps18::set_num_files(func_id); 
         if dirty!(){println!("line {}", line)}
-        if line == stopCode{return true}
+        if line == stopCode{ps18::fix_num_files(func_id); return true}
     }  if dirty!(){println!("midway ended")}}
     false
 }
@@ -147,11 +147,12 @@ fn read_midway_data() -> bool{
 fn find_files(path: &str, mut in_name: String, path_2_tmp_file: &str) -> bool{
 let func_id: i64 = 2;
 let mut list_of_found_files: Vec<String> = vec![]; 
+let output = format!("{}/found_files", unsafe{ps18::page_struct("", ps18::TMP_DIR_, -1).str_});
 if in_name.len() == 0{in_name = core18::put_in_name();}
 else{in_name = format!("|{}", form_grep_cmd(&in_name));}
 let stopCode: String = unsafe {ps18::page_struct("", ps18::STOP_CODE_,-1).str_};
-let cmd: String = format!("#!/bin/bash\nfind -L '{path}' -type f{in_name};echo '\n{stopCode}\n';notify-send 'hi the'; touch -f ./tst");
-run_cmd(cmd);
+let cmd: String = format!("#!/bin/bash\nfind -L '{path}' -type f{in_name} >> {};echo '{stopCode}' >> {}", output, output);
+run_cmd0(cmd);
 return true;
 }
 fn get_arg_in_cmd(key: &str) -> core18::ret0{
