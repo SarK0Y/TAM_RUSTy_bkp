@@ -67,6 +67,28 @@ pub fn ins_last_char_to_string1_from_string1(indx: usize, origString: String) ->
     ////println!("ret {}", ret);
     ret
 }
+pub fn ins_last_char_to_string1_from_string1_ptr(indx: usize, origString: &mut String) {
+    let mut len = origString.chars().count(); if len == 0 || len == 1 || indx == len -1 {return}
+     let mut ret = String::new();
+     len -= 1; 
+    let char0: char =match origString.chars().nth(len){
+        Some(ch) => ch,
+        _ => {/*println!("kkkkkkkkk");*/ return;}
+    };
+    if crate::dirty!(){
+    let msg = format!("'ins_last_char_to_string1_from_string1 indx {} orig{} char0 {} orig len {}'", indx, origString, char0, len);
+    //run_cmd0(&msg);
+    println!("{}", &msg);
+    }
+    for i in 0..len {
+        let char1: char = origString.chars().nth(i).unwrap();
+        if i == indx{ret.push(char0);}
+        ret.push(char1);
+       // println!("{}", char1);
+    }
+    origString.clear(); origString.push_str(ret.as_str());
+    ////println!("ret {}", ret);
+}
 pub(crate) fn print_type_of<T>(_: &T) {
 println!("{}", std::any::type_name::<T>())
 }
@@ -130,7 +152,7 @@ pub fn len_of_main0_list() -> String{
 pub fn len_of_front_list() -> String{
     return unsafe{lists("", FRONT_, 0, LEN)}
 }
-fn get_proper_indx(indx: i64) -> usize{
+pub(crate) fn get_proper_indx(indx: i64) -> usize{
     let mut proper_indx: usize = 0;
     let mut len: i64 = 0;
     if indx > 0{proper_indx = indx as usize;}

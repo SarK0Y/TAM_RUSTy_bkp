@@ -1,4 +1,6 @@
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user}, core18::{achtung, errMsg_dbg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string}, split_once};
+use cli_table::TableStruct;
+
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list}, split_once, swtch::{run_viewer, swtch_fn}};
 self::pg_uses!();
 
 fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -9,31 +11,62 @@ fn move_out_of_scope(row: &mut Vec<String>) -> Vec<CellStruct>{
     row.clear();
     row_
 }
+fn cpy_tbl(tbl: &Vec<Vec<CellStruct>>) -> Vec<Vec<CellStruct>>{
+    let mut tbl0: Vec<Vec<CellStruct>> = Vec::new();
+    //let mut get 
+    for i in 0..tbl.len(){
+        tbl0.push(match tbl.get(i){
+            Some(v) => move_out_of_scope(&mut v),
+            _ => return tbl0
+        });
+    }
+    tbl0
+}
 pub(crate) 
 fn build_page(ps: &mut crate::_page_struct){
     let func_id = crate::func_id18::build_page;
+    let mut try_entry = 0usize;
+    let mut count_down_files = get_num_files(func_id);
+    let mut indx = count_down_files;
+    let num_files = indx;
+    while try_entry < 1_000_000 {
+        if get_num_files(func_id) == 0i64 {continue;}
+        try_entry += 1;
+    }
+    if get_num_files(func_id) == 0i64 {println!("No files found"); unsafe {libc::exit(-1);}}
     let mut num_page; if ps.num_page != i64::MAX{num_page = ps.num_page;}else{num_page = crate::get_num_page(func_id);}
     let mut num_cols; if ps.num_cols != i64::MAX{num_cols = ps.num_cols;}else{num_cols = crate::get_num_cols(func_id);}
     let mut num_rows; if ps.num_rows != i64::MAX{num_rows = ps.num_rows;}else{num_rows = crate::get_num_rows(func_id);}
+    if ps.col_width != i64::MAX{crate::set_col_width(ps.col_width, func_id);}
     let num_items_on_pages = num_cols * num_rows; let stopCode: String = crate::getStop_code__!();
     num_page *= num_cols * num_rows; let mut filename_str: String; let mut time_to_stop = false;
     let mut pg: Vec<Vec<CellStruct>> = Vec::new();  let mut row: Vec<CellStruct> = Vec::new(); let mut row_cpy: Vec<String> = Vec::new();
     //let mut row: OnceCell<Vec<CellStruct>> = OnceCell::new(); row.set(row_nested);
    // pg.table().forecolor(Color::red());
-    for j in 0..num_rows{
-        for i in 0..num_cols{
-            let cell_num = j + num_cols * i + num_page;
+    crate::swtch::print_viewers();
+    crate::swtch::print_pg_info();
+    println!("Full path: {}", crate::get_full_path(func_id));
+    for j in 0..num_cols{
+        row_cpy.clear();
+        for i in 0..num_rows{
+            indx = j + num_rows * i + num_page;
+            //indx = num_files - count_down_files;
             let mut res: String ="".to_string();
             let full_path_fn = move || -> String {for i in 0..1_000_000_000 {
-              res = crate::globs18::get_item_from_front_list(cell_num);
+              res = crate::globs18::get_item_from_front_list(indx);
               if res != "front list is empty"{return res;}
             // println!("build_page - probe 0");
             } return "".to_string()};
             let full_path = full_path_fn();
+            let err_ret = std::ffi::OsString::from("");
+            let mut end_all_loop = || -> &std::ffi::OsString{time_to_stop = true; achtung("end all_loops"); return &err_ret};
             //println!("build_page - probe 1");
             let filename = Path::new(&full_path);
             macro_rules! filename_str0{
-                () => {String::from(filename.file_name().unwrap().to_str().unwrap()).as_str()};
+                () => {String::from(match filename.file_name(){
+                    Some(f) => f,
+                    _ => end_all_loop()
+                }.to_str().unwrap()).as_str()};
             }
             if crate::globs18::eq_str(stopCode.as_str(), filename.as_os_str().to_str().unwrap()) == 0 && stopCode.len() == filename.as_os_str().to_str().unwrap().len() {println!("{}", "caught".bold().green()); 
              time_to_stop = true; break;}
@@ -42,23 +75,29 @@ fn build_page(ps: &mut crate::_page_struct){
                println!("stop code {}, len {}; str {}, len {}", stopCode, stopCode.as_str().len(), filename.as_os_str().to_str().unwrap(), filename.as_os_str().to_str().unwrap().len());
                println!("{:?}", filename.file_name());
             }
-            if filename.file_name() == None{println!("{}", "caught".bold().blue()); break;}
-            if filename.is_dir(){filename_str =format!("{}: {}", cell_num, filename_str0!());}
-            else{filename_str = format!("{}: {}", cell_num, filename_str0!());}
+            let mut fixed_filename: String = filename_str0!().to_string();
+            ins_newlines(get_col_width(func_id).to_usize().unwrap(), &mut fixed_filename);
+            if filename.is_dir(){filename_str =format!("{}: {}/", indx, fixed_filename);}
+            else{filename_str = format!("{}: {}", indx, fixed_filename);}
             if filename_str == stopCode{return;}
             row_cpy.push(filename_str);
+            count_down_files -= 1;
+            if count_down_files <= 0 {time_to_stop = true; break;}
         }
         let count_pages = crate::get_num_files(func_id) / num_items_on_pages;
         pg.push(move_out_of_scope(&mut row_cpy));
+        print_stdout(cpy_tbl(&pg).table().bold(true).foreground_color(Some(cli_table::Color::Blue)));
+        pg.clear();
         if time_to_stop {break;}
     }
     //println!("{}", pg.table().display().unwrap());
-    println!("Full path: {}", crate::get_full_path(func_id));
-    print_stdout(pg.table().bold(true).foreground_color(Some(cli_table::Color::Blue)));
+    
+    
     println!("{}", crate::get_ask_user(func_id));
 }
 
 fn clear_screen(){
+    if checkArg("-dbg") || checkArg("-dirty"){return;}
     crate::run_cmd_str("clear");
 }
 pub(crate) 
@@ -144,7 +183,7 @@ pub(crate) fn form_cmd_line_default(){
     let prompt = crate::get_prompt(func_id); let mut ret = unsafe {crate::shift_cursor_of_prnt(0, func_id)};
     let mut prnt = ret.str__;
     let len = get_prnt(func_id).chars().count();
-    if ret.shift == len {prnt = format!("👈{}", prnt)}
+    if ret.shift == len {prnt = format!("👉{}", prnt)}
     else if ret.shift < len {ret.shift = len - ret.shift;
     prnt.push('👈');
     prnt = ins_last_char_to_string1_from_string1(ret.shift, prnt);}
@@ -200,4 +239,5 @@ fn exec_cmd(cmd: String){
         set_full_path(&file_full_name, func_id);
         return;
     }
+    unsafe {swtch_fn(-1, cmd)}
 }

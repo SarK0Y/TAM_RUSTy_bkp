@@ -30,7 +30,7 @@ pub(crate) fn main_update(){
 
 }
 pub(crate) fn prime(){
-    //crate::initSession();
+    crate::initSession();
     main_update();
 println!("len of main0 list {}", globs17::len_of_main0_list());
     let builder = thread::Builder::new().stack_size(8 * 1024 * 1024).name("manage_page".to_string());

@@ -1,5 +1,7 @@
+#![feature(trace_macros)]
 macro_rules! use_all {
     () => {
+//trace_macros!(true);
 use std::env;
 use colored::Colorize;
 use substring::Substring;
@@ -110,6 +112,7 @@ use substring::Substring;
 use std::str::{self, from_utf8};
 use std::string;
 use chrono::{DateTime, Local};
+use crate::{pg18::repeat_char, swtch::share_usize};
 use std::io::{self, Write};
 use std::any::{self, type_name};
 use std::fmt;

@@ -66,6 +66,7 @@ unsafe{crate::page_struct(&path_2_found_files_list, set(crate::FOUND_FILES_), fu
        crate::page_struct("empty", set(crate::KONSOLE_TITLE_), func_id);}
     crate::globs18::set_main0_as_front();
     crate::set_prnt("test typing", func_id);
+    unsafe {crate::swtch::form_list_of_viewers(false);}
     return true;
 }
 pub(crate) fn errMsg_dbg(msg: &str, val_func_id: i64, delay: f64) {
@@ -101,8 +102,12 @@ pub(crate) struct ret0 {
    pub res: bool
 }
 pub(crate) fn escape_symbs(str0: &String) -> String{
-    let strr = str0.as_str();
+    let  strr = str0.as_str();
     let strr = strr.replace("-", r"\-");
+    let strr = strr.replace(" ", r"\ ");
+    let strr = strr.replace("$", r"\$");
+    let strr = strr.replace("'", r"\'");
+    let strr = strr.replace("`", r"\`");
     return strr.to_string();
 }
 
@@ -208,7 +213,7 @@ loop {
 ch
 }
 pub(crate) fn achtung(msg: &str){
-    if !crate::checkArg("-dbg") | !crate::checkArg("-use-achtung"){return;}
+    if !crate::checkArg("-dbg") || !crate::checkArg("-use-achtung"){return;}
     let msg = format!("notify-send '{}'", msg);
     crate::run_cmd_str(&msg);
 }
@@ -233,4 +238,12 @@ pub(crate) fn put_in_name() -> String{
         }
     }
     return ret;
+}
+pub(crate) fn ins_newlines(len_of_line: usize, origString: &mut String) {
+    let num_of_loops = origString.len() / len_of_line;
+    for i in 1..num_of_loops{
+        let indx = i * len_of_line;
+        origString.push('\n');
+        ins_last_char_to_string1_from_string1_ptr(indx, origString);
+    }
 }
