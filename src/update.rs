@@ -37,7 +37,8 @@ println!("len of main0 list {}", globs17::len_of_main0_list());
 let handler = builder.spawn(|| {
 let mut ps__: crate::_page_struct = crate::init_page_struct();
 ps__.num_cols = i64::MAX; ps__.num_page = i64::MAX; ps__.num_rows = i64::MAX;
-crate::manage_pages(ps__);
+unsafe {crate::swtch::swtch_ps(0, Some(ps__));}
+crate::manage_pages();
 println!("stop manage_page");
 }).unwrap();
     handler.join().unwrap();

@@ -38,12 +38,14 @@ pub struct shift_cur_struct{
   pub shift: usize,
   pub str__: String
 }
+//#[derive(Clone, Copy)]
 pub struct child2run{
    pub running: i64,
    pub viewer: i64,
    pub mode2run: i64, // 0 == internal, 1 == extrn
    pub full_path: String
 }
+//#[derive(Clone, Copy)]
 pub struct _page_struct{
    pub stop_code: String,
    pub prnt: String,
@@ -62,6 +64,7 @@ pub struct _page_struct{
    pub ask_User: String,
    pub c2r: child2run
 }
+
 pub(crate) fn init_page_struct() -> _page_struct{
    let func_id = crate::func_id18::init_page_struct_;
    let stop_code = unsafe {page_struct("", STOP_CODE_, func_id.to_i64().unwrap()).str_};
