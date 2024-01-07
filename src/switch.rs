@@ -10,7 +10,7 @@ use std::{
     }
 };
 
-use crate::{core18::errMsg, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files}, globs18::get_item_from_front_list, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}};
+use crate::{core18::errMsg, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::get_item_from_front_list, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}};
 pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
     static mut fst_run: bool = true;
     static mut fn_indx: usize = 0;
@@ -22,6 +22,19 @@ pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
     }
     if indx > -1{fn_indx = indx.to_usize().unwrap(); return;}
     fn_.get().unwrap()[fn_indx](cmd);
+}
+pub(crate) unsafe fn swtch_ps(indx: i64, ps: Option<crate::_page_struct>) -> crate::_page_struct{
+    static mut fst_run: bool = true;
+    static mut ps_indx: usize = 0;
+    static mut ps_: OnceCell<Vec<crate::_page_struct>> = OnceCell::new();
+    let dummy = init_page_struct();
+    if fst_run{
+        let ps_vec: Vec<crate::_page_struct> = Vec::new();
+        ps_.set(ps_vec); fst_run = false;
+    }
+    if ps.is_some(){ps_.get_mut().unwrap().push(ps.unwrap());}
+    if indx > -1{ps_indx = indx.to_usize().unwrap(); return dummy;}
+    return crate::cpy_page_struct(&mut ps_.get_mut().unwrap()[ps_indx])
 }
 pub(crate) fn run_viewer(cmd: String) -> bool{
     let func_id = crate::func_id18::viewer_;
@@ -39,7 +52,7 @@ pub(crate) fn run_viewer(cmd: String) -> bool{
         Ok(v) => v,
         _ => return msg()
     };
-    let file_indx = crate::globs18::get_proper_indx(file_indx).to_i64().unwrap();
+    let file_indx: i64 = crate::globs18::get_proper_indx(file_indx).1;
     let filename = crate::escape_symbs(&get_item_from_front_list(file_indx));
     let viewer = get_viewer(app_indx, -1, true);
     let cmd = format!("{} {} > /dev/null 2>&1", viewer, filename);
@@ -76,6 +89,14 @@ pub(crate) unsafe fn share_usize(val: usize, func_id: i64) -> (usize, bool){
      }
     if owner_id == i64::MIN{owner_id = func_id; actual_val = val; return (val, true);}
     (usize::MAX, false)
+}
+pub(crate) unsafe fn local_indx(set_new_state: bool) -> bool{
+    static mut actual_state: bool = false;
+    if !set_new_state{
+        return actual_state
+     }
+    actual_state = !actual_state;
+    return actual_state
 }
 pub(crate) fn get_rnd_u64() -> (u64, bool){
     let mut get_rnd_device: File = match File::open("/dev/urandom"){
