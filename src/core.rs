@@ -108,7 +108,8 @@ pub(crate) fn escape_symbs(str0: &String) -> String{
     let strr = strr.replace("$", r"\$");
     let strr = strr.replace("'", r"\'");
     let strr = strr.replace("`", r"\`");
-    let strr = strr.replace("!", r"\!");
+    let strr = strr.replace("(", r"\(");
+    let strr = strr.replace(")", r"\)");
     return strr.to_string();
 }
 
