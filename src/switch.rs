@@ -52,8 +52,8 @@ pub(crate) fn run_viewer(cmd: String) -> bool{
         Ok(v) => v,
         _ => return msg()
     };
-    let file_indx: i64 = crate::globs18::get_proper_indx(file_indx).1;
-    let filename = crate::escape_symbs(&get_item_from_front_list(file_indx));
+    //let file_indx: i64 = crate::globs18::get_proper_indx(file_indx).1;
+    let filename = crate::escape_symbs(&get_item_from_front_list(file_indx, true));
     let viewer = get_viewer(app_indx, -1, true);
     let cmd = format!("{} {} > /dev/null 2>&1", viewer, filename);
     return crate::run_cmd_viewer(cmd)

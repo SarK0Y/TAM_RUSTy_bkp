@@ -2,6 +2,7 @@
 #[path = "exts.rs"]
 mod exts;
 use exts::*;
+use gag::RedirectError;
 
 use self::ps21::set_ask_user;
 core_use!();
@@ -131,6 +132,18 @@ fn end_termios(termios: &Termios){
         Ok(len) => {format!("{:?}", len)}
     };
     io::stdout().flush().unwrap();
+}
+pub(crate) fn redirect_stdout_to_buf() -> Redirect<File>{
+// Open a log
+let log = OpenOptions::new()
+    .read(true)
+    .create(true)
+    .write(true)
+    .open("/tmp/my_log.log")
+    .unwrap();
+
+let print_redirect = Redirect::stdout(log).unwrap();
+print_redirect
 }
 pub(crate) fn getkey() -> String{
 let mut Key: String ="".to_string();

@@ -153,9 +153,9 @@ pub fn len_of_main0_list() -> String{
 pub fn len_of_front_list() -> String{
     return unsafe{lists("", FRONT_, 0, LEN)}
 }
-pub(crate) fn get_proper_indx(indx: i64) -> (usize, i64){
+pub(crate) fn get_proper_indx(indx: i64, fixed_indx: bool) -> (usize, i64){
     let mut fix_inputed_indx = indx;
-    if !unsafe {local_indx(false)}{fix_inputed_indx += calc_num_files_up2_cur_pg();}
+    if !unsafe {local_indx(false)} && fixed_indx {fix_inputed_indx += calc_num_files_up2_cur_pg();}
     let indx = fix_inputed_indx;
     let mut proper_indx: i64 = 0;
     let mut len: i64 = 0;
@@ -167,8 +167,8 @@ pub(crate) fn get_proper_indx(indx: i64) -> (usize, i64){
     if proper_indx > len {let ret = proper_indx - (proper_indx/len) * len; return (ret.to_usize().unwrap(), ret) }
     return (usize::MAX, 0);
 }
-pub(crate) fn get_item_from_front_list(indx: i64) -> String{
-    let proper_indx = get_proper_indx(indx);
+pub(crate) fn get_item_from_front_list(indx: i64, fixed_indx: bool) -> String{
+    let proper_indx = get_proper_indx(indx, fixed_indx);
     if proper_indx.0 == usize::MAX{return "front list is empty".to_string()}
     return unsafe{lists("", FRONT_, proper_indx.0, GET)}
 }
