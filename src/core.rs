@@ -2,6 +2,7 @@
 #[path = "exts.rs"]
 mod exts;
 use exts::*;
+use gag::RedirectError;
 
 use self::ps21::set_ask_user;
 core_use!();
@@ -108,6 +109,8 @@ pub(crate) fn escape_symbs(str0: &String) -> String{
     let strr = strr.replace("$", r"\$");
     let strr = strr.replace("'", r"\'");
     let strr = strr.replace("`", r"\`");
+    let strr = strr.replace("(", r"\(");
+    let strr = strr.replace(")", r"\)");
     return strr.to_string();
 }
 
@@ -129,6 +132,18 @@ fn end_termios(termios: &Termios){
         Ok(len) => {format!("{:?}", len)}
     };
     io::stdout().flush().unwrap();
+}
+pub(crate) fn redirect_stdout_to_buf() -> Redirect<File>{
+// Open a log
+let log = OpenOptions::new()
+    .read(true)
+    .create(true)
+    .write(true)
+    .open("/tmp/my_log.log")
+    .unwrap();
+
+let print_redirect = Redirect::stdout(log).unwrap();
+print_redirect
 }
 pub(crate) fn getkey() -> String{
 let mut Key: String ="".to_string();
@@ -222,7 +237,7 @@ pub(crate) fn achtung(msg: &str){
     let msg = format!("notify-send '{}'", msg);
     crate::run_cmd_str(&msg);
 }
-pub(crate) fn calc_num_files_up2_cur_pg(){
+pub(crate) fn calc_num_files_up2_cur_pg() -> i64{
     let func_id= crate::func_id18::calc_num_files_up2_cur_pg_;
     let ps = unsafe {crate::swtch::swtch_ps(-1, None)};
      let mut num_page; if ps.num_page != i64::MAX{num_page = ps.num_page;}else{num_page = crate::get_num_page(func_id);}
@@ -230,7 +245,8 @@ pub(crate) fn calc_num_files_up2_cur_pg(){
     let mut num_rows; if ps.num_rows != i64::MAX{num_rows = ps.num_rows;}else{num_rows = crate::get_num_rows(func_id);}
     if ps.col_width != i64::MAX{crate::set_col_width(ps.col_width, func_id);}
     let num_items_on_pages = num_cols * num_rows; let stopCode: String = crate::getStop_code__!();
-    num_page *= num_cols * num_rows;
+    let counted_files = num_page * num_cols * num_rows;
+    return counted_files;
 }
 pub(crate)
 fn check_substring(orig: String, probe: String, start_from: usize) -> bool{

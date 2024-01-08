@@ -1,6 +1,7 @@
 use chrono::format;
+use num_traits::ToPrimitive;
 
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt}};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt}, swtch::local_indx, core18::calc_num_files_up2_cur_pg};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -152,21 +153,24 @@ pub fn len_of_main0_list() -> String{
 pub fn len_of_front_list() -> String{
     return unsafe{lists("", FRONT_, 0, LEN)}
 }
-pub(crate) fn get_proper_indx(indx: i64) -> usize{
-    let mut proper_indx: usize = 0;
+pub(crate) fn get_proper_indx(indx: i64) -> (usize, i64){
+    let mut fix_inputed_indx = indx;
+    if !unsafe {local_indx(false)}{fix_inputed_indx += calc_num_files_up2_cur_pg();}
+    let indx = fix_inputed_indx;
+    let mut proper_indx: i64 = 0;
     let mut len: i64 = 0;
-    if indx > 0{proper_indx = indx as usize;}
+    if indx > 0{proper_indx = indx;}
     len =i64::from_str_radix(len_of_front_list().as_str(), 10).unwrap();
-    if len == 0{return usize::MAX}
-    if indx > len {proper_indx = (indx - len) as usize;}
-    if proper_indx < len as usize{return proper_indx}
-    if proper_indx > len as usize{let len: usize = len as usize; return proper_indx - (proper_indx/len) * len }
-    return usize::MAX;
+    if len == 0{return (usize::MAX, 0i64)}
+    if indx > len {proper_indx = (indx - len);}
+    if proper_indx < len {return (proper_indx.to_usize().unwrap(), proper_indx)}
+    if proper_indx > len {let ret = proper_indx - (proper_indx/len) * len; return (ret.to_usize().unwrap(), ret) }
+    return (usize::MAX, 0);
 }
 pub(crate) fn get_item_from_front_list(indx: i64) -> String{
     let proper_indx = get_proper_indx(indx);
-    if proper_indx == usize::MAX{return "front list is empty".to_string()}
-    return unsafe{lists("", FRONT_, proper_indx, GET)}
+    if proper_indx.0 == usize::MAX{return "front list is empty".to_string()}
+    return unsafe{lists("", FRONT_, proper_indx.0, GET)}
 }
 pub fn set_main0_as_front(){unsafe{lists("", MAIN0_, 0, SET_FRONT_LIST);}}
 pub unsafe fn lists(val: &str, list: i64, indx: usize, op_code: i64) -> String{

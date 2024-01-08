@@ -1,6 +1,6 @@
 use cli_table::TableStruct;
 
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx}};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx}};
 self::pg_uses!();
 
 fn cpy_row(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -22,7 +22,7 @@ fn build_page(ps: &mut crate::_page_struct){
     let num_files = indx;
     while try_entry < 1_000_000 {
         if get_num_files(func_id) == 0i64 {continue;}
-        try_entry += 1;
+        try_entry += 1; 
     }
     if get_num_files(func_id) == 0i64 {println!("No files found"); unsafe {libc::exit(-1);}}
     let mut num_page; if ps.num_page != i64::MAX{num_page = ps.num_page;}else{num_page = crate::get_num_page(func_id);}
@@ -30,7 +30,7 @@ fn build_page(ps: &mut crate::_page_struct){
     let mut num_rows; if ps.num_rows != i64::MAX{num_rows = ps.num_rows;}else{num_rows = crate::get_num_rows(func_id);}
     if ps.col_width != i64::MAX{crate::set_col_width(ps.col_width, func_id);}
     let num_items_on_pages = num_cols * num_rows; let stopCode: String = crate::getStop_code__!();
-    num_page *= num_cols * num_rows; let mut filename_str: String; let mut time_to_stop = false;
+    num_page = calc_num_files_up2_cur_pg(); let mut filename_str: String; let mut time_to_stop = false;
     let mut row: Vec<CellStruct> = Vec::new(); let mut row_cpy: Vec<String> = Vec::new();
     //let mut row: OnceCell<Vec<CellStruct>> = OnceCell::new(); row.set(row_nested);
    // pg.table().forecolor(Color::red());
@@ -39,9 +39,9 @@ fn build_page(ps: &mut crate::_page_struct){
     println!("Full path: {}", crate::get_full_path(func_id));
     for j in 0..num_rows{
         for i in 0..num_cols{
-            indx = j + num_rows * i + num_page;
+            let indx = j + num_rows * i + num_page;
             if unsafe {local_indx(false)}{display_indx = indx;}
-            else {display_indx = j + num_rows * i;}
+            else {display_indx = indx - num_page;}
             //indx = num_files - count_down_files;
             let mut res: String ="".to_string();
             let full_path_fn = move || -> String {for i in 0..1_000_000_000 {
@@ -51,13 +51,13 @@ fn build_page(ps: &mut crate::_page_struct){
             } return "".to_string()};
             let full_path = full_path_fn();
             let err_ret = std::ffi::OsString::from("");
-            let mut end_all_loop = || -> &std::ffi::OsString{time_to_stop = true; achtung("end all_loops"); return &err_ret};
+            let mut end_all_loops = || -> &std::ffi::OsString{time_to_stop = true; achtung("end all_loops"); return &err_ret};
             //println!("build_page - probe 1");
             let filename = Path::new(&full_path);
             macro_rules! filename_str0{
                 () => {String::from(match filename.file_name(){
                     Some(f) => f,
-                    _ => end_all_loop()
+                    _ => end_all_loops()
                 }.to_str().unwrap()).as_str()};
             }
             if crate::globs18::eq_str(stopCode.as_str(), filename.as_os_str().to_str().unwrap()) == 0 && stopCode.len() == filename.as_os_str().to_str().unwrap().len() {println!("{}", "caught".bold().green()); 
@@ -73,13 +73,15 @@ fn build_page(ps: &mut crate::_page_struct){
             else{filename_str = format!("{}: {}", display_indx, fixed_filename);}
             if filename_str == stopCode{return;}
             row_cpy.push(filename_str);
-            count_down_files -= 1;
-            if count_down_files <= 0 {time_to_stop = true; break;}
-        }
-        let count_pages = crate::get_num_files(func_id) / num_items_on_pages;
+       //     count_down_files -= 1;
+         //   if count_down_files <= 0 {time_to_stop = true; break;}
+         let count_pages = crate::get_num_files(func_id) / num_items_on_pages;
         let mut new_row: Vec<Vec<CellStruct>> = Vec::new();
         new_row.push(cpy_row(&mut row_cpy));
-        print_stdout(new_row.table().bold(true).foreground_color(Some(cli_table::Color::Blue)));
+        //print_stdout(new_row.table().bold(true).foreground_color(Some(cli_table::Color::Blue)));
+        print!("\r{}\x1b[K", &kcode::UP_ARROW);
+        }
+        
         if time_to_stop {break;}
     }
     //println!("{}", pg.table().display().unwrap());
@@ -120,7 +122,8 @@ fn hotKeys() -> String{
     if crate::globs18::eq_ansi_str(&kcode::Alt_0, Key.as_str()) == 0 {
     unsafe {
         local_indx(true);};
-        popup_msg("Alt_0");
+        let msg = format!("alt_0 num page {}", crate::get_num_page(-1));
+        popup_msg(&msg);
     return "alt_0".to_string();}
     if crate::globs18::eq_ansi_str(&kcode::F12, Key.as_str()) == 0{
         unsafe {shift_cursor_of_prnt(0, func_id)};
@@ -231,7 +234,7 @@ fn exec_cmd(cmd: String){
             Ok(val) => val,
             _ => {set_full_path("wrong use of fp: fp <indx of file>", func_id); return}
         };
-        let file_full_name =  crate::globs18::get_item_from_front_list(file_indx);
+        let file_full_name =  crate::globs18::get_item_from_front_list( crate::globs18::get_proper_indx(file_indx).1);
         set_full_path(&file_full_name, func_id);
         return;
     }

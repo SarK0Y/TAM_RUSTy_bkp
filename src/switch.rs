@@ -34,7 +34,7 @@ pub(crate) unsafe fn swtch_ps(indx: i64, ps: Option<crate::_page_struct>) -> cra
     }
     if ps.is_some(){ps_.get_mut().unwrap().push(ps.unwrap());}
     if indx > -1{ps_indx = indx.to_usize().unwrap(); return dummy;}
-    return ps_.get_mut().unwrap()[ps_indx]
+    return crate::cpy_page_struct(&mut ps_.get_mut().unwrap()[ps_indx])
 }
 pub(crate) fn run_viewer(cmd: String) -> bool{
     let func_id = crate::func_id18::viewer_;
@@ -52,7 +52,7 @@ pub(crate) fn run_viewer(cmd: String) -> bool{
         Ok(v) => v,
         _ => return msg()
     };
-    let file_indx = crate::globs18::get_proper_indx(file_indx).to_i64().unwrap();
+    let file_indx: i64 = crate::globs18::get_proper_indx(file_indx).1;
     let filename = crate::escape_symbs(&get_item_from_front_list(file_indx));
     let viewer = get_viewer(app_indx, -1, true);
     let cmd = format!("{} {} > /dev/null 2>&1", viewer, filename);
