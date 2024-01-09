@@ -17,9 +17,6 @@ fn build_page(ps: &mut crate::_page_struct){
     let func_id = crate::func_id18::build_page;
     let mut try_entry = 0usize;
     let mut count_down_files = get_num_files(func_id);
-    let mut indx = count_down_files;
-    let mut display_indx = indx;
-    let num_files = indx;
     while try_entry < 1_000_000 {
         if get_num_files(func_id) == 0i64 {continue;}
         try_entry += 1; 
@@ -39,17 +36,16 @@ fn build_page(ps: &mut crate::_page_struct){
     println!("Full path: {}", crate::get_full_path(func_id));
     for j in 0..num_rows{
         for i in 0..num_cols{
-            let indx = j + num_rows * i + num_page;
-            if unsafe {local_indx(false)}{display_indx = indx;}
-            else {display_indx = indx - num_page;}
+            let mut indx = i + num_cols * j + num_page;
             //indx = num_files - count_down_files;
             let mut res: String ="".to_string();
             let full_path_fn = move || -> String {for i in 0..1_000_000_000 {
-              res = crate::globs18::get_item_from_front_list(indx);
+              res = crate::globs18::get_item_from_front_list(indx, false);
               if res != "front list is empty"{return res;}
             // println!("build_page - probe 0");
             } return "".to_string()};
             let full_path = full_path_fn();
+            if !unsafe {local_indx(false)}{indx -= num_page;}
             let err_ret = std::ffi::OsString::from("");
             let mut end_all_loops = || -> &std::ffi::OsString{time_to_stop = true; achtung("end all_loops"); return &err_ret};
             //println!("build_page - probe 1");
@@ -69,19 +65,17 @@ fn build_page(ps: &mut crate::_page_struct){
             }
             let mut fixed_filename: String = filename_str0!().to_string();
             ins_newlines(get_col_width(func_id).to_usize().unwrap(), &mut fixed_filename);
-            if filename.is_dir(){filename_str =format!("{}: {}/", display_indx, fixed_filename);}
-            else{filename_str = format!("{}: {}", display_indx, fixed_filename);}
+            if filename.is_dir(){filename_str =format!("{}: {}/", indx, fixed_filename);}
+            else{filename_str = format!("{}: {}", indx, fixed_filename);}
             if filename_str == stopCode{return;}
             row_cpy.push(filename_str);
        //     count_down_files -= 1;
          //   if count_down_files <= 0 {time_to_stop = true; break;}
-         let count_pages = crate::get_num_files(func_id) / num_items_on_pages;
+        }
+        let count_pages = crate::get_num_files(func_id) / num_items_on_pages;
         let mut new_row: Vec<Vec<CellStruct>> = Vec::new();
         new_row.push(cpy_row(&mut row_cpy));
-        //print_stdout(new_row.table().bold(true).foreground_color(Some(cli_table::Color::Blue)));
-        print!("\r{}\x1b[K", &kcode::UP_ARROW);
-        }
-        
+        print_stdout(new_row.table().bold(true).foreground_color(Some(cli_table::Color::Blue)));
         if time_to_stop {break;}
     }
     //println!("{}", pg.table().display().unwrap());
@@ -234,7 +228,7 @@ fn exec_cmd(cmd: String){
             Ok(val) => val,
             _ => {set_full_path("wrong use of fp: fp <indx of file>", func_id); return}
         };
-        let file_full_name =  crate::globs18::get_item_from_front_list( crate::globs18::get_proper_indx(file_indx).1);
+        let file_full_name =  crate::globs18::get_item_from_front_list(file_indx, true);
         set_full_path(&file_full_name, func_id);
         return;
     }

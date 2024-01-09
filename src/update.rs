@@ -44,3 +44,6 @@ println!("stop manage_page");
     handler.join().unwrap();
     println!("len of main0 list {}", globs17::len_of_main0_list());
 }
+pub(crate) fn update_dir_list(dir: String){
+
+}

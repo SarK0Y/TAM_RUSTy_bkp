@@ -182,6 +182,7 @@ use std::path::Path;
 use num_traits::cast::ToPrimitive;
 use std::io::{BufRead, BufReader};
 use std::thread::spawn;
+use std::{i64, usize};
 #[path = "func_id.rs"]
 mod func_id17;
 #[path = "globs.rs"]
@@ -197,6 +198,7 @@ macro_rules! core_use {
 use std::env;
 use std::fs::OpenOptions;
 use std::io;
+use std::{i64, usize};
 use std::io::{Read, Write, Seek, SeekFrom};
 use gag::Redirect;
 use colored::Colorize;

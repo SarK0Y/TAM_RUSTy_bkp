@@ -8,6 +8,7 @@
 #[allow(arithmetic_overflow)]
 mod exts;
 use exts::*;
+use swtch::share_cmd;
 use_all!();
 
 pub(crate) fn split_once(in_string: &str, delim: &str) -> (String, String) {
@@ -136,7 +137,7 @@ fn read_midway_data() -> bool{
         if indx <= added_indx && added_indx > 0{continue;}
         added_indx = indx;
         let line = line.unwrap();
-        let ret = globs18::add_2_main0_list(&line); // todo => add_2_front_list
+        let ret = globs18::add_2_front_list(&line); // todo => add_2_front_list
         ps18::set_num_files(func_id); 
         if dirty!(){println!("line {}", line)}
         if line == stopCode{ps18::fix_num_files(func_id); return true}
@@ -151,7 +152,10 @@ let output = format!("{}/found_files", unsafe{ps18::page_struct("", ps18::TMP_DI
 if in_name.len() == 0{in_name = core18::put_in_name();}
 else{in_name = format!("|{}", form_grep_cmd(&in_name));}
 let stopCode: String = unsafe {ps18::page_struct("", ps18::STOP_CODE_,-1).str_};
-let cmd: String = format!("#!/bin/bash\nfind -L '{path}' -type f{in_name} >> {};echo '{stopCode}' >> {}", output, output);
+let mut cmd: String = format!("#!/bin/bash\nfind -L '{path}' -type f{in_name} >> {};echo '{stopCode}' >> {}", output, output);
+let ret: (String, bool) = unsafe{share_cmd("get".to_string(), func_id)};
+if ret.1{
+    cmd = format!("#!/bin/bash\n{} >> {};echo '{stopCode}' >> {}", ret.0, output, output);}
 run_cmd0(cmd);
 return true;
 }

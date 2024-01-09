@@ -7,7 +7,9 @@ use std::{
     io::{
         ErrorKind,
         Read
-    }
+    },
+    i64,
+    usize
 };
 
 use crate::{core18::errMsg, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::get_item_from_front_list, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}};
@@ -52,8 +54,8 @@ pub(crate) fn run_viewer(cmd: String) -> bool{
         Ok(v) => v,
         _ => return msg()
     };
-    let file_indx: i64 = crate::globs18::get_proper_indx(file_indx).1;
-    let filename = crate::escape_symbs(&get_item_from_front_list(file_indx));
+    //let file_indx: i64 = crate::globs18::get_proper_indx(file_indx).1;
+    let filename = crate::escape_symbs(&get_item_from_front_list(file_indx, true));
     let viewer = get_viewer(app_indx, -1, true);
     let cmd = format!("{} {} > /dev/null 2>&1", viewer, filename);
     return crate::run_cmd_viewer(cmd)
@@ -89,6 +91,18 @@ pub(crate) unsafe fn share_usize(val: usize, func_id: i64) -> (usize, bool){
      }
     if owner_id == i64::MIN{owner_id = func_id; actual_val = val; return (val, true);}
     (usize::MAX, false)
+}
+pub(crate) unsafe fn share_cmd(val: String, func_id: i64) -> (String, bool){
+    static mut owner_id: i64 = i64::MIN;
+    static mut actual_val: OnceCell<String> = OnceCell::new();
+    static mut fst_run: bool = true;
+    if fst_run{actual_val.set("".to_string());}
+    if owner_id == func_id && val == "get"{
+        owner_id = i64::MIN;
+        return (actual_val.get().unwrap().to_string(), true)
+     }
+    if owner_id == i64::MIN{owner_id = func_id; actual_val.get_mut().unwrap().clear(); actual_val.get_mut().unwrap().push_str(val.as_str()); return (val, true);}
+    ("".to_string(), false)
 }
 pub(crate) unsafe fn local_indx(set_new_state: bool) -> bool{
     static mut actual_state: bool = false;
