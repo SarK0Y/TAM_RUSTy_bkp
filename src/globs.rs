@@ -147,10 +147,10 @@ result
 pub fn add_2_front_list(val: &str, func_id: i64) -> String{
     let mut list_id: (i64, bool) = (1i64, false);
     for i in 0..1000_000{
-        list_id = unsafe {front_list_indx(i64::MAX, func_id)};
+        list_id = unsafe {front_list_indx(i64::MAX)};
         if list_id.1{break;}
     }
-    if !list_id.1{set_ask_user("Can't access to Front list", func_id);}
+    if !list_id.1{set_ask_user("Can't access to Front list", func_id); return "!!no¡".to_string()}
     return unsafe{lists(val, list_id.0, 0, ADD)}
 }
 pub fn add_2_main0_list(val: &str) -> String{

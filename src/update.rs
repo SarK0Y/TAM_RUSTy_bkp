@@ -31,7 +31,7 @@ pub(crate) fn main_update(){
 }
 pub(crate) fn prime(){
     crate::initSession();
-    unsafe{front_list_indx(MAIN0_, -1)};
+    unsafe{front_list_indx(MAIN0_)};
     unsafe{set_main0_as_front()};
     main_update();
 println!("len of main0 list {}", globs17::len_of_main0_list());
