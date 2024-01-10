@@ -92,6 +92,17 @@ pub(crate) unsafe fn share_usize(val: usize, func_id: i64) -> (usize, bool){
     if owner_id == i64::MIN{owner_id = func_id; actual_val = val; return (val, true);}
     (usize::MAX, false)
 }
+pub(crate) unsafe fn front_list_indx(val: i64, func_id: i64, dontLock: bool) -> (i64, bool){
+    static mut owner_id: i64 = i64::MIN;
+    static mut actual_indx: i64 = 0;
+    static mut lock: bool = true; 
+    if owner_id == func_id && val == i64::MAX{
+        owner_id = i64::MIN;
+        return (actual_indx, true)
+     }
+    if owner_id == i64::MIN{owner_id = func_id; actual_indx = val; return (val, true);}
+    (i64::MAX, false)
+}
 pub(crate) unsafe fn share_cmd(val: String, func_id: i64) -> (String, bool){
     static mut owner_id: i64 = i64::MIN;
     static mut actual_val: OnceCell<String> = OnceCell::new();

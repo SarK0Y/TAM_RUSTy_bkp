@@ -1,7 +1,7 @@
 use chrono::format;
 use num_traits::ToPrimitive;
 
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt}, swtch::local_indx, core18::calc_num_files_up2_cur_pg};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx}, core18::calc_num_files_up2_cur_pg, func_id18};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -144,8 +144,14 @@ while i < str1_len && i < str2_len {
 }
 result
 }
-pub fn add_2_front_list(val: &str) -> String{
-    return unsafe{lists(val, FRONT_, 0, ADD)}
+pub fn add_2_front_list(val: &str, func_id: i64) -> String{
+    let mut list_id: (i64, bool) = (1i64, false);
+    for i in 0..1000_000{
+        list_id = unsafe {front_list_indx(i64::MAX, func_id)};
+        if list_id.1{break;}
+    }
+    if !list_id.1{set_ask_user("Can't access to Front list", func_id);}
+    return unsafe{lists(val, list_id.0, 0, ADD)}
 }
 pub fn add_2_main0_list(val: &str) -> String{
     return unsafe{lists(val, MAIN0_, 0, ADD)}

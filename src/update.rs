@@ -1,4 +1,4 @@
-use crate::exts::update_uses;
+use crate::{exts::update_uses, globs18::{set_main0_as_front, MAIN0_}, swtch::front_list_indx};
 use self::func_id17::find_files;
 update_uses!();
 pub(crate) fn main_update(){
@@ -31,6 +31,8 @@ pub(crate) fn main_update(){
 }
 pub(crate) fn prime(){
     crate::initSession();
+    unsafe{front_list_indx(MAIN0_, -1)};
+    unsafe{set_main0_as_front()};
     main_update();
 println!("len of main0 list {}", globs17::len_of_main0_list());
     let builder = thread::Builder::new().stack_size(8 * 1024 * 1024).name("manage_page".to_string());

@@ -137,7 +137,7 @@ fn read_midway_data() -> bool{
         if indx <= added_indx && added_indx > 0{continue;}
         added_indx = indx;
         let line = line.unwrap();
-        let ret = globs18::add_2_front_list(&line); // todo => add_2_front_list
+        let ret = globs18::add_2_front_list(&line, -1); // todo => add_2_front_list
         ps18::set_num_files(func_id); 
         if dirty!(){println!("line {}", line)}
         if line == stopCode{ps18::fix_num_files(func_id); return true}
