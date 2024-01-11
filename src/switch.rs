@@ -9,6 +9,7 @@ use std::{
         Read,
         Write,
         BufWriter,
+        BufReader,
         prelude::*
     },
     i64,
@@ -171,4 +172,12 @@ pub(crate) fn user_writing_path(key: String) -> bool{
     let key = format!("{}", key);
     writer.write(key.as_bytes()).expect("user_wrote_path failed write in");
     true
+}
+pub(crate) fn read_user_written_path() -> String{
+    let save_path = user_wrote_path();
+    let mut file_2_read_path = File::open(save_path).expect("read_user_written_path failed ");
+    let mut reader = BufReader::new(file_2_read_path);
+    let mut ret = String::new();
+    reader.read_to_string(&mut ret).expect("read_user_written_path failed write in");
+    ret
 }
