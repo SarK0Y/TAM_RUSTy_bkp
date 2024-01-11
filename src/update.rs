@@ -47,8 +47,15 @@ println!("stop manage_page");
     println!("len of main0 list {}", globs17::len_of_main0_list());
 }
 pub(crate) fn update_dir_list(dir: &str, opts: &str, no_grep: bool){
-    let head = Path::new(dir).file_stem().unwrap().to_str().unwrap();
-    let tail = Path::new(dir).parent().unwrap().to_str().unwrap();
+    let os_str = OsStr::new("");
+    let head = match Path::new(dir).file_stem(){
+        Some(p) => p,
+        _ => os_str
+    }.to_str().unwrap();
+    let tail = match Path::new(dir).parent(){
+        Some(p) => p,
+        _ => Path::new("")
+    }.to_str().unwrap();
     let mut cmd = format!("find -L {} {}|grep -Ei '{}", tail, opts, head);
     if no_grep{cmd = format!("find -L {}/{}", tail, head);}
     crate::custom_cmd_4_find_files(cmd);
@@ -58,5 +65,5 @@ pub(crate) fn update_dir_list(dir: &str, opts: &str, no_grep: bool){
 }
 pub(crate) fn lets_write_path(key: String){
     unsafe {swtch_fn(SWTCH_USER_WRITING_PATH, key)};
-    
+
 }

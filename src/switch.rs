@@ -168,7 +168,7 @@ pub(crate) fn user_wrote_path() -> String{
 }
 pub(crate) fn user_writing_path(key: String) -> bool{
     let save_path = user_wrote_path();
-    let mut file_2_write_path = File::options().append(true).open(save_path).expect("user_wrote_path failed ");
+    let mut file_2_write_path = File::options().create(true).append(true).open(save_path).expect("user_wrote_path failed ");
     let mut writer = BufWriter::new(file_2_write_path);
     let key = format!("{}", key);
     writer.write(key.as_bytes()).expect("user_wrote_path failed write in");
