@@ -1,4 +1,4 @@
-use crate::{exts::update_uses, globs18::{set_main0_as_front, MAIN0_}, swtch::front_list_indx, read_midway_data};
+use crate::{exts::update_uses, globs18::{set_main0_as_front, MAIN0_}, swtch::{front_list_indx, swtch_fn, SWTCH_USER_WRITING_PATH}, read_midway_data};
 use self::{func_id17::find_files, globs17::set_ls_as_front};
 update_uses!();
 pub(crate) fn main_update(){
@@ -55,4 +55,8 @@ pub(crate) fn update_dir_list(dir: &str, opts: &str, no_grep: bool){
     unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
     read_midway_data();
 
+}
+pub(crate) fn lets_write_path(key: String){
+    unsafe {swtch_fn(SWTCH_USER_WRITING_PATH, key)};
+    
 }
