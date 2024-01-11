@@ -38,12 +38,14 @@ pub struct shift_cur_struct{
   pub shift: usize,
   pub str__: String
 }
+//#[derive(Clone, Copy)]
 pub struct child2run{
    pub running: i64,
    pub viewer: i64,
    pub mode2run: i64, // 0 == internal, 1 == extrn
    pub full_path: String
 }
+//#[derive(Clone, Copy)]
 pub struct _page_struct{
    pub stop_code: String,
    pub prnt: String,
@@ -62,6 +64,27 @@ pub struct _page_struct{
    pub ask_User: String,
    pub c2r: child2run
 }
+pub(crate) fn cpy_page_struct(ps: &mut _page_struct) -> _page_struct{
+   let func_id = crate::func_id18::init_page_struct_;
+   let stop_code = unsafe {page_struct("", STOP_CODE_, func_id.to_i64().unwrap()).str_};;
+   let konsole_title = unsafe {page_struct("", KONSOLE_TITLE_, func_id.to_i64().unwrap()).str_};
+   let left_shift_4_cur =0i64; let cur_cur_pos = 0i64; let num_page = ps.num_page; let num_cols = ps.num_cols;
+   let col_width = get_col_width(func_id); let num_rows = ps.num_rows;
+    let num_spaces = 0i64; let num_files = 0i64;
+   let count_pages = 0i64;
+   let news_bar = unsafe {page_struct("", NEWS_BAR_, func_id.to_i64().unwrap()).str_};
+   let ask_user = unsafe {page_struct("", ASK_USER_, func_id.to_i64().unwrap()).str_};
+   let prnt = unsafe {page_struct("", PRNT_, func_id.to_i64().unwrap()).str_};
+   let prompt = unsafe {page_struct("", PROMPT_, func_id.to_i64().unwrap()).str_};
+   let full_path = unsafe {page_struct("", FULL_PATH_, func_id.to_i64().unwrap()).str_};
+   let running = 0i64; let viewer = 0i64; let mode2run = 1i64;
+   let c2r = child2run{running: running, viewer: viewer, mode2run: mode2run, full_path: full_path};
+   let ps_new = _page_struct{stop_code: stop_code, prnt: prnt, prompt: prompt, konsole_title: konsole_title, left_shift_4_cur: left_shift_4_cur,
+       cur_cur_pos: cur_cur_pos, num_page: num_page, num_cols: num_cols, col_width: col_width, num_rows: num_rows, num_spaces: num_spaces,
+   num_files: num_files, count_pages: count_pages, news_bar: news_bar, ask_User: ask_user, c2r: c2r};
+   ps_new
+}
+
 pub(crate) fn init_page_struct() -> _page_struct{
    let func_id = crate::func_id18::init_page_struct_;
    let stop_code = unsafe {page_struct("", STOP_CODE_, func_id.to_i64().unwrap()).str_};

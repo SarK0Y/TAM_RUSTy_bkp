@@ -85,7 +85,6 @@ use num_traits::cast::ToPrimitive;
 use std::io::{BufRead, BufReader};
 use std::os::fd::AsFd;
 use ansi_term::ANSIString;
-use if_chain::if_chain;
 //#[path = "func_id.rs"]
 //mod func_id0;
 //#[path = "globs.rs"]
@@ -183,6 +182,7 @@ use std::path::Path;
 use num_traits::cast::ToPrimitive;
 use std::io::{BufRead, BufReader};
 use std::thread::spawn;
+use std::{i64, usize};
 #[path = "func_id.rs"]
 mod func_id17;
 #[path = "globs.rs"]
@@ -196,6 +196,11 @@ use crate::get_arg_in_cmd;
 macro_rules! core_use {
     () => {
 use std::env;
+use std::fs::OpenOptions;
+use std::io;
+use std::{i64, usize};
+use std::io::{Read, Write, Seek, SeekFrom};
+use gag::Redirect;
 use colored::Colorize;
 use substring::Substring;
 use std::str::{self, from_utf8};
@@ -204,7 +209,7 @@ use termios::{Termios, TCSANOW, ECHO, ICANON, tcsetattr};
 use std::io::{BufRead, BufReader};
 use std::os::unix::io::{AsRawFd, RawFd};
 use chrono::{DateTime, Local};
-use std::io::{self, Write};
+//use std::io::{self, Write};
 use std::any::{self, type_name};
 use std::fmt;
 use std::fs;
@@ -221,7 +226,6 @@ use std::process::{Command, Stdio};
 use std::path::Path;
 use num_traits::cast::ToPrimitive;
 use std::os::fd::FromRawFd;
-use std::io::Read;
 use std::thread::spawn;
 #[path = "page_struct_.rs"]
 mod ps21;

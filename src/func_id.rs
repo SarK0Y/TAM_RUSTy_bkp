@@ -15,6 +15,7 @@ pub const INS_: i64 = 14;
 pub const viewer_: i64 = 15;
 pub const run_cmd_viewer_: i64 = 16;
 pub const where_is_last_pg_: i64 = 17;
+pub const calc_num_files_up2_cur_pg_: i64 = 18;
 pub fn get_func_name(func_id: i64) -> &'static str {
     //let max = i64::MAX;
     let ret = match func_id {
@@ -35,6 +36,7 @@ pub fn get_func_name(func_id: i64) -> &'static str {
         viewer_ => "viewer",
         run_cmd_viewer_ => "run_cmd_viewer",
         where_is_last_pg_ => "where_is_last_pg",
+        calc_num_files_up2_cur_pg_ => "calc_num_files_up2_cur_pg",
         _ => "unknown func",
     };
     return ret;

@@ -1,5 +1,5 @@
-use crate::exts::update_uses;
-use self::func_id17::find_files;
+use crate::{exts::update_uses, globs18::{set_main0_as_front, MAIN0_}, swtch::front_list_indx};
+use self::{func_id17::find_files, globs17::set_ls_as_front};
 update_uses!();
 pub(crate) fn main_update(){
     let func_id = crate::func_id18::main_update;
@@ -31,15 +31,27 @@ pub(crate) fn main_update(){
 }
 pub(crate) fn prime(){
     crate::initSession();
+    unsafe{front_list_indx(MAIN0_)};
+    unsafe{set_main0_as_front()};
     main_update();
 println!("len of main0 list {}", globs17::len_of_main0_list());
     let builder = thread::Builder::new().stack_size(8 * 1024 * 1024).name("manage_page".to_string());
 let handler = builder.spawn(|| {
 let mut ps__: crate::_page_struct = crate::init_page_struct();
 ps__.num_cols = i64::MAX; ps__.num_page = i64::MAX; ps__.num_rows = i64::MAX;
-crate::manage_pages(ps__);
+unsafe {crate::swtch::swtch_ps(0, Some(ps__));}
+crate::manage_pages();
 println!("stop manage_page");
 }).unwrap();
     handler.join().unwrap();
     println!("len of main0 list {}", globs17::len_of_main0_list());
+}
+pub(crate) fn update_dir_list(dir: &str, opts: &str, no_grep: bool){
+    let head = Path::new(dir).file_stem().unwrap().to_str().unwrap();
+    let tail = Path::new(dir).parent().unwrap().to_str().unwrap();
+    let mut cmd = format!("find -L {} {}|grep -Ei '{}", tail, opts, head);
+    if no_grep{cmd = format!("find -L {}/{}", tail, head);}
+    crate::custom_cmd_4_find_files(cmd);
+    unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
+
 }
