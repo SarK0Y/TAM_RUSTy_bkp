@@ -1,4 +1,4 @@
-use crate::{exts::update_uses, globs18::{set_main0_as_front, MAIN0_}, swtch::front_list_indx};
+use crate::{exts::update_uses, globs18::{set_main0_as_front, MAIN0_}, swtch::front_list_indx, read_midway_data};
 use self::{func_id17::find_files, globs17::set_ls_as_front};
 update_uses!();
 pub(crate) fn main_update(){
@@ -53,5 +53,6 @@ pub(crate) fn update_dir_list(dir: &str, opts: &str, no_grep: bool){
     if no_grep{cmd = format!("find -L {}/{}", tail, head);}
     crate::custom_cmd_4_find_files(cmd);
     unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
+    read_midway_data();
 
 }

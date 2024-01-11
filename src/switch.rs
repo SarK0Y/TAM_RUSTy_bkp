@@ -6,12 +6,16 @@ use std::{
     path::Path,
     io::{
         ErrorKind,
-        Read
+        Read,
+        Write,
+        BufWriter,
+        prelude::*
     },
     i64,
     usize
 };
-
+pub const SWTCH_RUN_VIEWER: i64 = 0;
+pub const SWTCH_USER_WRITING_PATH: i64 = 1;
 use crate::{core18::errMsg, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::get_item_from_front_list, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}};
 pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
     static mut fst_run: bool = true;
@@ -20,7 +24,8 @@ pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
     if fst_run{
         let fn_vec: Vec<fn(String) -> bool> = Vec::new();
         fn_.set(fn_vec); fst_run = false;
-        fn_.get_mut().unwrap().push(run_viewer);
+        fn_.get_mut().unwrap().push(run_viewer); // 0
+        fn_.get_mut().unwrap().push(user_writing_path); // 1
     }
     if indx > -1{fn_indx = indx.to_usize().unwrap(); return;}
     fn_.get().unwrap()[fn_indx](cmd);
@@ -154,4 +159,16 @@ pub fn print_pg_info(){
     let last_pg = crate::where_is_last_pg();
     let info = format!("Number of files/pages {}/{} p. {}", num_files, last_pg, num_page);
     println!("{}", info);
+}
+pub(crate) fn user_wrote_path() -> String{
+    return Path::new(&unsafe {format!("{}user_wrote_path", unsafe{crate::ps18::page_struct("", crate::ps18::MAINPATH_, -1).str_})}).to_str().unwrap().to_string()
+
+}
+pub(crate) fn user_writing_path(key: String) -> bool{
+    let save_path = user_wrote_path();
+    let mut file_2_write_path = File::options().append(true).open(save_path).expect("user_wrote_path failed ");
+    let mut writer = BufWriter::new(file_2_write_path);
+    let key = format!("{}", key);
+    writer.write(key.as_bytes()).expect("user_wrote_path failed write in");
+    true
 }
