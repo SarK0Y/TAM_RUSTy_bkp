@@ -84,7 +84,13 @@ fn build_page(ps: &mut crate::_page_struct){
 
 fn clear_screen(){
     if checkArg("-dbg") || checkArg("-dirty"){return;}
-    crate::run_cmd_str("clear");
+    let run_command = Command::new("clear")
+    .output()
+    .expect("can't clear screen");
+if run_command.status.success(){
+    io::stdout().write_all(&run_command.stdout).unwrap();
+    io::stderr().write_all(&run_command.stderr).unwrap();
+}
 }
 pub(crate) 
 fn hotKeys() -> String{

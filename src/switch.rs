@@ -163,12 +163,17 @@ pub fn print_pg_info(){
     println!("{}", info);
 }
 pub(crate) fn user_wrote_path() -> String{
-    return Path::new(&unsafe {format!("{}user_wrote_path", unsafe{crate::ps18::page_struct("", crate::ps18::MAINPATH_, -1).str_})}).to_str().unwrap().to_string()
+    return Path::new(&unsafe {format!("{}/user_wrote_path", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_})}).to_str().unwrap().to_string()
 
 }
 pub(crate) fn user_writing_path(key: String) -> bool{
     let save_path = user_wrote_path();
-    let mut file_2_write_path = File::options().create(true).append(true).open(save_path).expect("user_wrote_path failed ");
+    set_ask_user(&save_path, -1);
+    let mut file_2_write_path = match File::options().create_new(true).append(true).open(save_path){
+        Ok(p) => p,
+        _ => return false
+    }; //.expect("user_wrote_path failed ");
+    
     let mut writer = BufWriter::new(file_2_write_path);
     let key = format!("{}", key);
     writer.write(key.as_bytes()).expect("user_wrote_path failed write in");
