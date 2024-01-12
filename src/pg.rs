@@ -150,7 +150,7 @@ fn hotKeys() -> String{
     if kcode::TAB == ansiKey{println!("tab pressed");}  
    crate::INS(&Key);
        // enter();
-return "ok".to_string();
+return Key.to_string();
 }
 pub fn manage_pages(){
 let mut Key: String = "".to_string(); 

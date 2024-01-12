@@ -168,10 +168,11 @@ pub(crate) fn user_wrote_path() -> String{
 }
 pub(crate) fn user_writing_path(key: String) -> bool{
     let save_path = user_wrote_path();
+    let save_path1 = user_wrote_path();
     set_ask_user(&save_path, -1);
     let mut file_2_write_path = match File::options().create_new(true).append(true).open(save_path){
         Ok(p) => p,
-        _ => return false
+        _ => File::options().append(true).open(save_path1).unwrap()
     }; //.expect("user_wrote_path failed ");
     
     let mut writer = BufWriter::new(file_2_write_path);
