@@ -119,8 +119,7 @@ fn hotKeys() -> String{
     //io::stdout().lock().flush().unwrap();
     achtung("left arrow");
     return "cl".to_string();}
-    if "/" == Key.as_str() {
-    lets_write_path(Key);
+    if "/" == Key.as_str() {let mut Key_cpy =String::from(&Key); let mut Key_ = String::from(&Key); lets_write_path(Key_cpy); crate::INS(&Key_);
     return "/".to_string();}
     if crate::globs18::eq_ansi_str(&kcode::Alt_0, Key.as_str()) == 0 {
     unsafe {
