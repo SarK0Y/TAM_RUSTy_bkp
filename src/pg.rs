@@ -112,13 +112,13 @@ fn hotKeys() -> String{
     if crate::globs18::eq_ansi_str(&kcode::RIGHT_ARROW, Key.as_str()) == 0 {
         achtung(Key.as_str());
         unsafe {shift_cursor_of_prnt(1, func_id).shift};
-        return "cr".to_string();
+        return "dontPass".to_string();
     }
     if crate::globs18::eq_ansi_str(&kcode::LEFT_ARROW, Key.as_str()) == 0 {
     unsafe {shift_cursor_of_prnt(-1, func_id).shift};
     //io::stdout().lock().flush().unwrap();
     achtung("left arrow");
-    return "cl".to_string();}
+    return "dontPass".to_string();}
     if "/" == Key.as_str() {let mut Key_cpy =String::from(&Key); let mut Key_ = String::from(&Key); lets_write_path(Key_cpy); crate::INS(&Key_);
     return "/".to_string();}
     if crate::globs18::eq_ansi_str(&kcode::Alt_0, Key.as_str()) == 0 {
@@ -126,18 +126,18 @@ fn hotKeys() -> String{
         local_indx(true);};
         let msg = format!("alt_0 num page {}", crate::get_num_page(-1));
         popup_msg(&msg);
-    return "alt_0".to_string();}
+    return "dontPass".to_string();}
     if crate::globs18::eq_ansi_str(&kcode::F12, Key.as_str()) == 0{
         unsafe {shift_cursor_of_prnt(0, func_id)};
         crate::run_cmd_str("notify-send F12"); 
-        set_prnt("", func_id); return "f12".to_string();} 
+        set_prnt("", func_id); return "dontPass".to_string();} 
     if crate::globs18::eq_ansi_str(&kcode::DELETE, Key.as_str()) == 0{
         let shift = unsafe {shift_cursor_of_prnt(1, func_id).shift};
         let mut indx = get_prnt(func_id).chars().count();
         if shift <= indx {indx -= shift;}
         let prnt = rm_char_from_string(indx, &get_prnt(func_id));
         set_prnt(prnt.as_str(), func_id);
-        return "del".to_string();} 
+        return "dontPass".to_string();} 
     let ansiKey: u8 = match Key.as_str().bytes().next(){
         Some(val) => val,
         _ => 0
@@ -205,7 +205,7 @@ pub(crate) unsafe fn exec_cmd_cnt(count_: bool) -> u64{
 fn exec_cmd(cmd: String){
     let func_id = crate::func_id18::exec_cmd;
     //println!("cmd {} func {}, prnt {}", cmd, crate::func_id18::get_func_name(func_id), crate::get_prnt(func_id));
-    
+    if cmd == "dontPass" {return;}
     if cmd == "np"{
         unsafe{exec_cmd_cnt(true)};
         let num_page = crate::get_num_page(func_id) + 1;

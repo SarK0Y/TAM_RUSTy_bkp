@@ -54,9 +54,9 @@ pub(crate) fn update_dir_list(dir: &str, opts: &str, no_grep: bool){
     }.to_str().unwrap();
     let tail = match Path::new(dir).parent(){
         Some(p) => p,
-        _ => Path::new("")
+        _ => Path::new("/")
     }.to_str().unwrap();
-    let mut cmd = format!("find -L {} {}|grep -Ei '{}", tail, opts, head);
+    let mut cmd = format!("find -L {} {}|grep -Ei '{}'", tail, opts, head);
     if no_grep{cmd = format!("find -L {}/{}", tail, head);}
     crate::custom_cmd_4_find_files(cmd);
     unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}

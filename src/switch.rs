@@ -12,6 +12,7 @@ use std::{
         BufReader,
         prelude::*
     },
+    os::fd::AsRawFd,
     i64,
     usize
 };
@@ -174,10 +175,10 @@ pub(crate) fn user_writing_path(key: String) -> bool{
         Ok(p) => p,
         _ => File::options().append(true).open(save_path1).unwrap()
     }; //.expect("user_wrote_path failed ");
-    
-    let mut writer = BufWriter::new(file_2_write_path);
+    //let mut writer = BufWriter::new(file_2_write_path);
     let key = format!("{}", key);
-    writer.write(key.as_bytes()).expect("user_wrote_path failed write in");
+    file_2_write_path.write_all(key.as_bytes()).expect("user_wrote_path failed write in");
+    crate::globs18::unblock_fd(file_2_write_path.as_raw_fd());
     let written_path = read_user_written_path();
     update_dir_list(&written_path, "-maxdepth 1", false);
     true
