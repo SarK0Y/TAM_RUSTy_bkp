@@ -4,7 +4,7 @@ mod exts;
 use exts::*;
 use gag::RedirectError;
 
-use self::ps21::set_ask_user;
+use self::ps21::{set_ask_user, get_prnt};
 core_use!();
 pub(crate) fn initSession() -> bool{
     let func_id = 1;
@@ -200,6 +200,39 @@ loop {
         i += 1;}}
 }
 Key
+}
+pub(crate) fn get_path_from_strn(strn: String) -> String{
+    let len: usize = strn.chars().count();
+    let mut ret = String::new();
+    let mut yes_path = false;
+    for i in 0..len{
+        let char0 =strn.chars().nth(i).unwrap();
+        if char0 == '/'{yes_path = true;}
+        if yes_path{ret.push(char0);}
+    }
+    ret
+}
+pub(crate) fn get_path_from_prnt() -> String{
+    let got_path = get_prnt(-1);
+    let len: usize = got_path.chars().count();
+    let mut ret = String::new();
+    let mut yes_path = false;
+    for i in 0..len{
+        let char0 = got_path.chars().nth(i).unwrap();
+        if char0 == '/'{yes_path = true;}
+        if yes_path{ret.push(char0);}
+    }
+    ret
+}
+pub(crate) fn usize_2_i64(v: usize) -> i64{
+    let mut ret = 0i64;
+    let unit = 1usize;
+    let shl = 1i64;
+    let usize_len: usize = size_of::<usize>() * 8;
+    for i in 0..usize_len{
+        if v & unit == 1{ret += (shl << i);}       
+    }
+    ret
 }
 pub(crate) fn getch() -> char{
 let mut ch: char ='\0';

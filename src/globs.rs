@@ -206,7 +206,7 @@ if list == MAIN0_ {
     }
     if op_code == LEN{return MAIN0.get().unwrap().len().to_string()}
     if op_code == SET_FRONT_LIST {
-       if Some(FRONT.get()) != None{FRONT.take();}
+       FRONT.take(); FRONT.take();
        FRONT.set(&MAIN0.get().unwrap());
     }
 }
@@ -217,11 +217,15 @@ if list == LS_ {
     }
     if op_code == ADD{
         LS.get_mut().unwrap().push(val.to_string());
+        let mut len = LS.get_mut().unwrap().len() - 1;
+        if len > 2{len -= 2;}
+        set_ask_user(& LS.get().unwrap()[len], -1);
        return "ok".to_string()
     }
     if op_code == LEN{return LS.get().unwrap().len().to_string()}
     if op_code == SET_FRONT_LIST {
-       if Some(FRONT.get()) != None{FRONT.take();}
+       FRONT.take(); FRONT.take();
+       LS.get_mut().unwrap().clear();
        FRONT.set(&LS.get().unwrap());
     }
 }

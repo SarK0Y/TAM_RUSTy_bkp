@@ -8,6 +8,7 @@
 #[allow(arithmetic_overflow)]
 mod exts;
 use exts::*;
+use globs18::get_item_from_front_list;
 use_all!();
 
 pub(crate) fn split_once(in_string: &str, delim: &str) -> (String, String) {
@@ -137,6 +138,7 @@ fn read_midway_data() -> bool{
         added_indx = indx;
         let line = line.unwrap();
         let ret = globs18::add_2_front_list(&line, -1); // todo => add_2_front_list
+        let line_dbg = get_item_from_front_list(usize_2_i64(indx), false);
         ps18::set_num_files(func_id); 
         if dirty!(){println!("line {}", line)}
         if line == stopCode{ps18::fix_num_files(func_id); return true}

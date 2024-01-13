@@ -198,6 +198,7 @@ use crate::get_arg_in_cmd;
 macro_rules! core_use {
     () => {
 use std::env;
+use std::mem::size_of;
 use std::fs::OpenOptions;
 use std::io;
 use std::{i64, usize};
