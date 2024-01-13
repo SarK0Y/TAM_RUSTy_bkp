@@ -18,7 +18,7 @@ use std::{
 };
 pub const SWTCH_RUN_VIEWER: i64 = 0;
 pub const SWTCH_USER_WRITING_PATH: i64 = 1;
-use crate::{core18::{errMsg, get_path_from_prnt}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::get_item_from_front_list, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list};
+use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::get_item_from_front_list, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list};
 pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
     static mut fst_run: bool = true;
     static mut fn_indx: usize = 0;
@@ -27,7 +27,7 @@ pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
         let fn_vec: Vec<fn(String) -> bool> = Vec::new();
         fn_.set(fn_vec); fst_run = false;
         fn_.get_mut().unwrap().push(run_viewer); // 0
-        fn_.get_mut().unwrap().push(user_writing_path); // 1
+        fn_.get_mut().unwrap().push(user_writing_path0); // 1
     }
     if indx > -1 && cmd.is_empty(){fn_indx = indx.to_usize().unwrap(); return;}
     if indx > -1 && !cmd.is_empty(){fn_indx = indx.to_usize().unwrap();}
@@ -172,9 +172,9 @@ pub(crate) fn set_user_written_path_from_strn(strn: String) -> bool{
     let save_path1 = user_wrote_path();
     let strn = crate::get_path_from_strn(strn);
     set_ask_user(&save_path, -1); //dbg here
-    let mut file_2_write_path = match File::options().create_new(true).open(save_path){
+    let mut file_2_write_path = match File::options().create(true).open(save_path){
         Ok(p) => p,
-        _ => File::options().append(true).open(save_path1).unwrap()
+        _ => update_user_written_path()
     }; //.expect("user_wrote_path failed ");
     //let mut writer = BufWriter::new(file_2_write_path)
     file_2_write_path.write_all(strn.as_bytes()).expect("user_wrote_path failed write in");
@@ -190,12 +190,18 @@ pub(crate) fn set_user_written_path_from_prnt() -> bool{
     set_ask_user(&save_path, -1); //dbg here
     let mut file_2_write_path = match File::options().create_new(true).open(save_path){
         Ok(p) => p,
-        _ => File::options().append(true).open(save_path1).unwrap()
+        _ => update_user_written_path()
     }; //.expect("user_wrote_path failed ");
     //let mut writer = BufWriter::new(file_2_write_path);
     let key = format!("{}", path_from_prnt);
     file_2_write_path.write_all(path_from_prnt.as_bytes()).expect("user_wrote_path failed write in");
     crate::globs18::unblock_fd(file_2_write_path.as_raw_fd());
+    let written_path = read_user_written_path();
+    update_dir_list(&written_path, "-maxdepth 1", false);
+    true
+}
+pub(crate) fn user_writing_path0(key: String) -> bool{
+    set_user_written_path_from_prnt();
     let written_path = read_user_written_path();
     update_dir_list(&written_path, "-maxdepth 1", false);
     true

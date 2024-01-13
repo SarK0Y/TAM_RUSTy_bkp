@@ -129,7 +129,6 @@ fn hotKeys() -> String{
     return "dontPass".to_string();}
     if crate::globs18::eq_ansi_str(&kcode::F12, Key.as_str()) == 0{
         unsafe {shift_cursor_of_prnt(0, func_id)};
-        crate::run_cmd_str("notify-send F12"); 
         set_prnt("", func_id); return "dontPass".to_string();} 
     if crate::globs18::eq_ansi_str(&kcode::DELETE, Key.as_str()) == 0{
         let shift = unsafe {shift_cursor_of_prnt(1, func_id).shift};

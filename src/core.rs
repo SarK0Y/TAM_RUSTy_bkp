@@ -4,6 +4,8 @@ mod exts;
 use exts::*;
 use gag::RedirectError;
 
+use crate::swtch::user_wrote_path;
+
 use self::ps21::{set_ask_user, get_prnt};
 core_use!();
 pub(crate) fn initSession() -> bool{
@@ -200,6 +202,19 @@ loop {
         i += 1;}}
 }
 Key
+}
+pub(crate) fn update_user_written_path() -> File{
+    let user_written_path = user_wrote_path();
+    let err_msg = format!("update_user_written_path() can't create {}", user_written_path);
+    rm_file(&user_written_path);
+    File::options().create_new(true).write(true).read(true).open(user_written_path).expect(&err_msg)
+}
+pub(crate) fn rm_file(file: &String) -> bool{
+    let err_msg = format!("rm_file can't remove {}", file);
+    let rm_cmd = Command::new("rm").arg("-f").arg(file)
+    .output()
+    .expect(&err_msg);
+    true
 }
 pub(crate) fn get_path_from_strn(strn: String) -> String{
     let len: usize = strn.chars().count();
