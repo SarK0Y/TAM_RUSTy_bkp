@@ -135,18 +135,7 @@ fn end_termios(termios: &Termios){
     };
     io::stdout().flush().unwrap();
 }
-pub(crate) fn redirect_stdout_to_buf() -> Redirect<File>{
-// Open a log
-let log = OpenOptions::new()
-    .read(true)
-    .create(true)
-    .write(true)
-    .open("/tmp/my_log.log")
-    .unwrap();
 
-let print_redirect = Redirect::stdout(log).unwrap();
-print_redirect
-}
 #[inline(always)]
 pub(crate) fn custom_cmd_4_find_files(custom_cmd: String) -> bool{
 let func_id: i64 = 2;

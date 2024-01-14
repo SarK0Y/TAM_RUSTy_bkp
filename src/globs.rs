@@ -160,7 +160,13 @@ pub fn len_of_main0_list() -> String{
     return unsafe{lists("", MAIN0_, 0, LEN)}
 }
 pub fn len_of_front_list() -> String{
-    return unsafe{lists("", FRONT_, 0, LEN)}
+      let mut list_id: (i64, bool) = (1i64, false);
+    for i in 0..1000_000{
+        list_id = unsafe {front_list_indx(i64::MAX)};
+        if list_id.1{break;}
+    }
+    if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    return unsafe{lists("", list_id.0, 0, LEN)}
 }
 pub(crate) fn get_proper_indx(indx: i64, fixed_indx: bool) -> (usize, i64){
     let mut fix_inputed_indx = indx;
@@ -179,10 +185,23 @@ pub(crate) fn get_proper_indx(indx: i64, fixed_indx: bool) -> (usize, i64){
 pub(crate) fn get_item_from_front_list(indx: i64, fixed_indx: bool) -> String{
     let proper_indx = get_proper_indx(indx, fixed_indx);
     if proper_indx.0 == usize::MAX{return "front list is empty".to_string()}
-    return unsafe{lists("", FRONT_, proper_indx.0, GET)}
+      let mut list_id: (i64, bool) = (1i64, false);
+    for i in 0..1000_000{
+        list_id = unsafe {front_list_indx(i64::MAX)};
+        if list_id.1{break;}
+    }
+    if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    return unsafe{lists("", list_id.0, proper_indx.0, GET)}
 }
 pub fn set_main0_as_front(){unsafe{lists("", MAIN0_, 0, SET_FRONT_LIST);}}
-pub fn set_ls_as_front(){unsafe{lists("", LS_, 0, SET_FRONT_LIST);}}
+pub fn set_ls_as_front() -> String{
+      let mut list_id: (i64, bool) = (1i64, false);
+    for i in 0..1000_000{
+        list_id = unsafe {front_list_indx(LS_)};
+        if list_id.1{break;}
+    }
+    if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    unsafe{lists("", LS_, 0, SET_FRONT_LIST); return "ok".to_string();}}
 pub unsafe fn lists(val: &str, list: i64, indx: usize, op_code: i64) -> String{
 static mut MAIN0: OnceCell<Vec<String>> = OnceCell::new();
 static mut FRONT: OnceCell<&Vec<String>> = OnceCell::new();

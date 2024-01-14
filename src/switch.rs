@@ -27,7 +27,7 @@ pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
         let fn_vec: Vec<fn(String) -> bool> = Vec::new();
         fn_.set(fn_vec); fst_run = false;
         fn_.get_mut().unwrap().push(run_viewer); // 0
-        fn_.get_mut().unwrap().push(user_writing_path0); // 1
+        fn_.get_mut().unwrap().push(user_writing_path); // 1
     }
     if indx > -1 && cmd.is_empty(){fn_indx = indx.to_usize().unwrap(); return;}
     if indx > -1 && !cmd.is_empty(){fn_indx = indx.to_usize().unwrap();}
@@ -183,7 +183,7 @@ pub(crate) fn set_user_written_path_from_strn(strn: String) -> bool{
     update_dir_list(&written_path, "-maxdepth 1", false);
     true
 }
-pub(crate) fn set_user_written_path_from_prnt() -> bool{
+pub(crate) fn set_user_written_path_from_prnt() -> String{
     let save_path = user_wrote_path();
     let save_path1 = user_wrote_path();
     let path_from_prnt = get_path_from_prnt();
@@ -198,14 +198,9 @@ pub(crate) fn set_user_written_path_from_prnt() -> bool{
     crate::globs18::unblock_fd(file_2_write_path.as_raw_fd());
     let written_path = read_user_written_path();
     update_dir_list(&written_path, "-maxdepth 1", false);
-    true
+    written_path
 }
-pub(crate) fn user_writing_path0(key: String) -> bool{
-    set_user_written_path_from_prnt();
-    let written_path = read_user_written_path();
-    update_dir_list(&written_path, "-maxdepth 1", false);
-    true
-}
+
 pub(crate) fn user_writing_path(key: String) -> bool{
     let save_path = user_wrote_path();
     let save_path1 = user_wrote_path();
