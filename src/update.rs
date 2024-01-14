@@ -47,15 +47,25 @@ println!("stop manage_page");
     println!("len of main0 list {}", globs17::len_of_main0_list());
 }
 pub(crate) fn update_dir_list(dir: &str, opts: &str, no_grep: bool){
+    let mut head = String::new();
+    let mut tail = String::new();
     let os_str = OsStr::new("");
-    let head = match Path::new(dir).file_stem(){
+    let mut dir_len = dir.chars().count();
+    if dir_len > 0 {dir_len -= 1;}
+    if dir.chars().nth(dir_len).expect("update_dir_list failed to get file name") != '/'{
+    head = match Path::new(dir).file_name(){
         Some(p) => p,
         _ => os_str
-    }.to_str().unwrap();
-    let tail = match Path::new(dir).parent(){
+    }.to_str().unwrap().to_string();
+    tail = match Path::new(dir).parent(){
         Some(p) => p,
         _ => Path::new("/")
-    }.to_str().unwrap();
+    }.to_str().unwrap().to_string();
+    
+} else {
+    head = "".to_string();
+    tail = dir.substring(0, dir_len).to_string();
+}
     let mut cmd = format!("find -L {} {}|grep -Ei '{}'", tail, opts, head);
     if no_grep{cmd = format!("find -L {}/{}", tail, head);}
     crate::custom_cmd_4_find_files(cmd);
