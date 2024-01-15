@@ -205,15 +205,16 @@ pub fn set_ls_as_front() -> String{
 pub unsafe fn lists(val: &str, list: i64, indx: usize, op_code: i64) -> String{
 static mut MAIN0: OnceCell<Vec<String>> = OnceCell::new();
 static mut FRONT: OnceCell<&Vec<String>> = OnceCell::new();
-static mut LS: OnceCell<Vec<String>> = OnceCell::new();
+static mut LS: Vec<String> = Vec::new();
+//static mut LS: RwLock<Vec<String>> = RwLock::new(Vec::<String::new()>new()); // OnceCell<Vec<String>> = OnceCell::new();
 if Some(MAIN0.get()) != None{
     let mut main0_vec: Vec<String> = Vec::new();
     MAIN0.set(main0_vec);
 }
-if Some(LS.get()) != None{
+/*if Some(LS.get()) != None{
     let mut ls_vec: Vec<String> = Vec::new();
     LS.set(ls_vec);
-}
+}*/
 if list == MAIN0_ {
     if op_code == GET{
         let ret = &MAIN0.get().unwrap()[indx];
@@ -231,21 +232,21 @@ if list == MAIN0_ {
 }
 if list == LS_ {
     if op_code == GET{
-        let ret = &LS.get().unwrap()[indx];
+        let ret = &LS[indx];
         return ret.to_string()
     }
     if op_code == ADD{
-        LS.get_mut().unwrap().push(val.to_string());
-        let mut len = LS.get_mut().unwrap().len() - 1;
+        LS.push(val.to_string());
+        let mut len = LS.len() - 1;
         if len > 2{len -= 2;}
-        set_ask_user(& LS.get().unwrap()[len], -1);
+        set_ask_user(& LS[len], -1);
        return "ok".to_string()
     }
-    if op_code == LEN{return LS.get().unwrap().len().to_string()}
+    if op_code == LEN{return LS.len().to_string()}
     if op_code == SET_FRONT_LIST {
        FRONT.take(); FRONT.take();
-       LS.get_mut().unwrap().clear();
-       FRONT.set(&LS.get().unwrap());
+       LS = Vec::new();
+       FRONT.set(&LS);
     }
 }
 if list == FRONT_ {

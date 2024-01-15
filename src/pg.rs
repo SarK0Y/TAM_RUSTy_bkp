@@ -120,7 +120,7 @@ fn hotKeys() -> String{
     achtung("left arrow");
     return "dontPass".to_string();}
     if "/" == Key.as_str() {let mut Key_cpy =String::from(&Key); let mut Key_ = String::from(&Key); lets_write_path(Key_cpy); crate::INS(&Key_);
-    return "dontPass".to_string();}
+    return "/".to_string();}
     if crate::globs18::eq_ansi_str(&kcode::Alt_0, Key.as_str()) == 0 {
     unsafe {
         local_indx(true);};

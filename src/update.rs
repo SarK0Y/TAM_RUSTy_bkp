@@ -51,8 +51,8 @@ pub(crate) fn update_dir_list(dir: &str, opts: &str, no_grep: bool){
     let mut tail = String::new();
     let os_str = OsStr::new("");
     let mut dir_len = dir.chars().count();
-    if dir_len > 0 {dir_len -= 1;}
-    if dir.chars().nth(dir_len).expect("update_dir_list failed to get file name") != '/'{
+    if dir_len ==0 {return;}
+    if dir.chars().nth(dir_len -1).expect("update_dir_list failed to get file name") != '/'{
     head = match Path::new(dir).file_name(){
         Some(p) => p,
         _ => os_str
@@ -74,6 +74,8 @@ pub(crate) fn update_dir_list(dir: &str, opts: &str, no_grep: bool){
 
 }
 pub(crate) fn lets_write_path(key: String){
-    unsafe {swtch_fn(SWTCH_USER_WRITING_PATH, key)};
+    let mode: i64 = crate::swtch::SWTCH_USER_WRITING_PATH;
+    if mode < 0{return;}
+    unsafe {swtch_fn(mode, key)};
 
 }

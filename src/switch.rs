@@ -29,8 +29,8 @@ pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
         fn_.get_mut().unwrap().push(run_viewer); // 0
         fn_.get_mut().unwrap().push(user_writing_path); // 1
     }
-    if indx > -1 && cmd.is_empty(){fn_indx = indx.to_usize().unwrap(); return;}
-    if indx > -1 && !cmd.is_empty(){fn_indx = indx.to_usize().unwrap();}
+    if indx > -1 {fn_indx = indx.to_usize().unwrap(); return;}
+  //  if indx > -1 && !cmd.is_empty(){fn_indx = indx.to_usize().unwrap();}
     fn_.get().unwrap()[fn_indx](cmd);
 }
 pub(crate) unsafe fn swtch_ps(indx: i64, ps: Option<crate::_page_struct>) -> crate::_page_struct{
@@ -214,7 +214,9 @@ pub(crate) fn user_writing_path(key: String) -> bool{
     let key = format!("{}", key);
     file_2_write_path.write_all(key.as_bytes()).expect("user_wrote_path failed write in");
     crate::globs18::unblock_fd(file_2_write_path.as_raw_fd());
-    let written_path = read_user_written_path();
+    let mut written_path = read_user_written_path();
+    let written_path_from_prnt = get_path_from_prnt();
+    if written_path_from_prnt != written_path && written_path_from_prnt != ""{written_path = written_path_from_prnt;}
     update_dir_list(&written_path, "-maxdepth 1", false);
     true
 }
