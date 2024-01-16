@@ -4,7 +4,9 @@ mod exts;
 use exts::*;
 use gag::RedirectError;
 
-use self::ps21::set_ask_user;
+use crate::swtch::user_wrote_path;
+
+use self::ps21::{set_ask_user, get_prnt};
 core_use!();
 pub(crate) fn initSession() -> bool{
     let func_id = 1;
@@ -133,17 +135,16 @@ fn end_termios(termios: &Termios){
     };
     io::stdout().flush().unwrap();
 }
-pub(crate) fn redirect_stdout_to_buf() -> Redirect<File>{
-// Open a log
-let log = OpenOptions::new()
-    .read(true)
-    .create(true)
-    .write(true)
-    .open("/tmp/my_log.log")
-    .unwrap();
 
-let print_redirect = Redirect::stdout(log).unwrap();
-print_redirect
+#[inline(always)]
+pub(crate) fn custom_cmd_4_find_files(custom_cmd: String) -> bool{
+let func_id: i64 = 2;
+let mut list_of_found_files: Vec<String> = vec![]; 
+let output = format!("{}/found_files", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_});
+let stopCode: String = unsafe {crate::ps18::page_struct("", crate::ps18::STOP_CODE_,-1).str_};
+let mut cmd: String =  format!("#!/bin/bash\n{} > {};echo '{stopCode}' >> {}", custom_cmd, output, output);
+crate::run_cmd0(cmd);
+return true;
 }
 pub(crate) fn getkey() -> String{
 let mut Key: String ="".to_string();
@@ -190,6 +191,62 @@ loop {
         i += 1;}}
 }
 Key
+}
+pub(crate) fn update_user_written_path() -> File{
+    let user_written_path = user_wrote_path();
+    let err_msg = format!("update_user_written_path() can't create {}", user_written_path);
+    rm_file(&user_written_path);
+    File::options().create_new(true).write(true).read(true).open(user_written_path).expect(&err_msg)
+}
+pub(crate) fn rm_file(file: &String) -> bool{
+    let err_msg = format!("rm_file can't remove {}", file);
+    let rm_cmd = Command::new("rm").arg("-f").arg(file)
+    .output()
+    .expect(&err_msg);
+    true
+}
+pub(crate) fn ln_of_found_files(get_indx: usize) -> String{
+     let stopCode = getStop_code__!();
+        let filename = format!("{}/found_files", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_});
+        let file = File::open(filename).unwrap();
+        let reader = BufReader::new(file);
+    for (indx, line) in reader.lines().enumerate() {
+        if indx == get_indx{return line.unwrap();}
+    }
+    return "no str gotten".to_string();
+}
+pub(crate) fn get_path_from_strn(strn: String) -> String{
+    let len: usize = strn.chars().count();
+    let mut ret = String::new();
+    let mut yes_path = false;
+    for i in 0..len{
+        let char0 =strn.chars().nth(i).unwrap();
+        if char0 == '/'{yes_path = true;}
+        if yes_path{ret.push(char0);}
+    }
+    ret
+}
+pub(crate) fn get_path_from_prnt() -> String{
+    let got_path = get_prnt(-1);
+    let len: usize = got_path.chars().count();
+    let mut ret = String::new();
+    let mut yes_path = false;
+    for i in 0..len{
+        let char0 = got_path.chars().nth(i).unwrap();
+        if char0 == '/'{yes_path = true;}
+        if yes_path{ret.push(char0);}
+    }
+    ret
+}
+pub(crate) fn usize_2_i64(v: usize) -> i64{
+    let mut ret = 0i64;
+    let unit = 1usize;
+    let shl = 1i64;
+    let usize_len: usize = size_of::<usize>() * 8;
+    for i in 0..usize_len{
+        if v & unit == 1{ret += (shl << i);}       
+    }
+    ret
 }
 pub(crate) fn getch() -> char{
 let mut ch: char ='\0';

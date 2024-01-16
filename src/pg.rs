@@ -1,6 +1,6 @@
 use cli_table::TableStruct;
 
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx}};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx}, update18::lets_write_path};
 self::pg_uses!();
 
 fn cpy_row(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -84,7 +84,13 @@ fn build_page(ps: &mut crate::_page_struct){
 
 fn clear_screen(){
     if checkArg("-dbg") || checkArg("-dirty"){return;}
-    crate::run_cmd_str("clear");
+    let run_command = Command::new("clear")
+    .output()
+    .expect("can't clear screen");
+if run_command.status.success(){
+    io::stdout().write_all(&run_command.stdout).unwrap();
+    io::stderr().write_all(&run_command.stderr).unwrap();
+}
 }
 pub(crate) 
 fn hotKeys() -> String{
@@ -106,30 +112,31 @@ fn hotKeys() -> String{
     if crate::globs18::eq_ansi_str(&kcode::RIGHT_ARROW, Key.as_str()) == 0 {
         achtung(Key.as_str());
         unsafe {shift_cursor_of_prnt(1, func_id).shift};
-        return "cr".to_string();
+        return "dontPass".to_string();
     }
     if crate::globs18::eq_ansi_str(&kcode::LEFT_ARROW, Key.as_str()) == 0 {
     unsafe {shift_cursor_of_prnt(-1, func_id).shift};
     //io::stdout().lock().flush().unwrap();
     achtung("left arrow");
-    return "cl".to_string();}
+    return "dontPass".to_string();}
+    if "/" == Key.as_str() {let mut Key_cpy =String::from(&Key); let mut Key_ = String::from(&Key); lets_write_path(Key_cpy); crate::INS(&Key_);
+    return "/".to_string();}
     if crate::globs18::eq_ansi_str(&kcode::Alt_0, Key.as_str()) == 0 {
     unsafe {
         local_indx(true);};
         let msg = format!("alt_0 num page {}", crate::get_num_page(-1));
         popup_msg(&msg);
-    return "alt_0".to_string();}
+    return "dontPass".to_string();}
     if crate::globs18::eq_ansi_str(&kcode::F12, Key.as_str()) == 0{
         unsafe {shift_cursor_of_prnt(0, func_id)};
-        crate::run_cmd_str("notify-send F12"); 
-        set_prnt("", func_id); return "f12".to_string();} 
+        set_prnt("", func_id); return "dontPass".to_string();} 
     if crate::globs18::eq_ansi_str(&kcode::DELETE, Key.as_str()) == 0{
         let shift = unsafe {shift_cursor_of_prnt(1, func_id).shift};
         let mut indx = get_prnt(func_id).chars().count();
         if shift <= indx {indx -= shift;}
         let prnt = rm_char_from_string(indx, &get_prnt(func_id));
         set_prnt(prnt.as_str(), func_id);
-        return "del".to_string();} 
+        return "dontPass".to_string();} 
     let ansiKey: u8 = match Key.as_str().bytes().next(){
         Some(val) => val,
         _ => 0
@@ -137,12 +144,12 @@ fn hotKeys() -> String{
     if ansiKey == 0{return crate::get_prnt(func_id);}
     if crate::dirty!(){println!("ansi {}, Key {:?}", ansiKey, Key);}
     if kcode::ENTER == ansiKey{return crate::get_prnt(func_id);} 
-    if kcode::BACKSPACE == ansiKey{crate::press_BKSP(); return "bksp".to_string();} 
+    if kcode::BACKSPACE == ansiKey{crate::press_BKSP(); return "dontPass".to_string();} 
     if kcode::ESCAPE == ansiKey{println!("esc pressed");}
     if kcode::TAB == ansiKey{println!("tab pressed");}  
    crate::INS(&Key);
        // enter();
-return "ok".to_string();
+return Key.to_string();
 }
 pub fn manage_pages(){
 let mut Key: String = "".to_string(); 
@@ -197,7 +204,7 @@ pub(crate) unsafe fn exec_cmd_cnt(count_: bool) -> u64{
 fn exec_cmd(cmd: String){
     let func_id = crate::func_id18::exec_cmd;
     //println!("cmd {} func {}, prnt {}", cmd, crate::func_id18::get_func_name(func_id), crate::get_prnt(func_id));
-    
+    if cmd == "dontPass" {return;}
     if cmd == "np"{
         unsafe{exec_cmd_cnt(true)};
         let num_page = crate::get_num_page(func_id) + 1;

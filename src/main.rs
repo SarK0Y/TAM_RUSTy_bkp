@@ -8,7 +8,7 @@
 #[allow(arithmetic_overflow)]
 mod exts;
 use exts::*;
-use swtch::share_cmd;
+use globs18::get_item_from_front_list;
 use_all!();
 
 pub(crate) fn split_once(in_string: &str, delim: &str) -> (String, String) {
@@ -138,6 +138,7 @@ fn read_midway_data() -> bool{
         added_indx = indx;
         let line = line.unwrap();
         let ret = globs18::add_2_front_list(&line, -1); // todo => add_2_front_list
+        let line_dbg = get_item_from_front_list(usize_2_i64(indx), false);
         ps18::set_num_files(func_id); 
         if dirty!(){println!("line {}", line)}
         if line == stopCode{ps18::fix_num_files(func_id); return true}
@@ -153,9 +154,6 @@ if in_name.len() == 0{in_name = core18::put_in_name();}
 else{in_name = format!("|{}", form_grep_cmd(&in_name));}
 let stopCode: String = unsafe {ps18::page_struct("", ps18::STOP_CODE_,-1).str_};
 let mut cmd: String = format!("#!/bin/bash\nfind -L '{path}' -type f{in_name} >> {};echo '{stopCode}' >> {}", output, output);
-let ret: (String, bool) = unsafe{share_cmd("get".to_string(), func_id)};
-if ret.1{
-    cmd = format!("#!/bin/bash\n{} >> {};echo '{stopCode}' >> {}", ret.0, output, output);}
 run_cmd0(cmd);
 return true;
 }

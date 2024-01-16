@@ -160,7 +160,13 @@ pub fn len_of_main0_list() -> String{
     return unsafe{lists("", MAIN0_, 0, LEN)}
 }
 pub fn len_of_front_list() -> String{
-    return unsafe{lists("", FRONT_, 0, LEN)}
+      let mut list_id: (i64, bool) = (1i64, false);
+    for i in 0..1000_000{
+        list_id = unsafe {front_list_indx(i64::MAX)};
+        if list_id.1{break;}
+    }
+    if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    return unsafe{lists("", list_id.0, 0, LEN)}
 }
 pub(crate) fn get_proper_indx(indx: i64, fixed_indx: bool) -> (usize, i64){
     let mut fix_inputed_indx = indx;
@@ -179,22 +185,35 @@ pub(crate) fn get_proper_indx(indx: i64, fixed_indx: bool) -> (usize, i64){
 pub(crate) fn get_item_from_front_list(indx: i64, fixed_indx: bool) -> String{
     let proper_indx = get_proper_indx(indx, fixed_indx);
     if proper_indx.0 == usize::MAX{return "front list is empty".to_string()}
-    return unsafe{lists("", FRONT_, proper_indx.0, GET)}
+      let mut list_id: (i64, bool) = (1i64, false);
+    for i in 0..1000_000{
+        list_id = unsafe {front_list_indx(i64::MAX)};
+        if list_id.1{break;}
+    }
+    if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    return unsafe{lists("", list_id.0, proper_indx.0, GET)}
 }
 pub fn set_main0_as_front(){unsafe{lists("", MAIN0_, 0, SET_FRONT_LIST);}}
-pub fn set_ls_as_front(){unsafe{lists("", LS_, 0, SET_FRONT_LIST);}}
+pub fn set_ls_as_front() -> String{
+      let mut list_id: (i64, bool) = (1i64, false);
+    for i in 0..1000_000{
+        list_id = unsafe {front_list_indx(LS_)};
+        if list_id.1{break;}
+    }
+    if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    unsafe{lists("", LS_, 0, SET_FRONT_LIST); return "ok".to_string();}}
 pub unsafe fn lists(val: &str, list: i64, indx: usize, op_code: i64) -> String{
 static mut MAIN0: OnceCell<Vec<String>> = OnceCell::new();
 static mut FRONT: OnceCell<&Vec<String>> = OnceCell::new();
-static mut LS: OnceCell<Vec<String>> = OnceCell::new();
+//static mut LS: RwLock<Lazy<Vec<String>>> = RwLock::new(Lazy::new(||{vec!["".to_string()]})); // OnceCell<Vec<String>> = OnceCell::new();
 if Some(MAIN0.get()) != None{
     let mut main0_vec: Vec<String> = Vec::new();
     MAIN0.set(main0_vec);
 }
-if Some(LS.get()) != None{
+/*if Some(LS.get()) != None{
     let mut ls_vec: Vec<String> = Vec::new();
     LS.set(ls_vec);
-}
+}*/
 if list == MAIN0_ {
     if op_code == GET{
         let ret = &MAIN0.get().unwrap()[indx];
@@ -206,23 +225,27 @@ if list == MAIN0_ {
     }
     if op_code == LEN{return MAIN0.get().unwrap().len().to_string()}
     if op_code == SET_FRONT_LIST {
-       if Some(FRONT.get()) != None{FRONT.take();}
+       FRONT.take(); FRONT.take();
        FRONT.set(&MAIN0.get().unwrap());
     }
 }
 if list == LS_ {
     if op_code == GET{
-        let ret = &LS.get().unwrap()[indx];
+        let ret = &LS.read().unwrap()[indx];
         return ret.to_string()
     }
     if op_code == ADD{
-        LS.get_mut().unwrap().push(val.to_string());
+        LS.write().expect("Can't write into LS").push(val.to_string());
+        let mut len = LS.read().unwrap().len() - 1;
+        if len > 2{len -= 2;}
+        set_ask_user(& LS.read().unwrap()[len], -1);
        return "ok".to_string()
     }
-    if op_code == LEN{return LS.get().unwrap().len().to_string()}
+    if op_code == LEN{return LS.read().expect("").len().to_string()}
     if op_code == SET_FRONT_LIST {
-       if Some(FRONT.get()) != None{FRONT.take();}
-       FRONT.set(&LS.get().unwrap());
+       //FRONT.take(); FRONT.take();
+      // LS =  RwLock::new(Lazy::new(||{vec!["".to_string()]}));
+       //FRONT.set(&LS.read().expect(""));
     }
 }
 if list == FRONT_ {

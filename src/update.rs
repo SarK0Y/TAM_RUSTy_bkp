@@ -1,5 +1,5 @@
-use crate::{exts::update_uses, globs18::{set_main0_as_front, MAIN0_}, swtch::front_list_indx};
-use self::func_id17::find_files;
+use crate::{exts::update_uses, globs18::{set_main0_as_front, MAIN0_}, swtch::{front_list_indx, swtch_fn, SWTCH_USER_WRITING_PATH}, read_midway_data};
+use self::{func_id17::find_files, globs17::set_ls_as_front};
 update_uses!();
 pub(crate) fn main_update(){
     let func_id = crate::func_id18::main_update;
@@ -46,6 +46,37 @@ println!("stop manage_page");
     handler.join().unwrap();
     println!("len of main0 list {}", globs17::len_of_main0_list());
 }
-pub(crate) fn update_dir_list(dir: String){
+pub(crate) fn update_dir_list(dir: &str, opts: &str, no_grep: bool){
+    let mut head = String::new();
+    let mut tail = String::new();
+    let os_str = OsStr::new("");
+    let mut dir_len = dir.chars().count();
+    if dir_len ==0 {return;}
+    if dir.chars().nth(dir_len -1).expect("update_dir_list failed to get file name") != '/'{
+    head = match Path::new(dir).file_name(){
+        Some(p) => p,
+        _ => os_str
+    }.to_str().unwrap().to_string();
+    tail = match Path::new(dir).parent(){
+        Some(p) => p,
+        _ => Path::new("/")
+    }.to_str().unwrap().to_string();
+    
+} else {
+    head = "".to_string();
+    tail = dir.substring(0, dir_len).to_string();
+}
+    let mut cmd = format!("find -L {} {}|grep -Ei '{}'", tail, opts, head);
+    if no_grep{cmd = format!("find -L {}/{}", tail, head);}
+    crate::custom_cmd_4_find_files(cmd);
+    unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
+    read_midway_data();
+
+}
+pub(crate) fn lets_write_path(key: String){
+    unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
+    let mode: i64 = crate::swtch::SWTCH_USER_WRITING_PATH;
+    if mode < 0{return;}
+    unsafe {swtch_fn(mode, key)};
 
 }

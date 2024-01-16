@@ -58,6 +58,20 @@ fn hotKeys_tst( Key: &mut String) -> &'static str{
 //   println!("{}", res);
     "none"
 }
+/*perhaps for future */
+pub(crate) fn redirect_stdout_to_buf() -> Redirect<File>{
+// Open a log
+let log = OpenOptions::new()
+    .read(true)
+    .create(true)
+    .write(true)
+    .open("/tmp/my_log.log")
+    .unwrap();
+
+let print_redirect = Redirect::stdout(log).unwrap();
+print_redirect
+}
+/*perhaps for future */
 fn  stack_size(){let builder = thread::Builder::new().stack_size(80 * 1024 * 1024);
 let handler = builder.spawn(|| {
     // thread code
@@ -95,6 +109,17 @@ fn cpy_tbl(tbl: &Vec<Vec<CellStruct>>) -> Vec<Vec<CellStruct>>{
         });
     }
     tbl0
+}
+pub(crate) fn user_writing_path0(key: String) -> bool{
+    let mut written_path = String::new();
+    let mut x: u64  = 2;
+    for i in 0..1000{
+        for j in 0..1000{if (u64::MAX - x )/x > x{ x *= x;} x -= (j+i);}
+        written_path = set_user_written_path_from_prnt();
+        if written_path != ""{break;}
+    }
+    update_dir_list(&written_path, "-maxdepth 1", false);
+    true
 }
 fn make_rows(rows: &mut Vec<Vec<CellStruct>>, pg: &mut Vec<Vec<CellStruct>>, row_cpy: &mut Vec<String>){
     rows.push(move_out_of_scope(row_cpy));

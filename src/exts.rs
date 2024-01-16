@@ -138,6 +138,8 @@ use set_prnt_;
 }
 macro_rules! globs_uses {
     () => {
+    use std::sync::{RwLock, Arc};
+    use once_cell::unsync::Lazy;
     use ansi_term::ANSIString;
     use once_cell::sync::OnceCell;
     use libc::{fcntl, F_GETFL, F_SETFL, O_NONBLOCK};
@@ -163,6 +165,8 @@ use colored::Colorize;
 use substring::Substring;
 use std::str::{self, from_utf8};
 use std::string;
+use std::ffi::OsString;
+use std::ffi::OsStr;
 use chrono::{DateTime, Local};
 use std::io::{self, Write};
 use std::any::{self, type_name};
@@ -196,6 +200,7 @@ use crate::get_arg_in_cmd;
 macro_rules! core_use {
     () => {
 use std::env;
+use std::mem::size_of;
 use std::fs::OpenOptions;
 use std::io;
 use std::{i64, usize};

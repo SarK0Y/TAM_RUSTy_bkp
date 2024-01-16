@@ -1,7 +1,7 @@
 mod exts;
 use exts::page_struct_uses;
 
-use crate::{globs18::len_of_front_list, func_id18};
+use crate::{globs18::len_of_front_list, func_id18, swtch::{set_user_written_path_from_prnt, set_user_written_path_from_strn}};
 self::page_struct_uses!();
 pub const STOP_CODE_: i64 = 1;
 pub const KONSOLE_TITLE_: i64 = 2;
@@ -28,7 +28,7 @@ pub const FOUND_FILES_: i64 = 21;
 pub const TMP_DIR_: i64 = 22;
 pub const __BKSP: i64 = 23; // caller's id
 pub const __DEL: i64 = 24;
-pub const __INS: i64 = 25;
+pub const __INS: i64 = 1725;
 pub const NUM_OF_VIEWERS: i64 = 26;
 pub struct page_struct_ret{
    pub str_: String,
@@ -271,7 +271,7 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     //let fn_ptr_get_string: fn(&str) -> String = get_string;
     let no_val: i32 = 'no_val: {
    if id_of_caller == __INS{
-      
+      set_user_written_path_from_strn(PRNT.read().unwrap().to_string());
     }
     if val != "prnt" {break 'no_val 101;}
     if id_of_caller == __BKSP{
@@ -282,6 +282,7 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
         let new_prnt = crate::globs18::bksp();
         crate::set_prnt_!(new_prnt);
       set_cur_cur_pos(len as i64, func_id);
+      set_user_written_path_from_strn(PRNT.read().unwrap().to_string());
       ps_ret.str_= "ok".to_string(); return ps_ret;
     }
     if id_of_caller == __DEL{
@@ -293,6 +294,7 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
           set_prnt(&new_string, func_id);
       let left_shift_4_cur = get_left_shift_4_cur(func_id) - 1;
       set_left_shift_4_cur(left_shift_4_cur, func_id);
+      set_user_written_path_from_strn(PRNT.read().unwrap().to_string());
       ps_ret.str_= "ok".to_string(); return ps_ret;
     }
     11    

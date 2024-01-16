@@ -6,13 +6,19 @@ use std::{
     path::Path,
     io::{
         ErrorKind,
-        Read
+        Read,
+        Write,
+        BufWriter,
+        BufReader,
+        prelude::*
     },
+    os::fd::AsRawFd,
     i64,
     usize
 };
-
-use crate::{core18::errMsg, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::get_item_from_front_list, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}};
+pub const SWTCH_RUN_VIEWER: i64 = 0;
+pub const SWTCH_USER_WRITING_PATH: i64 = 1;
+use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list};
 pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
     static mut fst_run: bool = true;
     static mut fn_indx: usize = 0;
@@ -20,9 +26,11 @@ pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
     if fst_run{
         let fn_vec: Vec<fn(String) -> bool> = Vec::new();
         fn_.set(fn_vec); fst_run = false;
-        fn_.get_mut().unwrap().push(run_viewer);
+        fn_.get_mut().unwrap().push(run_viewer); // 0
+        fn_.get_mut().unwrap().push(user_writing_path); // 1
     }
-    if indx > -1{fn_indx = indx.to_usize().unwrap(); return;}
+    if indx > -1 {fn_indx = indx.to_usize().unwrap(); return;}
+  //  if indx > -1 && !cmd.is_empty(){fn_indx = indx.to_usize().unwrap();}
     fn_.get().unwrap()[fn_indx](cmd);
 }
 pub(crate) unsafe fn swtch_ps(indx: i64, ps: Option<crate::_page_struct>) -> crate::_page_struct{
@@ -100,20 +108,7 @@ pub(crate) unsafe fn front_list_indx(val: i64) -> (i64, bool){
     if val > -1 {actual_indx = val; return (val, true);}
     (i64::MAX, false)
 }
-pub(crate) unsafe fn share_cmd(val: String, func_id: i64) -> (String, bool){
-    static mut owner_id: i64 = i64::MIN;
-    static mut actual_val: OnceCell<String> = OnceCell::new();
-    static mut fst_run: bool = true;
-    if fst_run{actual_val.set("!!n0¡".to_string());}
-    if owner_id == func_id && val == "get"{
-        owner_id = i64::MIN;
-        let mut state = true;
-        if "!!n0¡" == actual_val.get().unwrap().to_string(){state = false;}
-        return (actual_val.get().unwrap().to_string(), state)
-     }
-    if owner_id == i64::MIN{owner_id = func_id; actual_val.get_mut().unwrap().clear(); actual_val.get_mut().unwrap().push_str(val.as_str()); return (val, true);}
-    ("".to_string(), false)
-}
+
 pub(crate) unsafe fn local_indx(set_new_state: bool) -> bool{
     static mut actual_state: bool = false;
     if !set_new_state{
@@ -167,4 +162,69 @@ pub fn print_pg_info(){
     let last_pg = crate::where_is_last_pg();
     let info = format!("Number of files/pages {}/{} p. {}", num_files, last_pg, num_page);
     println!("{}", info);
+}
+pub(crate) fn user_wrote_path() -> String{
+    return Path::new(&unsafe {format!("{}/user_wrote_path", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_})}).to_str().unwrap().to_string()
+
+}
+pub(crate) fn set_user_written_path_from_strn(strn: String) -> bool{
+    let save_path = user_wrote_path();
+    let save_path1 = user_wrote_path();
+    let strn = crate::get_path_from_strn(strn);
+    set_ask_user(&save_path, -1); //dbg here
+    let mut file_2_write_path = match File::options().create(true).open(save_path){
+        Ok(p) => p,
+        _ => update_user_written_path()
+    }; //.expect("user_wrote_path failed ");
+    //let mut writer = BufWriter::new(file_2_write_path)
+    file_2_write_path.write_all(strn.as_bytes()).expect("user_wrote_path failed write in");
+    crate::globs18::unblock_fd(file_2_write_path.as_raw_fd());
+    let written_path = read_user_written_path();
+    update_dir_list(&written_path, "-maxdepth 1", false);
+    true
+}
+pub(crate) fn set_user_written_path_from_prnt() -> String{
+    set_ls_as_front();
+    let save_path = user_wrote_path();
+    let save_path1 = user_wrote_path();
+    let path_from_prnt = get_path_from_prnt();
+    set_ask_user(&save_path, -1); //dbg here
+    let mut file_2_write_path = match File::options().create_new(true).open(save_path){
+        Ok(p) => p,
+        _ => update_user_written_path()
+    }; //.expect("user_wrote_path failed ");
+    //let mut writer = BufWriter::new(file_2_write_path);
+    let key = format!("{}", path_from_prnt);
+    file_2_write_path.write_all(path_from_prnt.as_bytes()).expect("user_wrote_path failed write in");
+    crate::globs18::unblock_fd(file_2_write_path.as_raw_fd());
+    let written_path = read_user_written_path();
+    update_dir_list(&written_path, "-maxdepth 1", false);
+    written_path
+}
+
+pub(crate) fn user_writing_path(key: String) -> bool{
+    let save_path = user_wrote_path();
+    let save_path1 = user_wrote_path();
+    set_ask_user(&save_path, -1); //dbg here
+    let mut file_2_write_path = match File::options().create_new(true).append(true).open(save_path){
+        Ok(p) => p,
+        _ => File::options().append(true).open(save_path1).unwrap()
+    }; //.expect("user_wrote_path failed ");
+    //let mut writer = BufWriter::new(file_2_write_path);
+    let key = format!("{}", key);
+    file_2_write_path.write_all(key.as_bytes()).expect("user_wrote_path failed write in");
+    crate::globs18::unblock_fd(file_2_write_path.as_raw_fd());
+    let mut written_path = read_user_written_path();
+    let written_path_from_prnt = get_path_from_prnt();
+    if written_path_from_prnt != written_path && written_path_from_prnt != ""{written_path = written_path_from_prnt;}
+    update_dir_list(&written_path, "-maxdepth 1", false);
+    true
+}
+pub(crate) fn read_user_written_path() -> String{
+    let save_path = user_wrote_path();
+    let mut file_2_read_path = File::open(save_path).expect("read_user_written_path failed ");
+    let mut reader = BufReader::new(file_2_read_path);
+    let mut ret = String::new();
+    reader.read_to_string(&mut ret).expect("read_user_written_path failed write in");
+    ret
 }
