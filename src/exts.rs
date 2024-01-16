@@ -138,6 +138,8 @@ use set_prnt_;
 }
 macro_rules! globs_uses {
     () => {
+    use std::sync::{RwLock, Arc};
+    use once_cell::unsync::Lazy;
     use ansi_term::ANSIString;
     use once_cell::sync::OnceCell;
     use libc::{fcntl, F_GETFL, F_SETFL, O_NONBLOCK};

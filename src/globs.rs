@@ -205,8 +205,7 @@ pub fn set_ls_as_front() -> String{
 pub unsafe fn lists(val: &str, list: i64, indx: usize, op_code: i64) -> String{
 static mut MAIN0: OnceCell<Vec<String>> = OnceCell::new();
 static mut FRONT: OnceCell<&Vec<String>> = OnceCell::new();
-static mut LS: Vec<String> = Vec::new();
-//static mut LS: RwLock<Vec<String>> = RwLock::new(Vec::<String::new()>new()); // OnceCell<Vec<String>> = OnceCell::new();
+static mut LS: RwLock<Lazy<Vec<String>>> = RwLock::new(Lazy::new(||{vec!["".to_string()]})); // OnceCell<Vec<String>> = OnceCell::new();
 if Some(MAIN0.get()) != None{
     let mut main0_vec: Vec<String> = Vec::new();
     MAIN0.set(main0_vec);
@@ -232,21 +231,21 @@ if list == MAIN0_ {
 }
 if list == LS_ {
     if op_code == GET{
-        let ret = &LS[indx];
+        let ret = &LS.read().unwrap()[indx];
         return ret.to_string()
     }
     if op_code == ADD{
-        LS.push(val.to_string());
-        let mut len = LS.len() - 1;
+        LS.write().expect("Can't write into LS").push(val.to_string());
+        let mut len = LS.read().unwrap().len() - 1;
         if len > 2{len -= 2;}
-        set_ask_user(& LS[len], -1);
+        set_ask_user(& LS.read().unwrap()[len], -1);
        return "ok".to_string()
     }
-    if op_code == LEN{return LS.len().to_string()}
+    if op_code == LEN{return LS.read().expect("").len().to_string()}
     if op_code == SET_FRONT_LIST {
        FRONT.take(); FRONT.take();
-       LS = Vec::new();
-       FRONT.set(&LS);
+       LS =  RwLock::new(Lazy::new(||{vec!["".to_string()]}));
+       //FRONT.set(&LS.read().expect(""));
     }
 }
 if list == FRONT_ {
