@@ -1,7 +1,7 @@
 use chrono::format;
 use num_traits::ToPrimitive;
 
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx}, core18::calc_num_files_up2_cur_pg, func_id18};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -205,7 +205,7 @@ pub fn set_ls_as_front() -> String{
 pub unsafe fn lists(val: &str, list: i64, indx: usize, op_code: i64) -> String{
 static mut MAIN0: OnceCell<Vec<String>> = OnceCell::new();
 static mut FRONT: OnceCell<&Vec<String>> = OnceCell::new();
-static mut LS: RwLock<Lazy<Vec<String>>> = RwLock::new(Lazy::new(||{vec!["".to_string()]})); // OnceCell<Vec<String>> = OnceCell::new();
+//static mut LS: RwLock<Lazy<Vec<String>>> = RwLock::new(Lazy::new(||{vec!["".to_string()]})); // OnceCell<Vec<String>> = OnceCell::new();
 if Some(MAIN0.get()) != None{
     let mut main0_vec: Vec<String> = Vec::new();
     MAIN0.set(main0_vec);
@@ -231,20 +231,20 @@ if list == MAIN0_ {
 }
 if list == LS_ {
     if op_code == GET{
-        let ret = &LS.read().unwrap()[indx];
+        let ret = ln_of_found_files(indx).0;
         return ret.to_string()
     }
     if op_code == ADD{
-        LS.write().expect("Can't write into LS").push(val.to_string());
+        /*LS.write().expect("Can't write into LS").push(val.to_string());
         let mut len = LS.read().unwrap().len() - 1;
         if len > 2{len -= 2;}
-        set_ask_user(& LS.read().unwrap()[len], -1);
-       return "ok".to_string()
+        set_ask_user(& LS.read().unwrap()[len], -1);*/
+       return "dummy ls ADD".to_string()
     }
-    if op_code == LEN{return LS.read().expect("").len().to_string()}
+    if op_code == LEN{return ln_of_found_files(usize::MAX).1.to_string()}
     if op_code == SET_FRONT_LIST {
-       FRONT.take(); FRONT.take();
-       LS =  RwLock::new(Lazy::new(||{vec!["".to_string()]}));
+       //FRONT.take(); FRONT.take();
+      // LS =  RwLock::new(Lazy::new(||{vec!["".to_string()]}));
        //FRONT.set(&LS.read().expect(""));
     }
 }

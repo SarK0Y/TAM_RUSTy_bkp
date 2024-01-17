@@ -205,6 +205,18 @@ pub(crate) fn rm_file(file: &String) -> bool{
     .expect(&err_msg);
     true
 }
+pub(crate) fn ln_of_found_files(get_indx: usize) -> (String, usize){
+     let stopCode = getStop_code__!();
+        let filename = format!("{}/found_files", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_});
+        let file = File::open(filename).unwrap();
+        let reader = BufReader::new(file);
+        let mut len = 0usize;
+    for (indx, line) in reader.lines().enumerate() {
+        if indx == get_indx{return (line.unwrap(), indx);}
+        len = indx;
+    }
+    return ("no str gotten".to_string(), len);
+}
 pub(crate) fn get_path_from_strn(strn: String) -> String{
     let len: usize = strn.chars().count();
     let mut ret = String::new();
