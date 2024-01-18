@@ -18,13 +18,17 @@ pub(crate) fn main_update(){
         if  crate::checkArg("-cols"){let val: i64 = i64::from_str_radix(String::from_iter(get_arg_in_cmd("-cols").s).as_str(), 10).expect(
             "set number of columns as an integer: '-cols 3'"
         ); ps0::set_num_cols(val, func_id);}
-        spawn(move||{
+        let thr_midway = thread::Builder::new().stack_size(2 * 1024 * 1024).name("read_midway".to_string());
+        let thr_find_files = thread::Builder::new().stack_size(2 * 1024 * 1024).name("find_files".to_string());
+        thr_find_files.spawn(move||{
             println!("spawn find files");
             crate::find_files(path.as_str(), in_name, "");
+            println!("exit find files");
         });
-        spawn(||{
+        thr_midway.spawn(||{
             println!("spawn midway data");
-            crate::read_midway_data()
+            crate::read_midway_data();
+            println!("exit midway data");
         });
     }
 

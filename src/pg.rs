@@ -16,7 +16,7 @@ pub(crate)
 fn build_page(ps: &mut crate::_page_struct){
     let func_id = crate::func_id18::build_page;
     let mut try_entry = 0usize;
-    let mut count_down_files = get_num_files(func_id);
+    let mut num_files = get_num_files(func_id);
     while try_entry < 1_000_000 {
         if get_num_files(func_id) == 0i64 {continue;}
         try_entry += 1; 
@@ -41,10 +41,12 @@ fn build_page(ps: &mut crate::_page_struct){
             let mut res: String ="".to_string();
             let full_path_fn = move || -> String {for i in 0..1_000_000_000 {
               res = crate::globs18::get_item_from_front_list(indx, false);
-              if res != "front list is empty"{return res;}
+              num_files = get_num_files(func_id);
+              if num_files == indx || "front list is empty" != res{return res;}
             // println!("build_page - probe 0");
             } return "".to_string()};
             let full_path = full_path_fn();
+            //no_dup_indx = indx;
             if !unsafe {local_indx(false)}{indx -= num_page;}
             let err_ret = std::ffi::OsString::from("");
             let mut end_all_loops = || -> &std::ffi::OsString{time_to_stop = true; achtung("end all_loops"); return &err_ret};
