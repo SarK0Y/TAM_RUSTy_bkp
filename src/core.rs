@@ -192,7 +192,8 @@ loop {
 }
 Key
 }
-pub(crate) fn update_user_written_path() -> File{
+pub(crate) fn update_user_written_path(e: std::io::Error) -> File{
+    println!("{:?}", e);
     let user_written_path = user_wrote_path();
     let err_msg = format!("update_user_written_path() can't create {}", user_written_path);
     rm_file(&user_written_path);

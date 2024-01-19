@@ -39,10 +39,10 @@ fn build_page(ps: &mut crate::_page_struct){
             let mut indx = i + num_cols * j + num_page;
             //indx = num_files - count_down_files;
             let mut res: String ="".to_string();
-            let full_path_fn = move || -> String {for i in 0..1_000_000_000 {
+            let full_path_fn = move || -> String {for i in 0..10_0 {
               res = crate::globs18::get_item_from_front_list(indx, false);
               num_files = get_num_files(func_id);
-              if num_files == indx || "front list is empty" != res{return res;}
+              if num_files == indx || "front list is empty" != res{time_to_stop = true; return res;}
             // println!("build_page - probe 0");
             } return "".to_string()};
             let full_path = full_path_fn();
