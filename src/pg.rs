@@ -1,6 +1,6 @@
 use cli_table::TableStruct;
 
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx}, update18::lets_write_path, ln_of_found_files, size_of_found_files};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx}, update18::lets_write_path, ln_of_found_files, size_of_found_files, key_f12};
 self::pg_uses!();
 
 fn cpy_row(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -18,8 +18,8 @@ fn build_page(ps: &mut crate::_page_struct){
     let mut try_entry = 0usize;
     let mut num_files = get_num_files(func_id);
     while try_entry < 1_000_000 {
-        if size_of_found_files() > 0u64 {break;}
-        if get_num_files(func_id) == 0i64 || size_of_found_files() == 0u64 {continue;}
+        if size_of_found_files() > 4u64 {break;}
+        if get_num_files(func_id) == 0i64{continue;}
         try_entry += 1; 
     }
     if size_of_found_files() == 0u64 {println!("No files found"); unsafe {libc::exit(-1);}}
@@ -131,8 +131,7 @@ fn hotKeys() -> String{
         popup_msg(&msg);
     return "dontPass".to_string();}
     if crate::globs18::eq_ansi_str(&kcode::F12, Key.as_str()) == 0{
-        unsafe {shift_cursor_of_prnt(0, func_id)};
-        set_prnt("", func_id); return "dontPass".to_string();} 
+        key_f12(func_id); return "dontPass".to_string();} 
     if crate::globs18::eq_ansi_str(&kcode::DELETE, Key.as_str()) == 0{
         let shift = unsafe {shift_cursor_of_prnt(1, func_id).shift};
         let mut indx = get_prnt(func_id).chars().count();

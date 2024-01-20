@@ -115,7 +115,11 @@ pub(crate) fn escape_symbs(str0: &String) -> String{
     let strr = strr.replace(")", r"\)");
     return strr.to_string();
 }
-
+pub(crate) fn key_f12(func_id: i64){
+    unsafe {crate::shift_cursor_of_prnt(0, func_id)};
+    crate::set_prnt("", func_id);
+    rm_user_written_path(func_id)
+}
 pub(crate) fn check_substr(orig: &String, probe: &str, start_from: usize) -> bool{
     let func_id = 3;
     let probe: String = String::from(probe.to_string());
@@ -198,6 +202,18 @@ pub(crate) fn update_user_written_path(e: std::io::Error) -> File{
     let err_msg = format!("update_user_written_path() can't create {}", user_written_path);
     rm_file(&user_written_path);
     File::options().create_new(true).write(true).read(true).open(user_written_path).expect(&err_msg)
+}
+pub(crate) fn rm_user_written_path(func_id: i64) {
+    let user_written_path = user_wrote_path_prnt();
+    let err_msg = format!("update_user_written_path() can't delete {}", user_written_path);
+    rm_file(&user_written_path);
+    let existed = Path::new(&user_written_path).exists();
+    if existed{set_ask_user(&err_msg, func_id);}
+    let user_written_path = user_wrote_path();
+    let err_msg = format!("update_user_written_path() can't delete {}", user_written_path);
+    rm_file(&user_written_path);
+    let existed = Path::new(&user_written_path).exists();
+    if existed{set_ask_user(&err_msg, func_id);}
 }
 pub(crate) fn rm_file(file: &String) -> bool{
     let err_msg = format!("rm_file can't remove {}", file);
