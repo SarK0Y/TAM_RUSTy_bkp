@@ -165,7 +165,9 @@ pub fn print_pg_info(){
 }
 pub(crate) fn user_wrote_path() -> String{
     return Path::new(&unsafe {format!("{}/user_wrote_path", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_})}).to_str().unwrap().to_string()
-
+}
+pub(crate) fn user_wrote_path_prnt() -> String{
+    return Path::new(&unsafe {format!("{}/user_wrote_path_prnt", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_})}).to_str().unwrap().to_string()
 }
 pub(crate) fn set_user_written_path_from_strn(strn: String) -> bool{
     let save_path = user_wrote_path();
