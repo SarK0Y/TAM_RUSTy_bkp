@@ -106,6 +106,7 @@ use once_cell::sync::OnceCell;
 macro_rules! page_struct_uses {
     () => {
 use std::env;
+use std::cell::UnsafeCell;
 use colored::Colorize;
 use substring::Substring;
 use std::str::{self, from_utf8};

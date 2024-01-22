@@ -6,7 +6,7 @@ use gag::RedirectError;
 
 use crate::swtch::{user_wrote_path, user_wrote_path_prnt};
 
-use self::ps21::{set_ask_user, get_prnt};
+use self::ps21::{set_ask_user, get_prnt, set_prnt};
 core_use!();
 pub(crate) fn initSession() -> bool{
     let func_id = 1;
@@ -195,6 +195,25 @@ loop {
         i += 1;}}
 }
 Key
+}
+pub(crate) fn cpy_str(in_str: &String) -> String{
+    in_str.to_string()
+}
+pub(crate) fn complete_path(){
+    let not_full_path = get_path_from_prnt();
+    let num_of_ln_in_dir_lst = ln_of_found_files(usize::MAX).1;
+    let mut prnt = String::from("");
+    for i in 0..100{
+        prnt = get_prnt(-5);
+        if prnt != ""{break;}
+    }
+    if num_of_ln_in_dir_lst == 1{
+        let mut full_path = ln_of_found_files(0).0;
+        let is_dir = Path::new(&full_path).is_dir();
+        if is_dir{full_path.push('/');}
+        prnt = prnt.replace(&not_full_path, &full_path);
+        set_prnt(&prnt, -5);
+    }
 }
 pub(crate) fn update_user_written_path(e: std::io::Error) -> File{
     println!("{:?}", e);
