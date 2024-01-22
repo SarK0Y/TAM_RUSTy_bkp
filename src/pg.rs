@@ -1,6 +1,6 @@
 use cli_table::TableStruct;
 
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx}, update18::lets_write_path};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx}, update18::lets_write_path, ln_of_found_files, size_of_found_files, key_f12};
 self::pg_uses!();
 
 fn cpy_row(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -16,12 +16,13 @@ pub(crate)
 fn build_page(ps: &mut crate::_page_struct){
     let func_id = crate::func_id18::build_page;
     let mut try_entry = 0usize;
-    let mut count_down_files = get_num_files(func_id);
+    let mut num_files = get_num_files(func_id);
     while try_entry < 1_000_000 {
-        if get_num_files(func_id) == 0i64 {continue;}
+        if size_of_found_files() > 4u64 {break;}
+        if get_num_files(func_id) == 0i64{continue;}
         try_entry += 1; 
     }
-    if get_num_files(func_id) == 0i64 {println!("No files found"); unsafe {libc::exit(-1);}}
+    if size_of_found_files() == 0u64 {println!("No files found"); unsafe {libc::exit(-1);}}
     let mut num_page; if ps.num_page != i64::MAX{num_page = ps.num_page;}else{num_page = crate::get_num_page(func_id);}
     let mut num_cols; if ps.num_cols != i64::MAX{num_cols = ps.num_cols;}else{num_cols = crate::get_num_cols(func_id);}
     let mut num_rows; if ps.num_rows != i64::MAX{num_rows = ps.num_rows;}else{num_rows = crate::get_num_rows(func_id);}
@@ -39,12 +40,14 @@ fn build_page(ps: &mut crate::_page_struct){
             let mut indx = i + num_cols * j + num_page;
             //indx = num_files - count_down_files;
             let mut res: String ="".to_string();
-            let full_path_fn = move || -> String {for i in 0..1_000_000_000 {
+            let full_path_fn = move || -> String {for i in 0..10_0 {
               res = crate::globs18::get_item_from_front_list(indx, false);
-              if res != "front list is empty"{return res;}
+              num_files = get_num_files(func_id);
+              if num_files == indx || "front list is empty" != res{time_to_stop = true; return res;}
             // println!("build_page - probe 0");
             } return "".to_string()};
             let full_path = full_path_fn();
+            //no_dup_indx = indx;
             if !unsafe {local_indx(false)}{indx -= num_page;}
             let err_ret = std::ffi::OsString::from("");
             let mut end_all_loops = || -> &std::ffi::OsString{time_to_stop = true; achtung("end all_loops"); return &err_ret};
@@ -128,8 +131,7 @@ fn hotKeys() -> String{
         popup_msg(&msg);
     return "dontPass".to_string();}
     if crate::globs18::eq_ansi_str(&kcode::F12, Key.as_str()) == 0{
-        unsafe {shift_cursor_of_prnt(0, func_id)};
-        set_prnt("", func_id); return "dontPass".to_string();} 
+        key_f12(func_id); return "dontPass".to_string();} 
     if crate::globs18::eq_ansi_str(&kcode::DELETE, Key.as_str()) == 0{
         let shift = unsafe {shift_cursor_of_prnt(1, func_id).shift};
         let mut indx = get_prnt(func_id).chars().count();

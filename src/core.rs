@@ -4,9 +4,9 @@ mod exts;
 use exts::*;
 use gag::RedirectError;
 
-use crate::swtch::user_wrote_path;
+use crate::swtch::{user_wrote_path, user_wrote_path_prnt};
 
-use self::ps21::{set_ask_user, get_prnt};
+use self::ps21::{set_ask_user, get_prnt, set_prnt};
 core_use!();
 pub(crate) fn initSession() -> bool{
     let func_id = 1;
@@ -115,7 +115,11 @@ pub(crate) fn escape_symbs(str0: &String) -> String{
     let strr = strr.replace(")", r"\)");
     return strr.to_string();
 }
-
+pub(crate) fn key_f12(func_id: i64){
+    unsafe {crate::shift_cursor_of_prnt(0, func_id)};
+    crate::set_prnt("", func_id);
+    rm_user_written_path(func_id)
+}
 pub(crate) fn check_substr(orig: &String, probe: &str, start_from: usize) -> bool{
     let func_id = 3;
     let probe: String = String::from(probe.to_string());
@@ -192,11 +196,40 @@ loop {
 }
 Key
 }
-pub(crate) fn update_user_written_path() -> File{
-    let user_written_path = user_wrote_path();
+pub(crate) fn complete_path(){
+    let not_full_path = get_path_from_prnt();
+    let num_of_ln_in_dir_lst = ln_of_found_files(usize::MAX).1;
+    let mut prnt = String::from("");
+    for i in 0..100{
+        prnt = get_prnt(-5);
+        if prnt != ""{break;}
+    }
+    if num_of_ln_in_dir_lst == 1{
+        let mut full_path = ln_of_found_files(0).0;
+        let is_dir = Path::new(&full_path).is_dir();
+        if is_dir{full_path.push('/');}
+        prnt = prnt.replace(&not_full_path, &full_path);
+        set_prnt(&prnt, -5);
+    }
+}
+pub(crate) fn update_user_written_path(e: std::io::Error) -> File{
+    println!("{:?}", e);
+    let user_written_path = user_wrote_path_prnt();
     let err_msg = format!("update_user_written_path() can't create {}", user_written_path);
     rm_file(&user_written_path);
     File::options().create_new(true).write(true).read(true).open(user_written_path).expect(&err_msg)
+}
+pub(crate) fn rm_user_written_path(func_id: i64) {
+    let user_written_path = user_wrote_path_prnt();
+    let err_msg = format!("update_user_written_path() can't delete {}", user_written_path);
+    rm_file(&user_written_path);
+    let existed = Path::new(&user_written_path).exists();
+    if existed{set_ask_user(&err_msg, func_id);}
+    let user_written_path = user_wrote_path();
+    let err_msg = format!("update_user_written_path() can't delete {}", user_written_path);
+    rm_file(&user_written_path);
+    let existed = Path::new(&user_written_path).exists();
+    if existed{set_ask_user(&err_msg, func_id);}
 }
 pub(crate) fn rm_file(file: &String) -> bool{
     let err_msg = format!("rm_file can't remove {}", file);
@@ -205,15 +238,44 @@ pub(crate) fn rm_file(file: &String) -> bool{
     .expect(&err_msg);
     true
 }
-pub(crate) fn ln_of_found_files(get_indx: usize) -> String{
-     let stopCode = getStop_code__!();
+pub(crate) fn read_midway_data_4_ls() -> bool{
+    let func_id = crate::func_id18::read_midway_data_;
+    let mut added_indx = 0usize;
+    loop {
+        let stopCode = getStop_code__!();
         let filename = format!("{}/found_files", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_});
         let file = File::open(filename).unwrap();
         let reader = BufReader::new(file);
     for (indx, line) in reader.lines().enumerate() {
-        if indx == get_indx{return line.unwrap();}
+        if indx <= added_indx && added_indx > 0{continue;}
+        added_indx = indx;
+        let line = line.unwrap();
+        let ret = crate::globs18::add_2_front_list(&line, -1); // todo => add_2_front_list
+        let line_dbg = get_item_from_front_list(usize_2_i64(indx), false); 
+        if dirty!(){println!("line {}", line)}
+        if line == stopCode{crate::ps18::fix_num_files(func_id); return true}
+    }  if dirty!(){println!("midway ended")}}
+    false
+}
+pub(crate) fn ln_of_found_files(get_indx: usize) -> (String, usize){
+     let stopCode = getStop_code__!();
+        let filename = format!("{}/found_files", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_});
+        let file = File::open(filename).unwrap();
+        let reader = BufReader::new(file);
+        let mut len = 0usize;
+    for (indx, line) in reader.lines().enumerate() {
+        if indx == get_indx{return (line.unwrap(), indx);}
+        len = indx;
     }
-    return "no str gotten".to_string();
+    return ("no str gotten".to_string(), len);
+}
+pub(crate) fn size_of_found_files() -> u64{
+     let stopCode = getStop_code__!();
+        let filename = format!("{}/found_files", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_});
+        match fs::metadata(filename){
+            Ok(op) => op,
+            _ => return 0u64
+        }.len()
 }
 pub(crate) fn get_path_from_strn(strn: String) -> String{
     let len: usize = strn.chars().count();

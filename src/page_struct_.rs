@@ -249,7 +249,7 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     static mut RUNNING: OnceCell<Vec<Command>> = OnceCell::new(); //15
     static mut VIEWER: OnceCell<Vec<String>> = OnceCell::new(); //16
     static mut MODE2RUN: OnceCell<(String, String)> = OnceCell::new(); //17
-    static mut PRNT: RwLock<String> = RwLock::new(String::new()); //18
+    static mut PRNT: UnsafeCell<String> = UnsafeCell::new(String::new()); //18
     static mut PROMPT: OnceCell<String> = OnceCell::new(); //
     static mut FULL_PATH: OnceCell<String> = OnceCell::new(); //19
     static mut MAINPATH: OnceCell<String> = OnceCell::new(); //20
@@ -271,13 +271,13 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     //let fn_ptr_get_string: fn(&str) -> String = get_string;
     let no_val: i32 = 'no_val: {
    if id_of_caller == __INS{
-      set_user_written_path_from_strn(PRNT.read().unwrap().to_string());
+      set_user_written_path_from_strn(*PRNT.get());
     }
     if val != "prnt" {break 'no_val 101;}
     if id_of_caller == __BKSP{
       if PRNT.read().unwrap().len() == 0 {set_cur_cur_pos(0, func_id); ps_ret.str_= "ok".to_string(); return ps_ret}
       //crate::run_cmd0("notify-send bksp".to_string());
-      let len = PRNT.read().unwrap().len() - 1;
+      let len = PRNT.get().as_ref().expect("").len() - 1;
       //loop {
         let new_prnt = crate::globs18::bksp();
         crate::set_prnt_!(new_prnt);

@@ -165,7 +165,9 @@ pub fn print_pg_info(){
 }
 pub(crate) fn user_wrote_path() -> String{
     return Path::new(&unsafe {format!("{}/user_wrote_path", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_})}).to_str().unwrap().to_string()
-
+}
+pub(crate) fn user_wrote_path_prnt() -> String{
+    return Path::new(&unsafe {format!("{}/user_wrote_path_prnt", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_})}).to_str().unwrap().to_string()
 }
 pub(crate) fn set_user_written_path_from_strn(strn: String) -> bool{
     let save_path = user_wrote_path();
@@ -174,7 +176,7 @@ pub(crate) fn set_user_written_path_from_strn(strn: String) -> bool{
     set_ask_user(&save_path, -1); //dbg here
     let mut file_2_write_path = match File::options().create(true).open(save_path){
         Ok(p) => p,
-        _ => update_user_written_path()
+        Err(e) => update_user_written_path(e)
     }; //.expect("user_wrote_path failed ");
     //let mut writer = BufWriter::new(file_2_write_path)
     file_2_write_path.write_all(strn.as_bytes()).expect("user_wrote_path failed write in");
@@ -191,7 +193,7 @@ pub(crate) fn set_user_written_path_from_prnt() -> String{
     set_ask_user(&save_path, -1); //dbg here
     let mut file_2_write_path = match File::options().create_new(true).open(save_path){
         Ok(p) => p,
-        _ => update_user_written_path()
+        Err(e) => update_user_written_path(e)
     }; //.expect("user_wrote_path failed ");
     //let mut writer = BufWriter::new(file_2_write_path);
     let key = format!("{}", path_from_prnt);
@@ -208,7 +210,13 @@ pub(crate) fn user_writing_path(key: String) -> bool{
     set_ask_user(&save_path, -1); //dbg here
     let mut file_2_write_path = match File::options().create_new(true).append(true).open(save_path){
         Ok(p) => p,
-        _ => File::options().append(true).open(save_path1).unwrap()
+        Err(e) => match e.kind(){
+          ErrorKind::AlreadyExists => match File::options().append(true).write(true).open(save_path1){
+            Ok(f) => f,
+            _ => update_user_written_path(e)
+          }
+        _ => return false
+        }
     }; //.expect("user_wrote_path failed ");
     //let mut writer = BufWriter::new(file_2_write_path);
     let key = format!("{}", key);

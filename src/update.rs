@@ -1,5 +1,5 @@
-use crate::{exts::update_uses, globs18::{set_main0_as_front, MAIN0_}, swtch::{front_list_indx, swtch_fn, SWTCH_USER_WRITING_PATH}, read_midway_data};
-use self::{func_id17::find_files, globs17::set_ls_as_front};
+use crate::{exts::update_uses, globs18::{set_main0_as_front, MAIN0_}, swtch::{front_list_indx, swtch_fn, SWTCH_USER_WRITING_PATH}, read_midway_data, complete_path};
+use self::{func_id17::{find_files, read_midway_data_}, globs17::set_ls_as_front};
 update_uses!();
 pub(crate) fn main_update(){
     let func_id = crate::func_id18::main_update;
@@ -18,13 +18,17 @@ pub(crate) fn main_update(){
         if  crate::checkArg("-cols"){let val: i64 = i64::from_str_radix(String::from_iter(get_arg_in_cmd("-cols").s).as_str(), 10).expect(
             "set number of columns as an integer: '-cols 3'"
         ); ps0::set_num_cols(val, func_id);}
-        spawn(move||{
+        let thr_midway = thread::Builder::new().stack_size(2 * 1024 * 1024).name("read_midway".to_string());
+        let thr_find_files = thread::Builder::new().stack_size(2 * 1024 * 1024).name("find_files".to_string());
+        thr_find_files.spawn(move||{
             println!("spawn find files");
             crate::find_files(path.as_str(), in_name, "");
+            println!("exit find files");
         });
-        spawn(||{
+        thr_midway.spawn(||{
             println!("spawn midway data");
-            crate::read_midway_data()
+            crate::read_midway_data();
+            println!("exit midway data");
         });
     }
 
@@ -70,8 +74,8 @@ pub(crate) fn update_dir_list(dir: &str, opts: &str, no_grep: bool){
     if no_grep{cmd = format!("find -L {}/{}", tail, head);}
     crate::custom_cmd_4_find_files(cmd);
     unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
-    read_midway_data();
-
+    crate::read_midway_data_4_ls();
+    complete_path();
 }
 pub(crate) fn lets_write_path(key: String){
     unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
