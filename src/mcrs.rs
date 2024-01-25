@@ -17,7 +17,8 @@ macro_rules! set_prnt_ {
     ($x: expr) => {
        // PRNT = RwLock::new(String::new());
         //*PRNT.write().unwrap() = $x.to_string();
-        *PRNT.get_mut() = $x.to_string();
+        crate::popup_msg(&*PRNT.get());
+        *PRNT.get() = $x.to_string();
     };
 }
 macro_rules! close_termios__ {

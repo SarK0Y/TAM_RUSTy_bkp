@@ -75,7 +75,6 @@ pub(crate) fn update_dir_list(dir: &str, opts: &str, no_grep: bool){
     crate::custom_cmd_4_find_files(cmd);
     unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
     crate::read_midway_data_4_ls();
-    complete_path();
 }
 pub(crate) fn lets_write_path(key: String){
     unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}

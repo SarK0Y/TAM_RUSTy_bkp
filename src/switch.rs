@@ -18,7 +18,7 @@ use std::{
 };
 pub const SWTCH_RUN_VIEWER: i64 = 0;
 pub const SWTCH_USER_WRITING_PATH: i64 = 1;
-use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list};
+use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path};
 pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
     static mut fst_run: bool = true;
     static mut fn_indx: usize = 0;
@@ -225,7 +225,7 @@ pub(crate) fn user_writing_path(key: String) -> bool{
     let mut written_path = read_user_written_path();
     let written_path_from_prnt = get_path_from_prnt();
     if written_path_from_prnt != written_path && written_path_from_prnt != ""{written_path = written_path_from_prnt;}
-    update_dir_list(&written_path, "-maxdepth 1", false);
+    complete_path(&written_path, "-maxdepth 1", false);
     true
 }
 pub(crate) fn read_user_written_path() -> String{

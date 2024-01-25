@@ -4,7 +4,7 @@ mod exts;
 use exts::*;
 use gag::RedirectError;
 
-use crate::swtch::{user_wrote_path, user_wrote_path_prnt};
+use crate::{swtch::{user_wrote_path, user_wrote_path_prnt, read_user_written_path}, update18::update_dir_list};
 
 use self::ps21::{set_ask_user, get_prnt, set_prnt};
 core_use!();
@@ -199,20 +199,25 @@ Key
 pub(crate) fn cpy_str(in_str: &String) -> String{
     in_str.to_string()
 }
-pub(crate) fn complete_path(){
-    let not_full_path = get_path_from_prnt();
+pub(crate) fn complete_path(dir: &str, opts: &str, no_grep: bool){
+    update_dir_list(dir, opts, no_grep);
+    let not_full_path = read_user_written_path();
     let num_of_ln_in_dir_lst = ln_of_found_files(usize::MAX).1;
     let mut prnt = String::from("");
-    for i in 0..100{
+    //for i in 0..100{
         prnt = get_prnt(-5);
-        if prnt != ""{break;}
-    }
+      //  if prnt != ""{break;}
+    //}
+    if prnt == "".to_string(){set_ask_user("prnt is empty", -5);}
     if num_of_ln_in_dir_lst == 1{
         let mut full_path = ln_of_found_files(0).0;
         let is_dir = Path::new(&full_path).is_dir();
         if is_dir{full_path.push('/');}
         prnt = prnt.replace(&not_full_path, &full_path);
-        set_prnt(&prnt, -5);
+        let msg = format!("prnt: {}", prnt);
+        popup_msg(msg.as_str());
+        set_prnt(&prnt, -5); set_prnt(&prnt, -5);
+        update_dir_list(&full_path, opts, no_grep);
     }
 }
 pub(crate) fn update_user_written_path(e: std::io::Error) -> File{

@@ -17,7 +17,7 @@ fn build_page(ps: &mut crate::_page_struct){
     let func_id = crate::func_id18::build_page;
     let mut try_entry = 0usize;
     let mut num_files = get_num_files(func_id);
-    while try_entry < 1_000_000 {
+    while try_entry < 1_000 {
         if size_of_found_files() > 4u64 {break;}
         if get_num_files(func_id) == 0i64{continue;}
         try_entry += 1; 
