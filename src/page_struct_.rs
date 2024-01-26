@@ -279,8 +279,8 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
       //crate::run_cmd0("notify-send bksp".to_string());
       let len = PRNT.get().as_ref().expect("Can't get len of prnt").len() - 1;
       //loop {
-        let new_prnt = crate::globs18::bksp();
-        crate::set_prnt_!(new_prnt);
+        let mut new_prnt = crate::globs18::bksp();
+        crate::set_prnt_!(&new_prnt);
       set_cur_cur_pos(len as i64, func_id);
       set_user_written_path_from_strn(cpy_str(&*PRNT.get()));
       ps_ret.str_= "ok".to_string(); return ps_ret;
@@ -301,7 +301,7 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     };
     let cpy: fn(&String) -> String = |val: &String| -> String{return val.to_string();}; 
     if id_of_val == PRNT_  {ps_ret.str_.push_str(cpy_str(&*PRNT.get()).as_str());/*String::from(PRNT.get().unwrap())*/; return ps_ret;}
-    if id_of_val == crate::set(PRNT_) {crate::set_prnt_!(val); ps_ret.str_= "ok".to_string(); prnt_set =true; return ps_ret;}
+    if id_of_val == crate::set(PRNT_) {crate::set_prnt_!(&val.to_string()); ps_ret.str_= "ok".to_string(); prnt_set =true; return ps_ret;}
     if id_of_val == NUM_OF_VIEWERS  {ps_ret.int = VIEWER.get().unwrap().len().to_i64().unwrap(); return ps_ret;}
     if id_of_val == VIEWER_  {
       let indx = share_usize(usize::MAX, id_of_caller);

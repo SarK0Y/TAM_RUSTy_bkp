@@ -201,7 +201,7 @@ pub(crate) fn cpy_str(in_str: &String) -> String{
 }
 pub(crate) fn complete_path(dir: &str, opts: &str, no_grep: bool){
     update_dir_list(dir, opts, no_grep);
-    let not_full_path = read_user_written_path();
+    let not_full_path = get_path_from_prnt();//read_user_written_path();
     let num_of_ln_in_dir_lst = ln_of_found_files(usize::MAX).1;
     let mut prnt = String::from("");
     //for i in 0..100{
@@ -216,7 +216,7 @@ pub(crate) fn complete_path(dir: &str, opts: &str, no_grep: bool){
         prnt = prnt.replace(&not_full_path, &full_path);
         let msg = format!("prnt: {}", prnt);
         popup_msg(msg.as_str());
-        set_prnt(&prnt, -5); set_prnt(&prnt, -5);
+        set_prnt(&prnt, -5);
         update_dir_list(&full_path, opts, no_grep);
     }
 }

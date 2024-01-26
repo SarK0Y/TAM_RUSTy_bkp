@@ -1,6 +1,6 @@
 use cli_table::TableStruct;
 
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx}, update18::lets_write_path, ln_of_found_files, size_of_found_files, key_f12};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx, read_user_written_path}, update18::lets_write_path, ln_of_found_files, size_of_found_files, key_f12};
 self::pg_uses!();
 
 fn cpy_row(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -151,7 +151,10 @@ fn hotKeys() -> String{
     if kcode::TAB == ansiKey{println!("tab pressed");}  
    crate::INS(&Key);
        // enter();
+       let user_written_path = read_user_written_path();
+       if user_written_path != "" && Path::new(&user_written_path).exists() {return get_prnt(func_id);}
 return Key.to_string();
+//return get_prnt(func_id);
 }
 pub fn manage_pages(){
 let mut Key: String = "".to_string(); 
@@ -172,6 +175,7 @@ pub(crate) fn repeat_char(num_of_times: usize, this_char: &str) -> String{
     ret
 }
 pub(crate) fn wipe_cmd_line(len_2_wipe: usize){
+    return;
     let many_spaces = repeat_char(len_2_wipe, " ");
     println!("\r{}", many_spaces);
 }
