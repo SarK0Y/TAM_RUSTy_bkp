@@ -186,7 +186,7 @@ pub(crate) fn get_item_from_front_list(indx: i64, fixed_indx: bool) -> String{
     let proper_indx = get_proper_indx(indx, fixed_indx);
     if proper_indx.0 == usize::MAX{return "front list is empty".to_string()}
       let mut list_id: (i64, bool) = (1i64, false);
-    for i in 0..1000_000{
+    for i in 0..1000{
         list_id = unsafe {front_list_indx(i64::MAX)};
         if list_id.1{break;}
     }
@@ -196,7 +196,7 @@ pub(crate) fn get_item_from_front_list(indx: i64, fixed_indx: bool) -> String{
 pub fn set_main0_as_front(){unsafe{lists("", MAIN0_, 0, SET_FRONT_LIST);}}
 pub fn set_ls_as_front() -> String{
       let mut list_id: (i64, bool) = (1i64, false);
-    for i in 0..1000_000{
+    for i in 0..1000{
         list_id = unsafe {front_list_indx(LS_)};
         if list_id.1{break;}
     }

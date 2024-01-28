@@ -1,7 +1,7 @@
 mod exts;
 use exts::page_struct_uses;
 
-use crate::{globs18::len_of_front_list, func_id18, swtch::{set_user_written_path_from_prnt, set_user_written_path_from_strn}};
+use crate::{globs18::len_of_front_list, func_id18, swtch::{set_user_written_path_from_prnt, set_user_written_path_from_strn}, cpy_str};
 self::page_struct_uses!();
 pub const STOP_CODE_: i64 = 1;
 pub const KONSOLE_TITLE_: i64 = 2;
@@ -271,37 +271,37 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     //let fn_ptr_get_string: fn(&str) -> String = get_string;
     let no_val: i32 = 'no_val: {
    if id_of_caller == __INS{
-      set_user_written_path_from_strn(*PRNT.get());
+      set_user_written_path_from_strn(cpy_str(&*PRNT.get()));
     }
     if val != "prnt" {break 'no_val 101;}
     if id_of_caller == __BKSP{
-      if PRNT.read().unwrap().len() == 0 {set_cur_cur_pos(0, func_id); ps_ret.str_= "ok".to_string(); return ps_ret}
+      if PRNT.get().as_ref().expect("Can't get zero len of prnt").len() == 0 {set_cur_cur_pos(0, func_id); ps_ret.str_= "ok".to_string(); return ps_ret}
       //crate::run_cmd0("notify-send bksp".to_string());
-      let len = PRNT.get().as_ref().expect("").len() - 1;
+      let len = PRNT.get().as_ref().expect("Can't get len of prnt").len() - 1;
       //loop {
-        let new_prnt = crate::globs18::bksp();
-        crate::set_prnt_!(new_prnt);
+        let mut new_prnt = crate::globs18::bksp();
+        crate::set_prnt_!(&new_prnt);
       set_cur_cur_pos(len as i64, func_id);
-      set_user_written_path_from_strn(PRNT.read().unwrap().to_string());
+      set_user_written_path_from_strn(cpy_str(&*PRNT.get()));
       ps_ret.str_= "ok".to_string(); return ps_ret;
     }
     if id_of_caller == __DEL{
       let cur_cur_pos = (get_cur_cur_pos(func_id) + 1) as usize;
-      let mut string1 = PRNT.read().unwrap().to_string();
+      let mut string1 = cpy_str(&*PRNT.get());
       string1.push_str(val);
       let new_string = crate::globs18::ins_last_char_to_string1_from_string1(cur_cur_pos, string1);
       //loop {
           set_prnt(&new_string, func_id);
       let left_shift_4_cur = get_left_shift_4_cur(func_id) - 1;
       set_left_shift_4_cur(left_shift_4_cur, func_id);
-      set_user_written_path_from_strn(PRNT.read().unwrap().to_string());
+      set_user_written_path_from_strn(cpy_str(&*PRNT.get()));
       ps_ret.str_= "ok".to_string(); return ps_ret;
     }
     11    
     };
     let cpy: fn(&String) -> String = |val: &String| -> String{return val.to_string();}; 
-    if id_of_val == PRNT_  {ps_ret.str_ = PRNT.read().unwrap().to_string()/*String::from(PRNT.get().unwrap())*/; return ps_ret;}
-    if id_of_val == crate::set(PRNT_) {crate::set_prnt_!(val); ps_ret.str_= "ok".to_string(); prnt_set =true; return ps_ret;}
+    if id_of_val == PRNT_  {ps_ret.str_.push_str(cpy_str(&*PRNT.get()).as_str());/*String::from(PRNT.get().unwrap())*/; return ps_ret;}
+    if id_of_val == crate::set(PRNT_) {crate::set_prnt_!(&val.to_string()); ps_ret.str_= "ok".to_string(); prnt_set =true; return ps_ret;}
     if id_of_val == NUM_OF_VIEWERS  {ps_ret.int = VIEWER.get().unwrap().len().to_i64().unwrap(); return ps_ret;}
     if id_of_val == VIEWER_  {
       let indx = share_usize(usize::MAX, id_of_caller);
