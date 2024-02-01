@@ -1,6 +1,6 @@
 use cli_table::TableStruct;
 
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx, read_user_written_path}, update18::lets_write_path, ln_of_found_files, size_of_found_files, key_f12};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx, read_user_written_path, user_writing_path}, update18::lets_write_path, ln_of_found_files, size_of_found_files, key_f12, get_path_from_prnt, get_path_from_strn};
 self::pg_uses!();
 
 fn cpy_row(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -97,8 +97,9 @@ if run_command.status.success(){
 }
 pub(crate) 
 fn hotKeys() -> String{
-    let mut Key =String::new();
     let func_id = crate::func_id18::hotKeys;
+    if unsafe {crate::swtch::path_completed(true, true)}{unsafe {crate::swtch::path_completed(false, false);}; return "dontPass".to_string();}
+    let mut Key =String::new();
     let mut cmd = String::new();
     Key.push_str(crate::getkey().as_str());
     if crate::globs18::eq_ansi_str(&kcode::F1, Key.as_str()) == 0 {
@@ -151,8 +152,8 @@ fn hotKeys() -> String{
     if kcode::TAB == ansiKey{println!("tab pressed");}  
    crate::INS(&Key);
        // enter();
-       let user_written_path = read_user_written_path();
-       if user_written_path != "" && Path::new(&user_written_path).exists() {return get_prnt(func_id);}
+       let user_written_path = read_user_written_path().replace("//", "/");
+       if user_written_path != "/" && Path::new(&user_written_path).exists() && ln_of_found_files(usize::MAX).1 < 2usize {return get_prnt(func_id);}
 return Key.to_string();
 //return get_prnt(func_id);
 }
@@ -163,10 +164,11 @@ let mut bal =String::new();
     loop{
         //set_prnt(&bal, -1);
         let mut ps: crate::_page_struct = unsafe {crate::swtch::swtch_ps(-1, None)};
+        let mut data = "".to_string();
         build_page(&mut ps);
+        println!("{}", get_prnt(-1));
         exec_cmd(custom_input());
         clear_screen();
-        //crate::run_cmd0("clear".to_string());
     }
 }
 pub(crate) fn repeat_char(num_of_times: usize, this_char: &str) -> String{
@@ -188,7 +190,11 @@ pub(crate) fn form_cmd_line_default(){
     let func_id = crate::func_id18::form_cmd_line_default;
     let prompt = crate::get_prompt(func_id); let mut ret = unsafe {crate::shift_cursor_of_prnt(0, func_id)};
     let mut prnt = ret.str__;
-    let len = get_prnt(func_id).chars().count();
+    let full_path = read_user_written_path();
+    let partial_path = get_path_from_strn(crate::cpy_str(&prnt));
+    if partial_path != ""{prnt = prnt.replace(&partial_path, &full_path);}
+    else {prnt = format!("{} {}", prnt, full_path);}
+    let len = prnt.chars().count();
     if ret.shift == len {prnt = format!("👉{}", prnt)}
     else if ret.shift < len {ret.shift = len - ret.shift;
     prnt.push('👈');

@@ -18,7 +18,7 @@ use std::{
 };
 pub const SWTCH_RUN_VIEWER: i64 = 0;
 pub const SWTCH_USER_WRITING_PATH: i64 = 1;
-use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default};
+use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default, get_prnt};
 pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
     static mut fst_run: bool = true;
     static mut fn_indx: usize = 0;
@@ -100,6 +100,16 @@ pub(crate) unsafe fn share_usize(val: usize, func_id: i64) -> (usize, bool){
     if owner_id == i64::MIN{owner_id = func_id; actual_val = val; return (val, true);}
     (usize::MAX, false)
 }
+unsafe fn drop_2_dev_null() -> bool{
+    static mut drop: bool = true;
+    drop = !drop; return !drop;
+}
+pub(crate) unsafe fn path_completed(set_state: bool, ret_state: bool) -> bool{
+    static mut state: bool = false;
+    if ret_state {return state;}
+    state = set_state;
+    state
+}
 pub(crate) unsafe fn front_list_indx(val: i64) -> (i64, bool){
     static mut actual_indx: i64 = 0;
     if val == i64::MAX{
@@ -173,7 +183,7 @@ pub(crate) fn set_user_written_path_from_strn(strn: String) -> bool{
     let save_path = user_wrote_path();
     let save_path1 = user_wrote_path();
     let strn = crate::get_path_from_strn(strn);
-    set_ask_user(&save_path, -1); //dbg here
+   // set_ask_user(&save_path, -1); //dbg here
     let mut file_2_write_path = match File::options().create(true).open(save_path){
         Ok(p) => p,
         Err(e) => update_user_written_path(e)
@@ -190,7 +200,7 @@ pub(crate) fn set_user_written_path_from_prnt() -> String{
     let save_path = user_wrote_path();
     let save_path1 = user_wrote_path();
     let path_from_prnt = get_path_from_prnt();
-    set_ask_user(&save_path, -1); //dbg here
+    //set_ask_user(&save_path, -1); //dbg here
     let mut file_2_write_path = match File::options().create_new(true).open(save_path){
         Ok(p) => p,
         Err(e) => update_user_written_path(e)
@@ -207,8 +217,13 @@ pub(crate) fn set_user_written_path_from_prnt() -> String{
 pub(crate) fn user_writing_path(key: String) -> bool{
     let mut save_path = user_wrote_path();
     let mut save_path1 = user_wrote_path();
-    set_ask_user(&save_path, -1); //dbg here
+   // set_ask_user(&save_path, -1); //dbg here
+    let key = key.replace("//", "/");
+    let path_exist = Path::new(&read_user_written_path()).exists();
     if key.chars().count() > 1 {save_path1 = "/dev/null".to_string(); save_path = "/dev/null".to_string();} 
+    else if path_exist && key != "/" && crate::ln_of_found_files(usize::MAX).1 < 2usize {if unsafe {drop_2_dev_null()}{save_path1 = "/dev/null".to_string(); save_path = "/dev/null".to_string();}}
+    let dbg_prnt = get_prnt(-5);
+    set_ask_user(&dbg_prnt, -1);
     let mut file_2_write_path = match File::options().create_new(true).append(true).open(save_path){
         Ok(p) => p,
         Err(e) => match e.kind(){
@@ -232,7 +247,10 @@ pub(crate) fn user_writing_path(key: String) -> bool{
 }
 pub(crate) fn read_user_written_path() -> String{
     let save_path = user_wrote_path();
-    let mut file_2_read_path = File::open(save_path).expect("read_user_written_path failed ");
+    let mut file_2_read_path = match File::open(save_path){
+        Ok(f) => f,
+        Err(e) => return "".to_string()
+    };
     let mut reader = BufReader::new(file_2_read_path);
     let mut ret = String::new();
     reader.read_to_string(&mut ret).expect("read_user_written_path failed write in");
