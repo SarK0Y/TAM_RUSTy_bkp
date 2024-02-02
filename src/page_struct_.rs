@@ -1,7 +1,7 @@
 mod exts;
 use exts::page_struct_uses;
 
-use crate::{globs18::len_of_front_list, func_id18, swtch::{set_user_written_path_from_prnt, set_user_written_path_from_strn}, cpy_str, complete_path};
+use crate::{globs18::len_of_front_list, func_id18, swtch::{set_user_written_path_from_prnt, set_user_written_path_from_strn}, cpy_str, complete_path, get_path_from_strn, rewrite_user_written_path};
 self::page_struct_uses!();
 pub const STOP_CODE_: i64 = 1;
 pub const KONSOLE_TITLE_: i64 = 2;
@@ -204,18 +204,20 @@ pub(crate) unsafe fn page_struct_int(val: i64, val_id: i64, caller_id: i64) -> i
  return -1;  
 }
 pub(crate) unsafe fn shift_cursor_of_prnt(shift: i64, func_id: i64) -> shift_cur_struct{ // shift == 0 to get cursor position, -1 to move left for one char, 1 to move right /
-  static mut num_of_shifts: usize = 0;                                          // i64::MIN to set num_of_shifts = 0, 2 to ret num_of_shifts w/ no string
-  let mut str__ = String::from("");
+  static mut num_of_shifts: usize = 0;                                          // i64::MIN to set num_of_shifts = 0, 2 to ret num_of_shifts w/ no string /
+  let mut str__ = String::from("");                                             // 3 to ret str of shifts
   let mut ret = shift_cur_struct{shift: num_of_shifts, str__: str__};
   if shift == i64::MIN{num_of_shifts = 0;}
   if shift == 2 {return ret;}
-  if shift == 0{
+  if shift == 0 && shift == 3{
   macro_rules! shift {
       () => {
       repeat_char(num_of_shifts, "\x1b[D").as_str()      
       };
   }
+  if shift == 0{
     ret.str__ = get_prnt(-2);
+  }
     ret.str__.push_str(shift!());
     return ret
   }
@@ -283,6 +285,8 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
       let len = PRNT.get().as_ref().expect("Can't get len of prnt").len() - 1;
       //loop {
         let mut new_prnt = crate::globs18::bksp();
+        let new_path = get_path_from_strn(crate::cpy_str(&new_prnt));
+        rewrite_user_written_path(&new_path);
         crate::set_prnt_!(&new_prnt);
       set_cur_cur_pos(len as i64, func_id);
       set_user_written_path_from_strn(cpy_str(&*PRNT.get()));

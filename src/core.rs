@@ -217,7 +217,7 @@ pub(crate) fn complete_path(dir: &str, opts: &str, no_grep: bool){
         if is_dir{full_path.push('/');}
         prnt = prnt.replace(&not_full_path, &full_path);
         let msg = format!("prnt: {}", prnt);
-        popup_msg(msg.as_str());
+        //popup_msg(msg.as_str());
         set_prnt(&prnt, -47);
         let prnt = get_prnt(-5);
         set_ask_user(&prnt, -5);
@@ -233,7 +233,7 @@ pub(crate) fn update_user_written_path(e: std::io::Error) -> File{
     rm_file(&user_written_path);
     File::options().create_new(true).write(true).read(true).open(user_written_path).expect(&err_msg)
 }
-fn rewrite_user_written_path(new_path: &String) {
+pub(crate) fn rewrite_user_written_path(new_path: &String) {
     let user_written_path = user_wrote_path();
     let err_msg = format!("update_user_written_path() can't create {}", user_written_path);
     rm_file(&user_written_path);
