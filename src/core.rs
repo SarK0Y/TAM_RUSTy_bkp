@@ -6,7 +6,7 @@ use gag::RedirectError;
 
 use crate::{swtch::{user_wrote_path, user_wrote_path_prnt, read_user_written_path, path_completed}, update18::update_dir_list, shift_cursor_of_prnt};
 
-use self::ps21::{set_ask_user, get_prnt, set_prnt};
+use self::ps21::{set_ask_user, get_prnt, set_prnt, get_mainpath};
 core_use!();
 pub(crate) fn initSession() -> bool{
     let func_id = 1;
@@ -321,16 +321,41 @@ pub(crate) fn get_path_from_prnt() -> String{
     }
     ret
 }
-pub(crate) fn position_of_slash_in_prnt() -> usize{
-    let got_path = get_prnt(-1);
-    let len: usize = got_path.chars().count();
-    let ret = 0usize;
-    let mut yes_path = false;
-    for i in 0..len{
-        let char0 = got_path.chars().nth(i).unwrap();
-        if char0 == '/'{return i;}
-    }
+pub(crate) fn save_file(content: String, fname: String) -> bool{
+    let fname = format!("{}/{}", get_mainpath(-157), fname);
+    let anew_file = || -> File{rm_file(&fname); return File::options().create_new(true).write(true).open(&fname).expect("")};
+    let mut file: File = match File::options().create_new(true).write(true).open(&fname){
+        Ok(f) => f,
+        _ => anew_file()
+    };
+    file.write(content.as_bytes()).expect("save_file failed");
+    true
+}
+pub(crate) fn read_file(fname: &str) -> String{
+    let fname = format!("{}/{}", get_mainpath(-157), fname);
+    let err = format!("failed to read {}", fname);
+    let mut file: File = match File::options().open(&fname){
+        Ok(f) => f,
+        _ => return err
+    };
+    let mut ret = String::new();
+    file.read_to_string(&mut ret);
     ret
+}
+pub(crate) fn read_prnt() -> String{read_file("prnt")}
+pub(crate) fn file_prnt(content: String){save_file(content, "prnt".to_string());}
+pub(crate) fn position_of_slash_in_prnt() -> usize{
+    let got_path = read_prnt();
+    let ret = usize::MAX;
+    let mut i = 0usize;
+    loop{
+        let char0 = match got_path.chars().nth(i){
+            Some(ch) => ch,
+            _ => return ret
+        };
+        if char0 == '/'{return i;}
+        i += 1;
+    }
 }
 pub(crate) fn i64_2_usize(v: i64) -> usize{
     let mut ret = 0usize;

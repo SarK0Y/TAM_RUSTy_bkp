@@ -18,7 +18,7 @@ macro_rules! set_prnt_ {
        // PRNT = RwLock::new(String::new());
         //*PRNT.write().unwrap() = $x.to_string();
         PRNT = UnsafeCell::new($x.to_string());
-        crate::popup_msg(&*PRNT.get()); //PRNT.get().as_ref().expect("set_prnt_!() can't unwrap PRNT").clear();
+        //crate::popup_msg(&*PRNT.get()); //PRNT.get().as_ref().expect("set_prnt_!() can't unwrap PRNT").clear();
         //*PRNT.get_mut().as_ref().expect("set_prnt_!() can't unwrap PRNT").push_str(cpy_str($x).as_str());
     };
 }
