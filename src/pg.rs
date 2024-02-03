@@ -98,7 +98,7 @@ if run_command.status.success(){
 pub(crate) 
 fn hotKeys() -> String{
     let func_id = crate::func_id18::hotKeys;
-    if unsafe {crate::swtch::path_completed(true, true)}{unsafe {crate::swtch::path_completed(false, false);}; return "dontPass".to_string();}
+    //if unsafe {crate::swtch::path_completed(true, true)}{unsafe {crate::swtch::path_completed(false, false);}; return "dontPass".to_string();}
     let mut Key =String::new();
     let mut cmd = String::new();
     Key.push_str(crate::getkey().as_str());

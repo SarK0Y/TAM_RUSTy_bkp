@@ -4,7 +4,7 @@ mod exts;
 use exts::*;
 use gag::RedirectError;
 
-use crate::{swtch::{user_wrote_path, user_wrote_path_prnt, read_user_written_path, path_completed}, update18::update_dir_list};
+use crate::{swtch::{user_wrote_path, user_wrote_path_prnt, read_user_written_path, path_completed}, update18::update_dir_list, shift_cursor_of_prnt};
 
 use self::ps21::{set_ask_user, get_prnt, set_prnt};
 core_use!();
@@ -222,7 +222,7 @@ pub(crate) fn complete_path(dir: &str, opts: &str, no_grep: bool){
         let prnt = get_prnt(-5);
         set_ask_user(&prnt, -5);
         rewrite_user_written_path(&full_path);
-        unsafe{crate::swtch::path_completed(true, false);}
+        //unsafe{crate::swtch::path_completed(true, false);}
         update_dir_list(&full_path, opts, no_grep);
     }
 }
@@ -321,13 +321,38 @@ pub(crate) fn get_path_from_prnt() -> String{
     }
     ret
 }
+pub(crate) fn position_of_slash_in_prnt() -> usize{
+    let got_path = get_prnt(-1);
+    let len: usize = got_path.chars().count();
+    let ret = 0usize;
+    let mut yes_path = false;
+    for i in 0..len{
+        let char0 = got_path.chars().nth(i).unwrap();
+        if char0 == '/'{return i;}
+    }
+    ret
+}
+pub(crate) fn i64_2_usize(v: i64) -> usize{
+    let mut ret = 0usize;
+    let unit = 1i64;
+    let shl = 1usize;
+    let mut v = v;
+    let i64_len: usize = size_of::<i64>() * 8;
+    for i in 0..i64_len{
+        if v & unit == 1{ret += (shl << i);}       
+        v = v >> 1;
+    }
+    ret
+}
 pub(crate) fn usize_2_i64(v: usize) -> i64{
     let mut ret = 0i64;
     let unit = 1usize;
     let shl = 1i64;
+    let mut v = v;
     let usize_len: usize = size_of::<usize>() * 8;
     for i in 0..usize_len{
-        if v & unit == 1{ret += (shl << i);}       
+        if v & unit == 1{ret += (shl << i);}
+        v = v >> 1;
     }
     ret
 }
