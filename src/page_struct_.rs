@@ -140,6 +140,7 @@ pub(crate) fn press_DEL(val: &str) -> page_struct_ret{return unsafe{page_struct(
 pub(crate) fn press_BKSP() -> page_struct_ret{return unsafe{page_struct("prnt", 0, __BKSP)}}
 /*------------------------------------------------------------------------------------------------------------------------ */
 pub(crate) fn get_mainpath(func_id: i64) -> String{return unsafe{page_struct("", MAINPATH_, func_id).str_}}
+pub(crate) fn get_tmp_dir(func_id: i64) -> String{return unsafe{page_struct("", TMP_DIR_, func_id).str_}}
 pub(crate) fn get_prnt(func_id: i64) -> String{return unsafe{page_struct("", PRNT_, func_id).str_}}
 pub(crate) fn set_prnt(val: &str, func_id: i64) -> String{
   let get_prnt_dbg = get_prnt;

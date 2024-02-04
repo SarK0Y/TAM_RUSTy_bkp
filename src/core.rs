@@ -322,9 +322,9 @@ pub(crate) fn get_path_from_prnt() -> String{
     ret
 }
 pub(crate) fn save_file(content: String, fname: String) -> bool{
-    let fname = format!("{}/{}", get_mainpath(-157), fname);
+    let fname = format!("{}/{}", crate::get_tmp_dir(-157), fname);
     let anew_file = || -> File{rm_file(&fname); return File::options().create_new(true).write(true).open(&fname).expect("")};
-    let mut file: File = match File::options().create_new(true).write(true).open(&fname){
+    let mut file: File = match File::options().create(true).read(true).write(true).open(&fname){
         Ok(f) => f,
         _ => anew_file()
     };
@@ -332,11 +332,11 @@ pub(crate) fn save_file(content: String, fname: String) -> bool{
     true
 }
 pub(crate) fn read_file(fname: &str) -> String{
-    let fname = format!("{}/{}", get_mainpath(-157), fname);
-    let err = format!("failed to read {}", fname);
-    let mut file: File = match File::options().open(&fname){
+    let fname = format!("{}/{}", crate::get_tmp_dir(-157), fname);
+    //let err = format!("failed to read {}", fname);
+    let mut file: File = match File::open(&fname){
         Ok(f) => f,
-        _ => return err
+        Err(e) => return format!("{:?}", e)
     };
     let mut ret = String::new();
     file.read_to_string(&mut ret);

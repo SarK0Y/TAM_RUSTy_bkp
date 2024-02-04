@@ -223,7 +223,7 @@ pub(crate) fn set_user_written_path_from_prnt() -> String{
 
 pub(crate) fn user_writing_path(key: String) -> bool{
     let cur_cur_pos = get_prnt(-19).chars().count() - unsafe {crate::shift_cursor_of_prnt(0, -19).shift};
-    if position_of_slash_in_prnt() < cur_cur_pos {unsafe {swtch_fn(-2, crate::cpy_str(&key))}}
+    if position_of_slash_in_prnt() < cur_cur_pos {unsafe {swtch_fn(-2, crate::cpy_str(&key))} return false;}
     let mut save_path = user_wrote_path();
     let mut save_path1 = user_wrote_path();
    // set_ask_user(&save_path, -1); //dbg here
