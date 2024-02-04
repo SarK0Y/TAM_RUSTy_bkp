@@ -223,14 +223,14 @@ pub(crate) fn set_user_written_path_from_prnt() -> String{
 
 pub(crate) fn user_writing_path(key: String) -> bool{
     let cur_cur_pos = get_prnt(-19).chars().count() - unsafe {crate::shift_cursor_of_prnt(0, -19).shift};
-    if position_of_slash_in_prnt() < cur_cur_pos {unsafe {swtch_fn(-2, crate::cpy_str(&key))} return false;}
+    if position_of_slash_in_prnt() >= cur_cur_pos {unsafe {swtch_fn(-2, crate::cpy_str(&key))} return false;}
     let mut save_path = user_wrote_path();
     let mut save_path1 = user_wrote_path();
    // set_ask_user(&save_path, -1); //dbg here
     let key = key.replace("//", "/");
     let path_exist = Path::new(&read_user_written_path()).exists();
     if key.chars().count() > 1 {save_path1 = "/dev/null".to_string(); save_path = "/dev/null".to_string();} 
-    else if path_exist && key != "/" && crate::ln_of_found_files(usize::MAX).1 < 2usize {if unsafe {drop_2_dev_null()}{save_path1 = "/dev/null".to_string(); save_path = "/dev/null".to_string();}}
+    else if path_exist && key != "/" && crate::ln_of_found_files(usize::MAX).1 < 2usize {/*if unsafe {drop_2_dev_null()}*/{save_path1 = "/dev/null".to_string(); save_path = "/dev/null".to_string();}}
     let dbg_prnt = get_prnt(-5);
     set_ask_user(&dbg_prnt, -1);
     let mut file_2_write_path = match File::options().create_new(true).append(true).open(save_path){
@@ -249,7 +249,7 @@ pub(crate) fn user_writing_path(key: String) -> bool{
     crate::globs18::unblock_fd(file_2_write_path.as_raw_fd());
     let mut written_path = read_user_written_path();
     let written_path_from_prnt = get_path_from_prnt();
-    if written_path_from_prnt != written_path && written_path_from_prnt != ""{written_path = written_path_from_prnt;}
+    if written_path_from_prnt.chars().count() > written_path.chars().count(){written_path = written_path_from_prnt;}
     complete_path(&written_path, "-maxdepth 1", false);
     form_cmd_line_default();
     true
