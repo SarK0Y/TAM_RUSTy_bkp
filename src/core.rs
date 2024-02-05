@@ -200,7 +200,8 @@ pub(crate) fn cpy_str(in_str: &String) -> String{
     in_str.to_string()
 }
 pub(crate) fn complete_path(dir: &str, opts: &str, no_grep: bool){
-    update_dir_list(dir, opts, no_grep);
+    let proper_dir = crate::escape_symbs(&dir.to_string());
+    update_dir_list(&proper_dir, opts, no_grep);
     let not_full_path = get_path_from_prnt();//read_user_written_path();
     let num_of_ln_in_dir_lst = ln_of_found_files(usize::MAX).1;
     let mut get_prnt_dbg: fn (i64) -> String = get_prnt;
@@ -223,7 +224,8 @@ pub(crate) fn complete_path(dir: &str, opts: &str, no_grep: bool){
         set_ask_user(&prnt, -5);
         rewrite_user_written_path(&full_path);
         //unsafe{crate::swtch::path_completed(true, false);}
-        update_dir_list(&full_path, opts, no_grep);
+        let proper_dir = crate::escape_symbs(&full_path.to_string());
+        update_dir_list(&proper_dir, opts, no_grep);
     }
 }
 pub(crate) fn update_user_written_path(e: std::io::Error) -> File{

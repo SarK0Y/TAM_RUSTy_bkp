@@ -1,7 +1,7 @@
 use chrono::format;
 use num_traits::ToPrimitive;
 
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -26,6 +26,12 @@ pub fn rm_char_from_string(indx: usize, origString: &String) -> String{
         }
     }
     ret
+}
+pub(crate) fn Enter(){
+    let mut mode = 0i64;
+    unsafe{check_mode(&mut mode)}
+    if mode == SWTCH_USER_WRITING_PATH{mode = SWTCH_RUN_VIEWER}
+    unsafe {crate::swtch::swtch_fn(mode, "".to_string());}
 }
 pub fn unblock_fd(fd: RawFd) -> io::Result<()> {
     let flags = unsafe { fcntl(fd, F_GETFL, 0) };

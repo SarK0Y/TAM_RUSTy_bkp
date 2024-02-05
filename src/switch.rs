@@ -1,6 +1,7 @@
 use chrono::format::format;
 use num_traits::{FloatErrorKind, ToPrimitive};
 use once_cell::sync::OnceCell;
+use substring::Substring;
 use std::{
     fs::File,
     path::Path,
@@ -14,11 +15,11 @@ use std::{
     },
     os::fd::AsRawFd,
     i64,
-    usize
+    usize,
 };
 pub const SWTCH_RUN_VIEWER: i64 = 0;
 pub const SWTCH_USER_WRITING_PATH: i64 = 1;
-use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default, get_prnt, position_of_slash_in_prnt, usize_2_i64};
+use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default, get_prnt, position_of_slash_in_prnt, usize_2_i64, escape_symbs};
 pub(crate) unsafe fn check_mode(mode: &mut i64){
     static mut state: i64 = 0;
     if *mode == -1 {*mode = state;}
@@ -62,9 +63,26 @@ pub(crate) unsafe fn swtch_ps(indx: i64, ps: Option<crate::_page_struct>) -> cra
     if indx > -1{ps_indx = indx.to_usize().unwrap(); return dummy;}
     return crate::cpy_page_struct(&mut ps_.get_mut().unwrap()[ps_indx])
 }
+fn viewer_n_adr(app: String, file: String) -> bool{
+    let func_id = crate::func_id18::viewer_;
+    if app == "none" {
+        crate::core18::errMsg("To run file w/ viewer, You need to type '<indx of viewer> /path/to/file'", func_id);
+        return false
+    }
+    let msg = || -> bool{crate::core18::errMsg("To run file w/ viewer, You need to type '<indx of viewer> <index of file>'", func_id); return false};
+    let app_indx = match usize::from_str_radix(app.as_str(), 10){
+        Ok(v) => v,
+        _ => return msg()
+    };
+    //let file = escape_symbs(&file);
+    let viewer = get_viewer(app_indx, -1, true);
+    let cmd = format!("{} {} > /dev/null 2>&1", viewer, file);
+    return crate::run_cmd_viewer(cmd)
+}
 pub(crate) fn run_viewer(cmd: String) -> bool{
     let func_id = crate::func_id18::viewer_;
     let  (app_indx, file_indx) = crate::split_once(&cmd, " ");
+    if file_indx.as_str().substring(0, 1) == "/"{return viewer_n_adr(app_indx, file_indx);}
     if app_indx == "none" || file_indx == "none"{
         crate::core18::errMsg("To run file w/ viewer, You need to type '<indx of viewer> <index of file>'", func_id);
         return false
