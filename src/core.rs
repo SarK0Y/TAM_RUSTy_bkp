@@ -260,6 +260,7 @@ pub(crate) fn rm_file(file: &String) -> bool{
     true
 }
 pub(crate) fn read_midway_data_4_ls() -> bool{
+   // return true;
     let func_id = crate::func_id18::read_midway_data_;
     let mut added_indx = 0usize;
     loop {
@@ -271,8 +272,8 @@ pub(crate) fn read_midway_data_4_ls() -> bool{
         if indx <= added_indx && added_indx > 0{continue;}
         added_indx = indx;
         let line = line.unwrap();
-        let ret = crate::globs18::add_2_front_list(&line, -1); // todo => add_2_front_list
-        let line_dbg = get_item_from_front_list(usize_2_i64(indx), false); 
+        let ret = crate::globs18::add_2_front_list(&line, -1); 
+        //let line_dbg = get_item_from_front_list(usize_2_i64(indx), false); 
         if dirty!(){println!("line {}", line)}
         if line == stopCode{crate::ps18::fix_num_files(func_id); return true}
     }  if dirty!(){println!("midway ended")}}
