@@ -18,7 +18,12 @@ use std::{
 };
 pub const SWTCH_RUN_VIEWER: i64 = 0;
 pub const SWTCH_USER_WRITING_PATH: i64 = 1;
-use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default, get_prnt, position_of_slash_in_prnt};
+use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default, get_prnt, position_of_slash_in_prnt, usize_2_i64};
+pub(crate) unsafe fn check_mode(mode: &mut i64){
+    static mut state: i64 = 0;
+    if *mode == -1 {*mode = state;}
+    state = *mode;
+} 
 pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
     static mut fst_run: bool = true;
     static mut fn_indx: usize = 0;
@@ -34,10 +39,14 @@ pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
         let len = fn_.get().expect("Can't unwrap fn_ in swtch_fn").len();
         if indx > len {set_ask_user("indx gets out of fn_ ", -178); return;}
         fn_.get().unwrap()[indx](cmd);
+        let mut indx = usize_2_i64(indx);
+        check_mode(&mut indx);
         return;
     }
     if indx > -1 {fn_indx = indx.to_usize().unwrap(); return;}
   //  if indx > -1 && !cmd.is_empty(){fn_indx = indx.to_usize().unwrap();}
+    let mut mode = indx;
+    check_mode(&mut mode);
     fn_.get().unwrap()[fn_indx](cmd);
 }
 pub(crate) unsafe fn swtch_ps(indx: i64, ps: Option<crate::_page_struct>) -> crate::_page_struct{
