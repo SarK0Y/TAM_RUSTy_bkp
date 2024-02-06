@@ -1,7 +1,7 @@
 use chrono::format;
 use num_traits::ToPrimitive;
 
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -26,6 +26,20 @@ pub fn rm_char_from_string(indx: usize, origString: &String) -> String{
         }
     }
     ret
+}
+pub(crate) fn Ins_key(){
+    let mut prnt: String = read_prnt();
+    let path = get_path_from_strn(crate::cpy_str(&prnt));
+    let mut file_indx = String::new();
+    io::stdin().read_line(&mut file_indx).expect("Ins_key failed to read console");
+    let file_indx = match i64::from_str_radix(&file_indx, 10){
+        Ok(int) => int,
+        _ => -1i64
+    };
+    if file_indx == -1{set_ask_user("give a number within the range.", -1); return;}
+    let file = get_item_from_front_list(file_indx, true);
+    prnt = prnt.replace(&path, &file);
+    crate::set_prnt(&prnt, -1);
 }
 pub(crate) fn Enter(){
     let mut mode = 0i64;
