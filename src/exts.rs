@@ -139,6 +139,7 @@ use set_prnt_;
 }
 macro_rules! globs_uses {
     () => {
+    use substring::Substring;
     use std::sync::{RwLock, Arc};
     use once_cell::unsync::Lazy;
     use ansi_term::ANSIString;

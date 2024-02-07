@@ -1,6 +1,5 @@
 use chrono::format;
 use num_traits::ToPrimitive;
-
 use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
@@ -32,11 +31,14 @@ pub(crate) fn Ins_key(){
     let path = get_path_from_strn(crate::cpy_str(&prnt));
     let mut file_indx = String::new();
     io::stdin().read_line(&mut file_indx).expect("Ins_key failed to read console");
+    let file_indx = file_indx.as_str().substring(0, file_indx.len() -1);
+    let mut err_msg = "".to_string();
+    let mut handle_err =|e: std::num::ParseIntError| -> i64 {err_msg = format!("{:?}", e); -1i64};
     let file_indx = match i64::from_str_radix(&file_indx, 10){
         Ok(int) => int,
-        _ => -1i64
+        Err(e) => handle_err(e)
     };
-    if file_indx == -1{set_ask_user("give a number within the range.", -1); return;}
+    if file_indx == -1i64{set_ask_user(&err_msg, -1); return;}
     let file = get_item_from_front_list(file_indx, true);
     prnt = prnt.replace(&path, &file);
     crate::set_prnt(&prnt, -1);
