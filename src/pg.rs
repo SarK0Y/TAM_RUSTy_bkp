@@ -196,7 +196,11 @@ pub(crate) fn form_cmd_line_default(){
     let mut prnt = get_prnt(func_id);
     let full_path = read_user_written_path();
     let partial_path = get_path_from_strn(crate::cpy_str(&prnt));
-    if partial_path != ""{prnt = prnt.replace(&partial_path, &full_path);}
+    if partial_path != ""{
+        if partial_path.chars().count() < full_path.chars().count(){
+        prnt = prnt.replace(&partial_path, &full_path);
+        }
+    }
     //else {prnt = format!("{} {}", prnt, full_path);}
     if full_path.len() > 0{set_prnt(&prnt, func_id);}
     let len = prnt.chars().count();
