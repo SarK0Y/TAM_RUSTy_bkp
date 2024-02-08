@@ -74,7 +74,7 @@ fn viewer_n_adr(app: String, file: String) -> bool{
         Ok(v) => v,
         _ => return msg()
     };
-    //let file = escape_symbs(&file);
+    let file = escape_symbs(&file);
     let viewer = get_viewer(app_indx, -1, true);
     let cmd = format!("{} {} > /dev/null 2>&1", viewer, file);
     return crate::run_cmd_viewer(cmd)

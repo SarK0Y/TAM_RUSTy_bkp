@@ -26,7 +26,7 @@ pub fn rm_char_from_string(indx: usize, origString: &String) -> String{
     }
     ret
 }
-pub(crate) fn Ins_key(){
+pub(crate) fn Ins_key() -> String{
     let mut prnt: String = read_prnt();
     let path = get_path_from_strn(crate::cpy_str(&prnt));
     let mut file_indx = String::new();
@@ -38,10 +38,13 @@ pub(crate) fn Ins_key(){
         Ok(int) => int,
         Err(e) => handle_err(e)
     };
-    if file_indx == -1i64{set_ask_user(&err_msg, -1); return;}
-    let file = get_item_from_front_list(file_indx, true);
+    if file_indx == -1i64{set_ask_user(&err_msg, -1); return "none done".to_string();}
+    let mut file = get_item_from_front_list(file_indx, true);
+    let is_dir = crate::Path::new(&file).is_dir();
+    if is_dir {file.push('/');}
     prnt = prnt.replace(&path, &file);
     crate::set_prnt(&prnt, -1);
+    prnt
 }
 pub(crate) fn Enter(){
     let mut mode = 0i64;

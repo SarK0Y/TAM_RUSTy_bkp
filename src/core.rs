@@ -68,7 +68,7 @@ if checkArg("-dbg"){println!("shell out = {:?}", run_shell4)};
 unsafe{crate::page_struct(&path_2_found_files_list, set(crate::FOUND_FILES_), func_id);
        crate::page_struct("empty", set(crate::KONSOLE_TITLE_), func_id);}
     crate::globs18::set_main0_as_front();
-    crate::set_prnt("test typing", func_id);
+    crate::set_prnt("", func_id);
     unsafe {crate::swtch::form_list_of_viewers(false);}
     return true;
 }
@@ -326,7 +326,7 @@ pub(crate) fn get_path_from_prnt() -> String{
 }
 pub(crate) fn save_file(content: String, fname: String) -> bool{
     let fname = format!("{}/{}", crate::get_tmp_dir(-157), fname);
-    let anew_file = || -> File{rm_file(&fname); return File::options().create_new(true).write(true).open(&fname).expect("")};
+    let anew_file = || -> File{rm_file(&fname); return File::options().create_new(true).write(true).open(&fname).expect(&fname)};
     let mut file: File = match File::options().create(true).read(true).write(true).open(&fname){
         Ok(f) => f,
         _ => anew_file()
@@ -346,7 +346,10 @@ pub(crate) fn read_file(fname: &str) -> String{
     ret
 }
 pub(crate) fn read_prnt() -> String{read_file("prnt")}
-pub(crate) fn file_prnt(content: String){save_file(content, "prnt".to_string());}
+pub(crate) fn file_prnt(content: String){
+    save_file(cpy_str(&content), "prnt".to_string());
+    let path = get_path_from_strn(content);
+    save_file(path, "user_wrote_path".to_string());}
 pub(crate) fn position_of_slash_in_prnt() -> usize{
     let got_path = read_prnt();
     let ret = usize::MAX;
