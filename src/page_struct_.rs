@@ -121,7 +121,6 @@ pub(crate) fn INS(val: &str) -> bool{
       let new_string = crate::globs18::ins_last_char_to_string1_from_string1(cur_cur_pos, string1);
       //loop {
           set_prnt(&new_string, func_id);
-          set_prompt("tsssssst", func_id);
           //set_ask_user(&new_string, func_id);
         //  if get_prnt(func_id) == new_string{break;}
       //}
@@ -271,7 +270,7 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
       VIEWER.set(viewer_vec);
      // let msg = format!("notify-send 'once prnt {}'", PRNT.get().unwrap()[0]);
      // crate::run_cmd0(msg);
-      let _ = PROMPT.set("prob".to_string());
+      let _ = PROMPT.set("Your command, Please: ".to_string());
       fst_run = false;
     }
     //let fn_ptr_get_string: fn(&str) -> String = get_string;

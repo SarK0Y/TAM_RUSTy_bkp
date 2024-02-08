@@ -1,6 +1,6 @@
 use chrono::format;
 use num_traits::ToPrimitive;
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -30,6 +30,8 @@ pub(crate) fn Ins_key() -> String{
     let mut prnt: String = read_prnt();
     let path = get_path_from_strn(crate::cpy_str(&prnt));
     let mut file_indx = String::new();
+    let spaces = repeat_char(63, " ");
+    println!(" \rPlease, enter indx of dir/file name to autocomplete: {}", spaces);
     io::stdin().read_line(&mut file_indx).expect("Ins_key failed to read console");
     let file_indx = file_indx.as_str().substring(0, file_indx.len() -1);
     let mut err_msg = "".to_string();

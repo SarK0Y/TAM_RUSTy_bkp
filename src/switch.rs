@@ -249,31 +249,13 @@ pub(crate) fn set_user_written_path_from_prnt() -> String{
 }
 
 pub(crate) fn user_writing_path(key: String) -> bool{
-    let cur_cur_pos = get_prnt(-19).chars().count() - unsafe {crate::shift_cursor_of_prnt(0, -19).shift};
+    let mut cur_cur_pos = get_prnt(-19).chars().count();
+    let shift = unsafe {crate::shift_cursor_of_prnt(0, -19).shift};
+    if cur_cur_pos > shift {cur_cur_pos -= shift;}
+    else {cur_cur_pos =0}
     if position_of_slash_in_prnt() >= cur_cur_pos {unsafe {swtch_fn(-2, crate::cpy_str(&key))} return false;}
-    let mut save_path = user_wrote_path();
-    let mut save_path1 = user_wrote_path();
    // set_ask_user(&save_path, -1); //dbg here
     let key = key.replace("//", "/");
-    let path_exist = Path::new(&read_user_written_path()).exists();
-    if key.chars().count() > 1 {save_path1 = "/dev/null".to_string(); save_path = "/dev/null".to_string();} 
-    else if path_exist && key != "/" && crate::ln_of_found_files(usize::MAX).1 < 2usize {/*if unsafe {drop_2_dev_null()}*/{save_path1 = "/dev/null".to_string(); save_path = "/dev/null".to_string();}}
-    let dbg_prnt = get_prnt(-5);
-    set_ask_user(&dbg_prnt, -1);
-    let mut file_2_write_path = match File::options().create_new(true).append(true).open(save_path){
-        Ok(p) => p,
-        Err(e) => match e.kind(){
-          ErrorKind::AlreadyExists => match File::options().append(true).write(true).open(save_path1){
-            Ok(f) => f,
-            _ => update_user_written_path(e)
-          }
-        _ => return false
-        }
-    }; //.expect("user_wrote_path failed ");
-    //let mut writer = BufWriter::new(file_2_write_path);
-    let key = format!("{}", key);
-    file_2_write_path.write_all(key.as_bytes()).expect("user_wrote_path failed write in");
-    crate::globs18::unblock_fd(file_2_write_path.as_raw_fd());
     let mut written_path = read_user_written_path();
     let written_path_from_prnt = get_path_from_prnt();
     if written_path_from_prnt.chars().count() > written_path.chars().count(){written_path = written_path_from_prnt;}
