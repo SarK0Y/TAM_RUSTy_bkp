@@ -207,7 +207,7 @@ pub(crate) fn complete_path(dir: &str, opts: &str, no_grep: bool){
     let mut get_prnt_dbg: fn (i64) -> String = get_prnt;
     let mut prnt = String::from("");
     //for i in 0..100{
-        prnt.push_str(get_prnt(-5).as_str());
+        prnt.push_str(read_prnt().as_str());
       //  if prnt != ""{break;}
     //}
     let mut prnt = "".to_string();
@@ -220,7 +220,7 @@ pub(crate) fn complete_path(dir: &str, opts: &str, no_grep: bool){
         let msg = format!("prnt: {}", prnt);
         //popup_msg(msg.as_str());
         set_prnt(&prnt, -47);
-        let prnt = get_prnt(-5);
+        let prnt = read_prnt();
         set_ask_user(&prnt, -5);
         rewrite_user_written_path(&full_path);
         //unsafe{crate::swtch::path_completed(true, false);}
@@ -313,7 +313,7 @@ pub(crate) fn get_path_from_strn(strn: String) -> String{
     ret
 }
 pub(crate) fn get_path_from_prnt() -> String{
-    let got_path = get_prnt(-1);
+    let got_path = read_prnt();
     let len: usize = got_path.chars().count();
     let mut ret = String::new();
     let mut yes_path = false;
