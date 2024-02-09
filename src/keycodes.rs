@@ -6,6 +6,7 @@ pub(crate) const TAB: u8 = 9;
 pub(crate) const DELETE: &str = "\x1b[3~";
 pub(crate) const F12: &str = "\x1b[24~";
 pub(crate) const F5:  &str  = "\x1b[15~";
+pub(crate) const F3:  &str  = "\x1bOR";
 pub(crate) const F1: &str = "\x1bOP";
 pub(crate) const F1_glitch0: &str = "POP";
 pub(crate) const F1_glitch1: &str = "OP";

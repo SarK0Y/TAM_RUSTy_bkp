@@ -220,7 +220,13 @@ pub(crate) fn set_user_written_path_from_strn(strn: String) -> bool{
    // set_ask_user(&save_path, -1); //dbg here
     let mut file_2_write_path = match File::options().create(true).open(save_path){
         Ok(p) => p,
-        Err(e) => update_user_written_path(e)
+        Err(e) => match e.kind(){
+            ErrorKind::NotFound => match File::options().create_new(true).open(save_path1){
+                Ok(f) => f,
+                _ => update_user_written_path(e)
+            }
+        _ => update_user_written_path(e)
+        } 
     }; //.expect("user_wrote_path failed ");
     //let mut writer = BufWriter::new(file_2_write_path)
     file_2_write_path.write_all(strn.as_bytes()).expect("user_wrote_path failed write in");

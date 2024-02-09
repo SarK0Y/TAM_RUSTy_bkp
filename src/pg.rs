@@ -126,6 +126,9 @@ fn hotKeys() -> String{
     if crate::globs18::eq_ansi_str(&kcode::INSERT, Key.as_str()) == 0 {
         return crate::globs18::Ins_key();
     }
+    if crate::globs18::eq_ansi_str(&kcode::F3, Key.as_str()) == 0 {
+        return crate::globs18::F3_key();
+    }
     if "/" == Key.as_str() {let mut Key_cpy =String::from(&Key); let mut Key_ = String::from(&Key); lets_write_path(Key_cpy); crate::INS(&Key_);
     return "/".to_string();}
     if crate::globs18::eq_ansi_str(&kcode::Alt_0, Key.as_str()) == 0 {

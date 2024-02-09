@@ -1,6 +1,6 @@
 use chrono::format;
 use num_traits::ToPrimitive;
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -25,6 +25,18 @@ pub fn rm_char_from_string(indx: usize, origString: &String) -> String{
         }
     }
     ret
+}
+pub(crate) fn F3_key() -> String{
+    let mut prnt: String = read_prnt();
+    let orig_path = get_path_from_strn(crate::cpy_str(&prnt));
+    let mut path = format!("{}/{}", Path::new(&orig_path).parent().unwrap().to_str().unwrap(), "/");
+    path = path.replace("//", "/");
+    prnt = prnt.replace(&orig_path, &path);
+    set_prnt(&prnt, -1405);
+    //rm_file(&user_wrote_path);
+    set_user_written_path_from_strn(path.to_string());
+    let user_wrote_path = user_wrote_path();
+    prnt
 }
 pub(crate) fn Ins_key() -> String{
     let mut prnt: String = read_prnt();

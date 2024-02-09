@@ -139,6 +139,9 @@ use set_prnt_;
 }
 macro_rules! globs_uses {
     () => {
+    //use rustix::path::arg::Arg;
+    use std::path::Path;
+    use std::ffi::OsString;
     use substring::Substring;
     use std::sync::{RwLock, Arc};
     use once_cell::unsync::Lazy;
