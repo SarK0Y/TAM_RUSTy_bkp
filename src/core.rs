@@ -327,7 +327,7 @@ pub(crate) fn get_path_from_prnt() -> String{
 pub(crate) fn save_file(content: String, fname: String) -> bool{
     let fname = format!("{}/{}", crate::get_tmp_dir(-157), fname);
     let anew_file = || -> File{rm_file(&fname); return File::options().create_new(true).write(true).open(&fname).expect(&fname)};
-    let mut file: File = match File::options().create(true).read(true).write(true).open(&fname){
+    let mut file: File = match File::options().create(true).read(true).truncate(true).write(true).open(&fname){
         Ok(f) => f,
         _ => anew_file()
     };

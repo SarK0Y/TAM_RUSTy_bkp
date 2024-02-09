@@ -216,6 +216,7 @@ pub(crate) fn user_wrote_path_prnt() -> String{
 pub(crate) fn set_user_written_path_from_strn(strn: String) -> bool{
     let save_path = user_wrote_path();
     let save_path1 = user_wrote_path();
+    let save_path2 = user_wrote_path();
     let strn = crate::get_path_from_strn(strn);
    // set_ask_user(&save_path, -1); //dbg here
     let mut file_2_write_path = match File::options().create(true).open(save_path){
@@ -225,10 +226,11 @@ pub(crate) fn set_user_written_path_from_strn(strn: String) -> bool{
                 Ok(f) => f,
                 _ => update_user_written_path(e)
             }
-        _ => update_user_written_path(e)
+        _ => File::options().write(true).open(save_path2).expect("set_user_written_path_from_strn failed")
         } 
     }; //.expect("user_wrote_path failed ");
     //let mut writer = BufWriter::new(file_2_write_path)
+    file_2_write_path.set_len(0);
     file_2_write_path.write_all(strn.as_bytes()).expect("user_wrote_path failed write in");
     crate::globs18::unblock_fd(file_2_write_path.as_raw_fd());
     let written_path = read_user_written_path();
