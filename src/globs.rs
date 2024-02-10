@@ -1,6 +1,6 @@
 use chrono::format;
 use num_traits::ToPrimitive;
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -266,6 +266,14 @@ if list == MAIN0_ {
     if op_code == SET_FRONT_LIST {
        FRONT.take(); FRONT.take();
        FRONT.set(&MAIN0.get().unwrap());
+       let main_path = get_tmp_dir(-13374);
+       let main0_path = format!("{}/{}", &main_path, "main0");
+       let found_files_path = format!("{}/{}", &main_path, "found_files");
+       let cmd = format!("touch -f {}", &main0_path);
+       run_cmd_str(&cmd);
+       let cmd = format!("ln -sf {} {}", main0_path, found_files_path);
+       run_cmd_str(&cmd);
+       return "main0 gets set as front".to_string();
     }
 }
 if list == LS_ {
@@ -282,9 +290,14 @@ if list == LS_ {
     }
     if op_code == LEN{return ln_of_found_files(usize::MAX).1.to_string()}
     if op_code == SET_FRONT_LIST {
-       //FRONT.take(); FRONT.take();
-      // LS =  RwLock::new(Lazy::new(||{vec!["".to_string()]}));
-       //FRONT.set(&LS.read().expect(""));
+       let main_path = get_tmp_dir(-13314);
+       let ls_path = format!("{}/{}", &main_path, "ls");
+       let found_files_path = format!("{}/{}", &main_path, "found_files");
+       let cmd = format!("touch -f {}", &ls_path);
+       run_cmd_str(&cmd);
+       let cmd = format!("ln -sf {} {}", ls_path, found_files_path);
+       run_cmd_str(&cmd);
+       return "ls gets set as front".to_string();
     }
 }
 if list == FRONT_ {
