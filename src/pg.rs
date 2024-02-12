@@ -103,9 +103,8 @@ fn hotKeys() -> String{
     let mut cmd = String::new();
     Key.push_str(crate::getkey().as_str());
     if crate::globs18::eq_ansi_str(&kcode::F1, Key.as_str()) == 0 {
-        let msg = get_prnt(func_id);
-        crate::achtung(msg.as_str());
-        return "go2 0".to_string();
+        //crate::globs18::F1_key();
+        return "".to_string();
     } 
     if crate::globs18::eq_ansi_str(&kcode::DOWN_ARROW, Key.as_str()) == 0 {
         return "pp".to_string();

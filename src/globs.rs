@@ -1,6 +1,6 @@
 use chrono::format;
 use num_traits::ToPrimitive;
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -25,6 +25,18 @@ pub fn rm_char_from_string(indx: usize, origString: &String) -> String{
         }
     }
     ret
+}
+pub(crate) fn get_num_pg_4_main0() -> i64{
+    let num_pg = read_file("main0.pg");
+    match i64::from_str_radix(&num_pg, 10){
+        Ok(num) => return num,
+        _ => return 0
+    };
+}
+pub(crate) fn F1_key() -> String{
+    let mut prnt: String = read_prnt();
+   set_main0_as_front();
+    "go2 0".to_string()
 }
 pub(crate) fn F3_key() -> String{
     let mut prnt: String = read_prnt();
@@ -232,7 +244,7 @@ pub(crate) fn get_item_from_front_list(indx: i64, fixed_indx: bool) -> String{
     if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
     return unsafe{lists("", list_id.0, proper_indx.0, GET)}
 }
-pub fn set_main0_as_front(){unsafe{lists("", MAIN0_, 0, SET_FRONT_LIST);}}
+pub fn set_main0_as_front(){mark_front_lst("main0"); unsafe{lists("", MAIN0_, 0, SET_FRONT_LIST);}}
 pub fn set_ls_as_front() -> String{
       let mut list_id: (i64, bool) = (1i64, false);
     for i in 0..1000{
@@ -240,6 +252,7 @@ pub fn set_ls_as_front() -> String{
         if list_id.1{break;}
     }
     if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    mark_front_lst("ls");
     unsafe{lists("", LS_, 0, SET_FRONT_LIST); return "ok".to_string();}}
 pub unsafe fn lists(val: &str, list: i64, indx: usize, op_code: i64) -> String{
 static mut MAIN0: OnceCell<Vec<String>> = OnceCell::new();
@@ -269,8 +282,10 @@ if list == MAIN0_ {
        let main_path = get_tmp_dir(-13374);
        let main0_path = format!("{}/{}", &main_path, "main0");
        let found_files_path = format!("{}/{}", &main_path, "found_files");
-       let cmd = format!("touch -f {}", &main0_path);
-       run_cmd_str(&cmd);
+       if !Path::new(&main0_path).exists(){
+        let cmd = format!("touch -f {}", &main0_path);
+        run_cmd_str(&cmd);
+       }
        let cmd = format!("ln -sf {} {}", main0_path, found_files_path);
        run_cmd_str(&cmd);
        return "main0 gets set as front".to_string();

@@ -8,6 +8,9 @@ use crate::{swtch::{user_wrote_path, user_wrote_path_prnt, read_user_written_pat
 
 use self::ps21::{set_ask_user, get_prnt, set_prnt, get_mainpath};
 core_use!();
+pub(crate) fn mark_front_lst(name: &str){
+    save_file(name.to_string(), "front_list".to_string());
+}
 pub(crate) fn initSession() -> bool{
     let func_id = 1;
     let run_command = Command::new("bash").arg("-c").arg("cd ~;pwd")
@@ -70,6 +73,8 @@ unsafe{crate::page_struct(&path_2_found_files_list, set(crate::FOUND_FILES_), fu
     crate::globs18::set_main0_as_front();
     crate::set_prnt("", func_id);
     unsafe {crate::swtch::form_list_of_viewers(false);}
+    crate::save_file("".to_string(), "main0.pg".to_string());
+    mark_front_lst("main0");
     return true;
 }
 pub(crate) fn errMsg_dbg(msg: &str, val_func_id: i64, delay: f64) {
