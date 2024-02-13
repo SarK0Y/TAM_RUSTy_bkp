@@ -8,6 +8,7 @@
 #[allow(arithmetic_overflow)]
 mod exts;
 use exts::*;
+use globs18::get_item_from_front_list;
 use_all!();
 
 pub(crate) fn split_once(in_string: &str, delim: &str) -> (String, String) {
@@ -82,18 +83,20 @@ stderr_path = format!("{}stderr", unsafe{ps18::page_struct("", ps18::MAINPATH_, 
 let path_2_list_of_found_files = format!("{}", unsafe{ps18::page_struct("", ps18::FOUND_FILES_, -1).str_});
 core18::errMsg_dbg(&stderr_path, func_id, -1.0);
 let fstderr = File::create(stderr_path).unwrap();
+let fstdout0 = File::open("/dev/null").unwrap();
 //let mut fstdout0 = io::BufReader::new(fstdout0);
 //errMsg_dbg(&in_name, func_id, -1.0);
 let run_command = Command::new("bash").arg("-c").arg(path_2_cmd)//.arg(";echo").arg(stopCode)
 //let run_command = Command::new(cmd)
     .stderr(fstderr)
-    .output()
+    .stdout(fstdout0)
+    .spawn()
     .expect("can't run command in run_cmd_viewer");
-if run_command.status.success(){
+/*if run_command.status.success(){
     io::stdout().write_all(&run_command.stdout).unwrap();
     io::stderr().write_all(&run_command.stderr).unwrap();
     return false;
-}
+}*/
 true
 }
 pub fn run_cmd(cmd: String) -> bool{
@@ -136,7 +139,8 @@ fn read_midway_data() -> bool{
         if indx <= added_indx && added_indx > 0{continue;}
         added_indx = indx;
         let line = line.unwrap();
-        let ret = globs18::add_2_main0_list(&line); // todo => add_2_front_list
+        let ret = globs18::add_2_front_list(&line, -1); // todo => add_2_front_list
+        let line_dbg = get_item_from_front_list(usize_2_i64(indx), false);
         ps18::set_num_files(func_id); 
         if dirty!(){println!("line {}", line)}
         if line == stopCode{ps18::fix_num_files(func_id); return true}
@@ -151,7 +155,7 @@ let output = format!("{}/found_files", unsafe{ps18::page_struct("", ps18::TMP_DI
 if in_name.len() == 0{in_name = core18::put_in_name();}
 else{in_name = format!("|{}", form_grep_cmd(&in_name));}
 let stopCode: String = unsafe {ps18::page_struct("", ps18::STOP_CODE_,-1).str_};
-let cmd: String = format!("#!/bin/bash\nfind -L '{path}' -type f{in_name} >> {};echo '{stopCode}' >> {}", output, output);
+let mut cmd: String = format!("#!/bin/bash\nfind -L '{path}' -type f{in_name} >> {};echo '{stopCode}' >> {}", output, output);
 run_cmd0(cmd);
 return true;
 }

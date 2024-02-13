@@ -1,13 +1,12 @@
 use chrono::format;
 use num_traits::ToPrimitive;
-
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt}, swtch::local_indx, core18::calc_num_files_up2_cur_pg};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
 pub const FILTERED_: i64 =  3;
 pub const MERGE_: i64 =  4;
-pub const LS: i64 =  5;
+pub const LS_: i64 =  5;
 pub const ADD: i64 =  6;
 pub const INS: i64 =  7;
 pub const DEL: i64 =  8;
@@ -26,6 +25,69 @@ pub fn rm_char_from_string(indx: usize, origString: &String) -> String{
         }
     }
     ret
+}
+pub(crate) fn show_ls(){
+    unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
+}
+pub(crate) fn get_num_pg_4_main0() -> i64{
+    let num_pg = read_file("main0.pg");
+    match i64::from_str_radix(&num_pg, 10){
+        Ok(num) => return num,
+        _ => return 0
+    };
+}
+pub(crate) fn set_valid_list_as_front(){
+    let tmp_dir = get_tmp_dir(-6015);
+    let active_lst = format!("{}/{}", &tmp_dir, read_file("front_list"));
+    let front_list_link = format!("{}/found_files", &tmp_dir);
+    let cmd = format!("ln -sf {} {}", active_lst, front_list_link);
+    run_cmd_str(&cmd);
+}
+pub(crate) fn F1_key() -> String{
+    let mut prnt: String = read_prnt();
+   set_main0_as_front();
+    "go2 0".to_string()
+}
+pub(crate) fn F3_key() -> String{
+    unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
+    let mut prnt: String = read_prnt();
+    let orig_path = get_path_from_strn(crate::cpy_str(&prnt));
+    let mut path = format!("{}/", Path::new(&orig_path).parent().unwrap().to_str().unwrap());
+    path = path.replace("//", "/");
+    prnt = prnt.replace(&orig_path, &path);
+    set_prnt(&prnt, -1405);
+    /*let user_wrote_path = user_wrote_path();
+    rm_file(&user_wrote_path);*/
+    set_user_written_path_from_strn(path.to_string());
+    prnt
+}
+pub(crate) fn Ins_key() -> String{
+    let mut prnt: String = read_prnt();
+    let path = get_path_from_strn(crate::cpy_str(&prnt));
+    let mut file_indx = String::new();
+    let spaces = repeat_char(63, " ");
+    println!(" \rPlease, enter indx of dir/file name to autocomplete: {}", spaces);
+    io::stdin().read_line(&mut file_indx).expect("Ins_key failed to read console");
+    let file_indx = file_indx.as_str().substring(0, file_indx.len() -1);
+    let mut err_msg = "".to_string();
+    let mut handle_err =|e: std::num::ParseIntError| -> i64 {err_msg = format!("{:?}", e); -1i64};
+    let file_indx = match i64::from_str_radix(&file_indx, 10){
+        Ok(int) => int,
+        Err(e) => handle_err(e)
+    };
+    if file_indx == -1i64{set_ask_user(&err_msg, -1); return "none done".to_string();}
+    let mut file = get_item_from_front_list(file_indx, true);
+    let is_dir = crate::Path::new(&file).is_dir();
+    if is_dir {file.push('/');}
+    prnt = prnt.replace(&path, &file);
+    crate::set_prnt(&prnt, -1);
+    prnt
+}
+pub(crate) fn Enter(){
+    let mut mode = 0i64;
+    unsafe{check_mode(&mut mode)}
+    if mode == SWTCH_USER_WRITING_PATH{mode = SWTCH_RUN_VIEWER}
+    unsafe {crate::swtch::swtch_fn(mode, "".to_string());}
 }
 pub fn unblock_fd(fd: RawFd) -> io::Result<()> {
     let flags = unsafe { fcntl(fd, F_GETFL, 0) };
@@ -144,6 +206,15 @@ while i < str1_len && i < str2_len {
 }
 result
 }
+pub fn add_2_front_list(val: &str, func_id: i64) -> String{
+    let mut list_id: (i64, bool) = (1i64, false);
+    for i in 0..1000_000{
+        list_id = unsafe {front_list_indx(i64::MAX)};
+        if list_id.1{break;}
+    }
+    if !list_id.1{set_ask_user("Can't access to Front list", func_id); return "!!no¡".to_string()}
+    return unsafe{lists(val, list_id.0, 0, ADD)}
+}
 pub fn add_2_main0_list(val: &str) -> String{
     return unsafe{lists(val, MAIN0_, 0, ADD)}
 }
@@ -151,7 +222,13 @@ pub fn len_of_main0_list() -> String{
     return unsafe{lists("", MAIN0_, 0, LEN)}
 }
 pub fn len_of_front_list() -> String{
-    return unsafe{lists("", FRONT_, 0, LEN)}
+      let mut list_id: (i64, bool) = (1i64, false);
+    for i in 0..1000_000{
+        list_id = unsafe {front_list_indx(i64::MAX)};
+        if list_id.1{break;}
+    }
+    if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    return unsafe{lists("", list_id.0, 0, LEN)}
 }
 pub(crate) fn get_proper_indx(indx: i64, fixed_indx: bool) -> (usize, i64){
     let mut fix_inputed_indx = indx;
@@ -170,16 +247,36 @@ pub(crate) fn get_proper_indx(indx: i64, fixed_indx: bool) -> (usize, i64){
 pub(crate) fn get_item_from_front_list(indx: i64, fixed_indx: bool) -> String{
     let proper_indx = get_proper_indx(indx, fixed_indx);
     if proper_indx.0 == usize::MAX{return "front list is empty".to_string()}
-    return unsafe{lists("", FRONT_, proper_indx.0, GET)}
+      let mut list_id: (i64, bool) = (1i64, false);
+    for i in 0..1000{
+        list_id = unsafe {front_list_indx(i64::MAX)};
+        if list_id.1{break;}
+    }
+    if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    return unsafe{lists("", list_id.0, proper_indx.0, GET)}
 }
-pub fn set_main0_as_front(){unsafe{lists("", MAIN0_, 0, SET_FRONT_LIST);}}
+pub fn set_main0_as_front(){mark_front_lst("main0"); unsafe{lists("", MAIN0_, 0, SET_FRONT_LIST);}}
+pub fn set_ls_as_front() -> String{
+      let mut list_id: (i64, bool) = (1i64, false);
+    for i in 0..1000{
+        list_id = unsafe {front_list_indx(LS_)};
+        if list_id.1{break;}
+    }
+    if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    mark_front_lst("ls");
+    unsafe{lists("", LS_, 0, SET_FRONT_LIST); return "ok".to_string();}}
 pub unsafe fn lists(val: &str, list: i64, indx: usize, op_code: i64) -> String{
 static mut MAIN0: OnceCell<Vec<String>> = OnceCell::new();
 static mut FRONT: OnceCell<&Vec<String>> = OnceCell::new();
+//static mut LS: RwLock<Lazy<Vec<String>>> = RwLock::new(Lazy::new(||{vec!["".to_string()]})); // OnceCell<Vec<String>> = OnceCell::new();
 if Some(MAIN0.get()) != None{
     let mut main0_vec: Vec<String> = Vec::new();
     MAIN0.set(main0_vec);
 }
+/*if Some(LS.get()) != None{
+    let mut ls_vec: Vec<String> = Vec::new();
+    LS.set(ls_vec);
+}*/
 if list == MAIN0_ {
     if op_code == GET{
         let ret = &MAIN0.get().unwrap()[indx];
@@ -191,8 +288,42 @@ if list == MAIN0_ {
     }
     if op_code == LEN{return MAIN0.get().unwrap().len().to_string()}
     if op_code == SET_FRONT_LIST {
-       if Some(FRONT.get()) != None{FRONT.take();}
+       FRONT.take(); FRONT.take();
        FRONT.set(&MAIN0.get().unwrap());
+       let main_path = get_tmp_dir(-13374);
+       let main0_path = format!("{}/{}", &main_path, "main0");
+       let found_files_path = format!("{}/{}", &main_path, "found_files");
+       if !Path::new(&main0_path).exists(){
+        let cmd = format!("touch -f {}", &main0_path);
+        run_cmd_str(&cmd);
+       }
+       let cmd = format!("ln -sf {} {}", main0_path, found_files_path);
+       run_cmd_str(&cmd);
+       return "main0 gets set as front".to_string();
+    }
+}
+if list == LS_ {
+    if op_code == GET{
+        let ret = ln_of_found_files(indx).0;
+        return ret.to_string()
+    }
+    if op_code == ADD{
+        /*LS.write().expect("Can't write into LS").push(val.to_string());
+        let mut len = LS.read().unwrap().len() - 1;
+        if len > 2{len -= 2;}
+        set_ask_user(& LS.read().unwrap()[len], -1);*/
+       return "dummy ls ADD".to_string()
+    }
+    if op_code == LEN{return ln_of_found_files(usize::MAX).1.to_string()}
+    if op_code == SET_FRONT_LIST {
+       let main_path = get_tmp_dir(-13314);
+       let ls_path = format!("{}/{}", &main_path, "ls");
+       let found_files_path = format!("{}/{}", &main_path, "found_files");
+       let cmd = format!("touch -f {}", &ls_path);
+       run_cmd_str(&cmd);
+       let cmd = format!("ln -sf {} {}", ls_path, found_files_path);
+       run_cmd_str(&cmd);
+       return "ls gets set as front".to_string();
     }
 }
 if list == FRONT_ {

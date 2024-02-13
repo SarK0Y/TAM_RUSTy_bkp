@@ -4,8 +4,13 @@ mod exts;
 use exts::*;
 use gag::RedirectError;
 
-use self::ps21::set_ask_user;
+use crate::{swtch::{user_wrote_path, user_wrote_path_prnt, read_user_written_path, path_completed}, update18::update_dir_list, shift_cursor_of_prnt};
+
+use self::ps21::{set_ask_user, get_prnt, set_prnt, get_mainpath};
 core_use!();
+pub(crate) fn mark_front_lst(name: &str){
+    save_file(name.to_string(), "front_list".to_string());
+}
 pub(crate) fn initSession() -> bool{
     let func_id = 1;
     let run_command = Command::new("bash").arg("-c").arg("cd ~;pwd")
@@ -66,8 +71,10 @@ if checkArg("-dbg"){println!("shell out = {:?}", run_shell4)};
 unsafe{crate::page_struct(&path_2_found_files_list, set(crate::FOUND_FILES_), func_id);
        crate::page_struct("empty", set(crate::KONSOLE_TITLE_), func_id);}
     crate::globs18::set_main0_as_front();
-    crate::set_prnt("test typing", func_id);
+    crate::set_prnt("", func_id);
     unsafe {crate::swtch::form_list_of_viewers(false);}
+    crate::save_file("".to_string(), "main0.pg".to_string());
+    mark_front_lst("main0");
     return true;
 }
 pub(crate) fn errMsg_dbg(msg: &str, val_func_id: i64, delay: f64) {
@@ -111,9 +118,14 @@ pub(crate) fn escape_symbs(str0: &String) -> String{
     let strr = strr.replace("`", r"\`");
     let strr = strr.replace("(", r"\(");
     let strr = strr.replace(")", r"\)");
+    let strr = strr.replace("&", r"\&");
     return strr.to_string();
 }
-
+pub(crate) fn key_f12(func_id: i64){
+    unsafe {crate::shift_cursor_of_prnt(0, func_id)};
+    crate::set_prnt("", func_id);
+    rm_user_written_path(func_id)
+}
 pub(crate) fn check_substr(orig: &String, probe: &str, start_from: usize) -> bool{
     let func_id = 3;
     let probe: String = String::from(probe.to_string());
@@ -133,17 +145,16 @@ fn end_termios(termios: &Termios){
     };
     io::stdout().flush().unwrap();
 }
-pub(crate) fn redirect_stdout_to_buf() -> Redirect<File>{
-// Open a log
-let log = OpenOptions::new()
-    .read(true)
-    .create(true)
-    .write(true)
-    .open("/tmp/my_log.log")
-    .unwrap();
 
-let print_redirect = Redirect::stdout(log).unwrap();
-print_redirect
+#[inline(always)]
+pub(crate) fn custom_cmd_4_find_files(custom_cmd: String) -> bool{
+let func_id: i64 = 2;
+let mut list_of_found_files: Vec<String> = vec![]; 
+let output = format!("{}/found_files", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_});
+let stopCode: String = unsafe {crate::ps18::page_struct("", crate::ps18::STOP_CODE_,-1).str_};
+let mut cmd: String =  format!("#!/bin/bash\n{} > {};echo '{stopCode}' >> {}", custom_cmd, output, output);
+crate::run_cmd0(cmd);
+return true;
 }
 pub(crate) fn getkey() -> String{
 let mut Key: String ="".to_string();
@@ -190,6 +201,197 @@ loop {
         i += 1;}}
 }
 Key
+}
+pub(crate) fn cpy_str(in_str: &String) -> String{
+    in_str.to_string()
+}
+pub(crate) fn complete_path(dir: &str, opts: &str, no_grep: bool){
+    let proper_dir = crate::escape_symbs(&dir.to_string());
+    update_dir_list(&proper_dir, opts, no_grep);
+    let not_full_path = get_path_from_prnt();//read_user_written_path();
+    let num_of_ln_in_dir_lst = ln_of_found_files(usize::MAX).1;
+    let mut get_prnt_dbg: fn (i64) -> String = get_prnt;
+    let mut prnt = String::from("");
+    //for i in 0..100{
+        prnt.push_str(read_prnt().as_str());
+      //  if prnt != ""{break;}
+    //}
+    let mut prnt = "".to_string();
+    if prnt.len() == 0{set_ask_user("prnt is empty", -5);}
+    if num_of_ln_in_dir_lst == 1{
+        let mut full_path = ln_of_found_files(0).0;
+        let is_dir = Path::new(&full_path).is_dir();
+        if is_dir{full_path.push('/');}
+        prnt = prnt.replace(&not_full_path, &full_path);
+        let msg = format!("prnt: {}", prnt);
+        //popup_msg(msg.as_str());
+        set_prnt(&prnt, -47);
+        let prnt = read_prnt();
+        set_ask_user(&prnt, -5);
+        rewrite_user_written_path(&full_path);
+        //unsafe{crate::swtch::path_completed(true, false);}
+        let proper_dir = crate::escape_symbs(&full_path.to_string());
+        update_dir_list(&proper_dir, opts, no_grep);
+    }
+}
+pub(crate) fn update_user_written_path(e: std::io::Error) -> File{
+    println!("{:?}", e);
+    let user_written_path = user_wrote_path_prnt();
+    let err_msg = format!("update_user_written_path() can't create {}", user_written_path);
+    rm_file(&user_written_path);
+    File::options().create_new(true).write(true).read(true).open(user_written_path).expect(&err_msg)
+}
+pub(crate) fn rewrite_user_written_path(new_path: &String) {
+    let user_written_path = user_wrote_path();
+    let err_msg = format!("update_user_written_path() can't create {}", user_written_path);
+    rm_file(&user_written_path);
+    let mut write_path = File::options().create_new(true).write(true).read(true).open(user_written_path).expect(&err_msg);
+    write_path.write_all(new_path.as_bytes());
+}
+pub(crate) fn rm_user_written_path(func_id: i64) {
+    let user_written_path = user_wrote_path_prnt();
+    let err_msg = format!("update_user_written_path() can't delete {}", user_written_path);
+    rm_file(&user_written_path);
+    let existed = Path::new(&user_written_path).exists();
+   // if existed{set_ask_user(&err_msg, func_id);}
+    let user_written_path = user_wrote_path();
+    let err_msg = format!("update_user_written_path() can't delete {}", user_written_path);
+    rm_file(&user_written_path);
+    let existed = Path::new(&user_written_path).exists();
+ //   if existed{set_ask_user(&err_msg, func_id);}
+}
+pub(crate) fn rm_file(file: &String) -> bool{
+    let err_msg = format!("rm_file can't remove {}", file);
+    let rm_cmd = Command::new("rm").arg("-f").arg(file)
+    .output()
+    .expect(&err_msg);
+    true
+}
+pub(crate) fn read_midway_data_4_ls() -> bool{
+   // return true;
+    let func_id = crate::func_id18::read_midway_data_;
+    let mut added_indx = 0usize;
+    loop {
+        let stopCode = getStop_code__!();
+        let filename = format!("{}/found_files", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_});
+        let file = File::open(filename).unwrap();
+        let reader = BufReader::new(file);
+    for (indx, line) in reader.lines().enumerate() {
+        if indx <= added_indx && added_indx > 0{continue;}
+        added_indx = indx;
+        let line = line.unwrap();
+        let ret = crate::globs18::add_2_front_list(&line, -1); 
+        //let line_dbg = get_item_from_front_list(usize_2_i64(indx), false); 
+        if dirty!(){println!("line {}", line)}
+        if line == stopCode{crate::ps18::fix_num_files(func_id); return true}
+    }  if dirty!(){println!("midway ended")}}
+    false
+}
+pub(crate) fn ln_of_found_files(get_indx: usize) -> (String, usize){
+     let stopCode = getStop_code__!();
+        let filename = format!("{}/found_files", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_});
+        let file = File::open(filename).unwrap();
+        let reader = BufReader::new(file);
+        let mut len = 0usize;
+    for (indx, line) in reader.lines().enumerate() {
+        if indx == get_indx{return (line.unwrap(), indx);}
+        len = indx;
+    }
+    return ("no str gotten".to_string(), len);
+}
+pub(crate) fn size_of_found_files() -> u64{
+     let stopCode = getStop_code__!();
+        let filename = format!("{}/found_files", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_});
+        match fs::metadata(filename){
+            Ok(op) => op,
+            _ => return 0u64
+        }.len()
+}
+pub(crate) fn get_path_from_strn(strn: String) -> String{
+    let len: usize = strn.chars().count();
+    let mut ret = String::new();
+    let mut yes_path = false;
+    for i in 0..len{
+        let char0 =strn.chars().nth(i).unwrap();
+        if char0 == '/'{yes_path = true;}
+        if yes_path{ret.push(char0);}
+    }
+    ret
+}
+pub(crate) fn get_path_from_prnt() -> String{
+    let got_path = read_prnt();
+    let len: usize = got_path.chars().count();
+    let mut ret = String::new();
+    let mut yes_path = false;
+    for i in 0..len{
+        let char0 = got_path.chars().nth(i).unwrap();
+        if char0 == '/'{yes_path = true;}
+        if yes_path{ret.push(char0);}
+    }
+    ret
+}
+pub(crate) fn save_file(content: String, fname: String) -> bool{
+    let fname = format!("{}/{}", crate::get_tmp_dir(-157), fname);
+    let anew_file = || -> File{rm_file(&fname); return File::options().create_new(true).write(true).open(&fname).expect(&fname)};
+    let mut file: File = match File::options().create(true).read(true).truncate(true).write(true).open(&fname){
+        Ok(f) => f,
+        _ => anew_file()
+    };
+    file.write(content.as_bytes()).expect("save_file failed");
+    true
+}
+pub(crate) fn read_file(fname: &str) -> String{
+    let fname = format!("{}/{}", crate::get_tmp_dir(-157), fname);
+    //let err = format!("failed to read {}", fname);
+    let mut file: File = match File::open(&fname){
+        Ok(f) => f,
+        Err(e) => return format!("{:?}", e)
+    };
+    let mut ret = String::new();
+    file.read_to_string(&mut ret);
+    ret
+}
+pub(crate) fn read_prnt() -> String{read_file("prnt")}
+pub(crate) fn file_prnt(content: String){
+    save_file(cpy_str(&content), "prnt".to_string());
+    let path = get_path_from_strn(content);
+    save_file(path, "user_wrote_path".to_string());}
+pub(crate) fn position_of_slash_in_prnt() -> usize{
+    let got_path = read_prnt();
+    let ret = usize::MAX;
+    let mut i = 0usize;
+    loop{
+        let char0 = match got_path.chars().nth(i){
+            Some(ch) => ch,
+            _ => return ret
+        };
+        if char0 == '/'{return i;}
+        i += 1;
+    }
+}
+pub(crate) fn i64_2_usize(v: i64) -> usize{
+    let mut ret = 0usize;
+    let unit = 1i64;
+    let shl = 1usize;
+    let mut v = v;
+    let i64_len: usize = size_of::<i64>() * 8;
+    for i in 0..i64_len{
+        if v & unit == 1{ret += (shl << i);}       
+        v = v >> 1;
+    }
+    ret
+}
+pub(crate) fn usize_2_i64(v: usize) -> i64{
+    let mut ret = 0i64;
+    let unit = 1usize;
+    let shl = 1i64;
+    let mut v = v;
+    let usize_len: usize = size_of::<usize>() * 8;
+    for i in 0..usize_len{
+        if v & unit == 1{ret += (shl << i);}
+        v = v >> 1;
+    }
+    ret
 }
 pub(crate) fn getch() -> char{
 let mut ch: char ='\0';

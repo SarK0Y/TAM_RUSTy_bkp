@@ -1,7 +1,7 @@
 mod exts;
 use exts::page_struct_uses;
 
-use crate::{globs18::len_of_front_list, func_id18};
+use crate::{globs18::len_of_front_list, func_id18, swtch::{set_user_written_path_from_prnt, set_user_written_path_from_strn}, cpy_str, complete_path, get_path_from_strn, rewrite_user_written_path, file_prnt};
 self::page_struct_uses!();
 pub const STOP_CODE_: i64 = 1;
 pub const KONSOLE_TITLE_: i64 = 2;
@@ -28,7 +28,7 @@ pub const FOUND_FILES_: i64 = 21;
 pub const TMP_DIR_: i64 = 22;
 pub const __BKSP: i64 = 23; // caller's id
 pub const __DEL: i64 = 24;
-pub const __INS: i64 = 25;
+pub const __INS: i64 = 1725;
 pub const NUM_OF_VIEWERS: i64 = 26;
 pub struct page_struct_ret{
    pub str_: String,
@@ -121,7 +121,7 @@ pub(crate) fn INS(val: &str) -> bool{
       let new_string = crate::globs18::ins_last_char_to_string1_from_string1(cur_cur_pos, string1);
       //loop {
           set_prnt(&new_string, func_id);
-          set_prompt("tsssssst", func_id);
+          //set_ask_user(&new_string, func_id);
         //  if get_prnt(func_id) == new_string{break;}
       //}
       //set_prompt(&new_string, func_id);
@@ -135,12 +135,15 @@ pub(crate) fn INS(val: &str) -> bool{
       //print!("{}]", get_cur_cur_pos(func_id));
       true
 }
-pub(crate) fn press_DEL(val: &str) -> page_struct_ret{return unsafe{page_struct("prnt", 0, __DEL)}}
-pub(crate) fn press_BKSP() -> page_struct_ret{return unsafe{page_struct("prnt", 0, __BKSP)}}
+pub(crate) fn press_DEL(val: &str) -> page_struct_ret{crate::globs18::set_valid_list_as_front(); return unsafe{page_struct("prnt", 0, __DEL)}}
+pub(crate) fn press_BKSP() -> page_struct_ret{crate::globs18::set_valid_list_as_front(); return unsafe{page_struct("prnt", 0, __BKSP)}}
 /*------------------------------------------------------------------------------------------------------------------------ */
 pub(crate) fn get_mainpath(func_id: i64) -> String{return unsafe{page_struct("", MAINPATH_, func_id).str_}}
+pub(crate) fn get_tmp_dir(func_id: i64) -> String{return unsafe{page_struct("", TMP_DIR_, func_id).str_}}
 pub(crate) fn get_prnt(func_id: i64) -> String{return unsafe{page_struct("", PRNT_, func_id).str_}}
-pub(crate) fn set_prnt(val: &str, func_id: i64) -> String{return unsafe{page_struct(val, crate::set(PRNT_), func_id).str_}}
+pub(crate) fn set_prnt(val: &str, func_id: i64) -> String{
+  let get_prnt_dbg = get_prnt;
+  return unsafe{page_struct(val, crate::set(PRNT_), func_id).str_}}
 pub(crate) fn get_ask_user(func_id: i64) -> String{return unsafe{page_struct("", ASK_USER_, func_id).str_}}
 pub(crate) fn set_ask_user(val: &str, func_id: i64) -> String{return unsafe{page_struct(val, crate::set(ASK_USER_), func_id).str_}}
 pub(crate) fn get_full_path(func_id: i64) -> String{return unsafe{page_struct("", FULL_PATH_, func_id).str_}}
@@ -201,18 +204,20 @@ pub(crate) unsafe fn page_struct_int(val: i64, val_id: i64, caller_id: i64) -> i
  return -1;  
 }
 pub(crate) unsafe fn shift_cursor_of_prnt(shift: i64, func_id: i64) -> shift_cur_struct{ // shift == 0 to get cursor position, -1 to move left for one char, 1 to move right /
-  static mut num_of_shifts: usize = 0;                                          // i64::MIN to set num_of_shifts = 0, 2 to ret num_of_shifts w/ no string
-  let mut str__ = String::from("");
+  static mut num_of_shifts: usize = 0;                                          // i64::MIN to set num_of_shifts = 0, 2 to ret num_of_shifts w/ no string /
+  let mut str__ = String::from("");                                             // 3 to ret str of shifts
   let mut ret = shift_cur_struct{shift: num_of_shifts, str__: str__};
   if shift == i64::MIN{num_of_shifts = 0;}
   if shift == 2 {return ret;}
-  if shift == 0{
+  if shift == 0 && shift == 3{
   macro_rules! shift {
       () => {
       repeat_char(num_of_shifts, "\x1b[D").as_str()      
       };
   }
+  if shift == 0{
     ret.str__ = get_prnt(-2);
+  }
     ret.str__.push_str(shift!());
     return ret
   }
@@ -249,7 +254,7 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     static mut RUNNING: OnceCell<Vec<Command>> = OnceCell::new(); //15
     static mut VIEWER: OnceCell<Vec<String>> = OnceCell::new(); //16
     static mut MODE2RUN: OnceCell<(String, String)> = OnceCell::new(); //17
-    static mut PRNT: RwLock<String> = RwLock::new(String::new()); //18
+    static mut PRNT: UnsafeCell<String> = UnsafeCell::new(String::new()); //18
     static mut PROMPT: OnceCell<String> = OnceCell::new(); //
     static mut FULL_PATH: OnceCell<String> = OnceCell::new(); //19
     static mut MAINPATH: OnceCell<String> = OnceCell::new(); //20
@@ -265,41 +270,46 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
       VIEWER.set(viewer_vec);
      // let msg = format!("notify-send 'once prnt {}'", PRNT.get().unwrap()[0]);
      // crate::run_cmd0(msg);
-      let _ = PROMPT.set("prob".to_string());
+      let _ = PROMPT.set("Your command, Please: ".to_string());
       fst_run = false;
     }
     //let fn_ptr_get_string: fn(&str) -> String = get_string;
     let no_val: i32 = 'no_val: {
    if id_of_caller == __INS{
-      
+      set_user_written_path_from_strn(cpy_str(&*PRNT.get()));
     }
     if val != "prnt" {break 'no_val 101;}
     if id_of_caller == __BKSP{
-      if PRNT.read().unwrap().len() == 0 {set_cur_cur_pos(0, func_id); ps_ret.str_= "ok".to_string(); return ps_ret}
+      if PRNT.get().as_ref().expect("Can't get zero len of prnt").len() == 0 {set_cur_cur_pos(0, func_id); ps_ret.str_= "ok".to_string(); return ps_ret}
       //crate::run_cmd0("notify-send bksp".to_string());
-      let len = PRNT.read().unwrap().len() - 1;
+      let len = PRNT.get().as_ref().expect("Can't get len of prnt").len() - 1;
       //loop {
-        let new_prnt = crate::globs18::bksp();
-        crate::set_prnt_!(new_prnt);
+        let mut new_prnt = crate::globs18::bksp();
+        let new_path = get_path_from_strn(crate::cpy_str(&new_prnt));
+        rewrite_user_written_path(&new_path);
+        crate::set_prnt_!(&new_prnt);
       set_cur_cur_pos(len as i64, func_id);
+      set_user_written_path_from_strn(cpy_str(&*PRNT.get()));
       ps_ret.str_= "ok".to_string(); return ps_ret;
     }
     if id_of_caller == __DEL{
       let cur_cur_pos = (get_cur_cur_pos(func_id) + 1) as usize;
-      let mut string1 = PRNT.read().unwrap().to_string();
+      let mut string1 = cpy_str(&*PRNT.get());
       string1.push_str(val);
       let new_string = crate::globs18::ins_last_char_to_string1_from_string1(cur_cur_pos, string1);
       //loop {
           set_prnt(&new_string, func_id);
       let left_shift_4_cur = get_left_shift_4_cur(func_id) - 1;
       set_left_shift_4_cur(left_shift_4_cur, func_id);
+      set_user_written_path_from_strn(cpy_str(&*PRNT.get()));
       ps_ret.str_= "ok".to_string(); return ps_ret;
     }
     11    
     };
     let cpy: fn(&String) -> String = |val: &String| -> String{return val.to_string();}; 
-    if id_of_val == PRNT_  {ps_ret.str_ = PRNT.read().unwrap().to_string()/*String::from(PRNT.get().unwrap())*/; return ps_ret;}
-    if id_of_val == crate::set(PRNT_) {crate::set_prnt_!(val); ps_ret.str_= "ok".to_string(); prnt_set =true; return ps_ret;}
+    if id_of_val == PRNT_  {ps_ret.str_.push_str(cpy_str(&*PRNT.get()).as_str());/*String::from(PRNT.get().unwrap())*/; return ps_ret;}
+    if id_of_val == crate::set(PRNT_) {crate::set_prnt_!(&val.to_string()); file_prnt(val.to_string()); 
+       if *PRNT.get() != val {panic!("set_prtn failed")} ps_ret.str_= "ok".to_string(); prnt_set =true; return ps_ret;}
     if id_of_val == NUM_OF_VIEWERS  {ps_ret.int = VIEWER.get().unwrap().len().to_i64().unwrap(); return ps_ret;}
     if id_of_val == VIEWER_  {
       let indx = share_usize(usize::MAX, id_of_caller);
