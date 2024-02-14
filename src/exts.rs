@@ -49,6 +49,7 @@ use dirty;
 use getStop_code__;
 use close_termios__;
 use set_prnt_;
+use C__;
 #[path = "core.rs"]
 mod core18;
 use core18::*;
@@ -153,7 +154,7 @@ macro_rules! globs_uses {
     #[macro_use]
     #[path = "mcrs.rs"]
     mod mcrs13;
-  //  use dirty;
+   // use C__;
     }
 }
 macro_rules! mcrs_uses {
