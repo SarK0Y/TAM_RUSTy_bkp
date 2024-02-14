@@ -1,7 +1,7 @@
 mod exts;
 use exts::page_struct_uses;
 
-use crate::{globs18::len_of_front_list, func_id18, swtch::{set_user_written_path_from_prnt, set_user_written_path_from_strn}, cpy_str, complete_path, get_path_from_strn, rewrite_user_written_path, file_prnt};
+use crate::{globs18::len_of_front_list, func_id18, swtch::{set_user_written_path_from_prnt, set_user_written_path_from_strn}, cpy_str, complete_path, get_path_from_strn, rewrite_user_written_path, file_prnt, set_proper_num_pg, read_proper_num_pg};
 self::page_struct_uses!();
 pub const STOP_CODE_: i64 = 1;
 pub const KONSOLE_TITLE_: i64 = 2;
@@ -153,11 +153,12 @@ pub(crate) fn set_prompt(val: &str, func_id: i64) -> String{return unsafe{page_s
 /*------------------------------------------------------------------------------------------------------------------------ */
 pub(crate) fn get_num_cols(func_id: i64) -> i64{return unsafe{page_struct_int(0, NUM_COLS_, func_id)}}
 pub(crate) fn set_num_cols(val: i64, func_id: i64) -> i64{return unsafe{page_struct_int(val, crate::set(NUM_COLS_), func_id)}}
-pub(crate) fn get_num_page(func_id: i64) -> i64{return unsafe{page_struct_int(0, NUM_PAGE_, func_id)}}
+pub(crate) fn get_num_page(func_id: i64) -> i64{return read_proper_num_pg()}//unsafe{page_struct_int(0, NUM_PAGE_, func_id)}}
 pub(crate) fn set_num_page(val: i64, func_id: i64) -> i64{
   let last_pg = where_is_last_pg();
   let mut proper_val = val;
   if val > last_pg {proper_val = last_pg;}
+  set_proper_num_pg(proper_val);
   return unsafe{page_struct_int(proper_val, crate::set(NUM_PAGE_), func_id)}}
 pub(crate) fn get_num_pages(func_id: i64) -> i64{return unsafe{page_struct_int(0, COUNT_PAGES_, func_id)}}
 pub(crate) fn get_num_files(func_id: i64) ->i64{return unsafe{page_struct_int(0, NUM_FILES_, func_id)}}

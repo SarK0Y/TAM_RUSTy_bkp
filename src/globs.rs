@@ -28,6 +28,7 @@ pub fn rm_char_from_string(indx: usize, origString: &String) -> String{
 }
 pub(crate) fn show_ls(){
     unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
+    crate::ps18::fix_num_files(-13972);
 }
 pub(crate) fn get_num_pg_4_main0() -> i64{
     let num_pg = read_file("main0.pg");
@@ -46,7 +47,8 @@ pub(crate) fn set_valid_list_as_front(){
 pub(crate) fn F1_key() -> String{
     let mut prnt: String = read_prnt();
    set_main0_as_front();
-    "go2 0".to_string()
+   crate::ps18::fix_num_files(-13971);
+format!("go2 {}", read_file("main0.pg"))
 }
 pub(crate) fn F3_key() -> String{
     unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}

@@ -104,7 +104,25 @@ pub(crate) fn set(item: i64) -> i64{
 pub(crate) fn this_item_takes_global_val(id: i64) -> i64 {
     return set(id);
 }
-
+pub(crate) fn set_proper_num_pg(num_pg: i64){
+    let front_list = format!("{}/{}", crate::get_tmp_dir(-371033), "front_list");
+    let listName_dot_pg = format!("{}.pg", read_front_list());
+    save_file(num_pg.to_string(), listName_dot_pg);
+}
+pub(crate) fn read_front_list() -> String{
+    let mut active_lst = read_file("front_list");
+    //if active_lst != front_list {active_lst = "main0".to_string();}
+    active_lst
+}
+pub(crate) fn read_proper_num_pg() -> i64{
+    let front_list = format!("{}/{}", crate::get_tmp_dir(-371011), "front_list");
+    let num_pg = format!("{}.pg", read_front_list());
+    let num_pg = read_file(&num_pg);
+    match i64::from_str_radix(num_pg.as_str(), 10){
+        Ok(num) => return num,
+        _ => return 0
+    }
+}
 pub(crate) struct ret0 {
    pub s: [char; 512],
    pub res: bool
