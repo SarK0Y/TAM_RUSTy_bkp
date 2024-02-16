@@ -1,6 +1,6 @@
 use chrono::format;
 use num_traits::ToPrimitive;
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst, split_once, fix_num_files};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -25,6 +25,27 @@ pub fn rm_char_from_string(indx: usize, origString: &String) -> String{
         }
     }
     ret
+}
+pub(crate) fn sieve_list(data: String){
+    let data = data.replace("sieve ", "");
+    let (opts, data) = split_once(&data, " ");
+    if opts == "none".to_string() || data == "none".to_string(){
+        set_ask_user("example: sieve -Ei some\\shere", 5977871);
+        return 
+    }
+    let found_files_path = format!("{}/found_files", get_tmp_dir(18441));
+    let filter_file_path_tmp = format!("{}/filter.tmp", get_tmp_dir(18441));
+    let filter_file_path = format!("{}/filter", get_tmp_dir(18441));
+    let cmd = format!("echo '' > {}", filter_file_path_tmp);
+    run_cmd_str(cmd.as_str());
+    let cmd = format!("grep {} '{}' {} > {}", opts, data, found_files_path, filter_file_path_tmp);
+    run_cmd_str(cmd.as_str());
+    let cmd = format!("mv {} {}", filter_file_path_tmp, filter_file_path);
+    run_cmd_str(cmd.as_str());
+    let cmd = format!("ln -sf {} {}", filter_file_path, found_files_path);
+    run_cmd_str(cmd.as_str());
+    mark_front_lst("filter");
+    fix_num_files(5977871);
 }
 pub(crate) fn show_ls(){
     unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
@@ -333,8 +354,9 @@ if list == LS_ {
     }
 }
 if list == FRONT_ {
-    if op_code == GET{return FRONT.get().unwrap()[indx].to_string()}
-    if op_code == LEN{return FRONT.get().unwrap().len().to_string()}
+    if op_code == GET{let ret = ln_of_found_files(indx).0;
+        return ret.to_string()}//return FRONT.get().unwrap()[indx].to_string()}
+    if op_code == LEN{return ln_of_found_files(usize::MAX).1.to_string()}//return FRONT.get().unwrap().len().to_string()}
 }
 "wrong".to_string()
 }

@@ -19,7 +19,7 @@ use std::{
 };
 pub const SWTCH_RUN_VIEWER: i64 = 0;
 pub const SWTCH_USER_WRITING_PATH: i64 = 1;
-use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default, get_prnt, position_of_slash_in_prnt, usize_2_i64, escape_symbs};
+use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front, FRONT_}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default, get_prnt, position_of_slash_in_prnt, usize_2_i64, escape_symbs};
 pub(crate) unsafe fn check_mode(mode: &mut i64){
     static mut state: i64 = 0;
     if *mode == -1 {*mode = state;}
@@ -145,11 +145,11 @@ pub(crate) unsafe fn path_completed(set_state: bool, ret_state: bool) -> bool{
     state
 }
 pub(crate) unsafe fn front_list_indx(val: i64) -> (i64, bool){
-    static mut actual_indx: i64 = 0;
+    static mut actual_indx: i64 = FRONT_;
     if val == i64::MAX{
         return (actual_indx, true)
      }
-    if val > -1 {actual_indx = val; return (val, true);}
+    //if val > -1 {actual_indx = val; return (val, true);}
     (i64::MAX, false)
 }
 
