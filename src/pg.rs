@@ -1,6 +1,6 @@
 use cli_table::TableStruct;
 
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list, Ins_key}, split_once, swtch::{run_viewer, swtch_fn, local_indx, read_user_written_path, user_writing_path}, update18::lets_write_path, ln_of_found_files, size_of_found_files, key_f12, get_path_from_prnt, get_path_from_strn, read_prnt};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list, Ins_key, show_ls, sieve_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx, read_user_written_path, user_writing_path}, update18::lets_write_path, ln_of_found_files, size_of_found_files, key_f12, get_path_from_prnt, get_path_from_strn, read_prnt};
 self::pg_uses!();
 
 fn cpy_row(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -23,7 +23,7 @@ fn build_page(ps: &mut crate::_page_struct){
         try_entry += 1; 
     }
     if size_of_found_files() == 0u64 {println!("No files found"); unsafe {libc::exit(-1);}}
-    let mut num_page; if ps.num_page != i64::MAX{num_page = ps.num_page;}else{num_page = crate::get_num_page(func_id);}
+    let mut num_page; num_page = crate::get_num_page(func_id); // if ps.num_page != i64::MAX{num_page = ps.num_page;}else{num_page = crate::get_num_page(func_id);}
     let mut num_cols; if ps.num_cols != i64::MAX{num_cols = ps.num_cols;}else{num_cols = crate::get_num_cols(func_id);}
     let mut num_rows; if ps.num_rows != i64::MAX{num_rows = ps.num_rows;}else{num_rows = crate::get_num_rows(func_id);}
     if ps.col_width != i64::MAX{crate::set_col_width(ps.col_width, func_id);}
@@ -116,6 +116,10 @@ fn hotKeys() -> String{
         unsafe {shift_cursor_of_prnt(1, func_id).shift};
         return "dontPass".to_string();
     }
+    if crate::globs18::eq_ansi_str(&kcode::Alt_l, Key.as_str()) == 0 {
+       show_ls();
+        return "dontPass".to_string();
+    }
     if crate::globs18::eq_ansi_str(&kcode::LEFT_ARROW, Key.as_str()) == 0 {
     unsafe {shift_cursor_of_prnt(-1, func_id).shift};
     //io::stdout().lock().flush().unwrap();
@@ -125,7 +129,8 @@ fn hotKeys() -> String{
         return crate::globs18::Ins_key();
     }
     if crate::globs18::eq_ansi_str(&kcode::F3, Key.as_str()) == 0 {
-        return crate::globs18::F3_key();
+        crate::globs18::F3_key();
+        return "dontPass".to_string();
     }
     if "/" == Key.as_str() {let mut Key_cpy =String::from(&Key); let mut Key_ = String::from(&Key); lets_write_path(Key_cpy); crate::INS(&Key_);
     return "/".to_string();}
@@ -248,6 +253,10 @@ fn exec_cmd(cmd: String){
             _ => {set_ask_user("wrong use of go2: go2 <indx of page>", func_id); return}
         };
         crate::set_num_page(pg_num, func_id);
+        return;
+    }
+    if cmd.as_str().substring(0, 5) == "sieve"{
+        sieve_list(crate::cpy_str(&cmd));
         return;
     }
       if cmd.as_str().substring(0, 2) == "fp"{

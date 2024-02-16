@@ -30,3 +30,8 @@ macro_rules! close_termios__ {
     }
     };
 }
+macro_rules! C__{
+    ($($x: expr)*) =>{
+        unsafe {$($x)*}
+    };
+}
