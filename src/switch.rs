@@ -1,6 +1,7 @@
 use chrono::format::format;
 use num_traits::{FloatErrorKind, ToPrimitive};
 use once_cell::sync::OnceCell;
+use substring::Substring;
 use std::{
     fs::File,
     path::Path,
@@ -14,11 +15,16 @@ use std::{
     },
     os::fd::AsRawFd,
     i64,
-    usize
+    usize,
 };
 pub const SWTCH_RUN_VIEWER: i64 = 0;
 pub const SWTCH_USER_WRITING_PATH: i64 = 1;
-use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default};
+use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front, FRONT_}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default, get_prnt, position_of_slash_in_prnt, usize_2_i64, escape_symbs};
+pub(crate) unsafe fn check_mode(mode: &mut i64){
+    static mut state: i64 = 0;
+    if *mode == -1 {*mode = state;}
+    state = *mode;
+} 
 pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
     static mut fst_run: bool = true;
     static mut fn_indx: usize = 0;
@@ -29,8 +35,19 @@ pub(crate) unsafe fn swtch_fn(indx: i64, cmd: String){
         fn_.get_mut().unwrap().push(run_viewer); // 0
         fn_.get_mut().unwrap().push(user_writing_path); // 1
     }
+    if indx < -1{
+        let indx = crate::i64_2_usize(crate::set(indx)) - 2;
+        let len = fn_.get().expect("Can't unwrap fn_ in swtch_fn").len();
+        if indx > len {set_ask_user("indx gets out of fn_ ", -178); return;}
+        fn_.get().unwrap()[indx](cmd);
+        let mut indx = usize_2_i64(indx);
+        check_mode(&mut indx);
+        return;
+    }
     if indx > -1 {fn_indx = indx.to_usize().unwrap(); return;}
   //  if indx > -1 && !cmd.is_empty(){fn_indx = indx.to_usize().unwrap();}
+    let mut mode = indx;
+    check_mode(&mut mode);
     fn_.get().unwrap()[fn_indx](cmd);
 }
 pub(crate) unsafe fn swtch_ps(indx: i64, ps: Option<crate::_page_struct>) -> crate::_page_struct{
@@ -46,9 +63,26 @@ pub(crate) unsafe fn swtch_ps(indx: i64, ps: Option<crate::_page_struct>) -> cra
     if indx > -1{ps_indx = indx.to_usize().unwrap(); return dummy;}
     return crate::cpy_page_struct(&mut ps_.get_mut().unwrap()[ps_indx])
 }
+fn viewer_n_adr(app: String, file: String) -> bool{
+    let func_id = crate::func_id18::viewer_;
+    if app == "none" {
+        crate::core18::errMsg("To run file w/ viewer, You need to type '<indx of viewer> /path/to/file'", func_id);
+        return false
+    }
+    let msg = || -> bool{crate::core18::errMsg("To run file w/ viewer, You need to type '<indx of viewer> <index of file>'", func_id); return false};
+    let app_indx = match usize::from_str_radix(app.as_str(), 10){
+        Ok(v) => v,
+        _ => return msg()
+    };
+    let file = escape_symbs(&file);
+    let viewer = get_viewer(app_indx, -1, true);
+    let cmd = format!("{} {} > /dev/null 2>&1", viewer, file);
+    return crate::run_cmd_viewer(cmd)
+}
 pub(crate) fn run_viewer(cmd: String) -> bool{
     let func_id = crate::func_id18::viewer_;
     let  (app_indx, file_indx) = crate::split_once(&cmd, " ");
+    if file_indx.as_str().substring(0, 1) == "/"{return viewer_n_adr(app_indx, file_indx);}
     if app_indx == "none" || file_indx == "none"{
         crate::core18::errMsg("To run file w/ viewer, You need to type '<indx of viewer> <index of file>'", func_id);
         return false
@@ -104,12 +138,18 @@ unsafe fn drop_2_dev_null() -> bool{
     static mut drop: bool = true;
     drop = !drop; return !drop;
 }
+pub(crate) unsafe fn path_completed(set_state: bool, ret_state: bool) -> bool{
+    static mut state: bool = false;
+    if ret_state {return state;}
+    state = set_state;
+    state
+}
 pub(crate) unsafe fn front_list_indx(val: i64) -> (i64, bool){
-    static mut actual_indx: i64 = 0;
+    static mut actual_indx: i64 = FRONT_;
     if val == i64::MAX{
         return (actual_indx, true)
      }
-    if val > -1 {actual_indx = val; return (val, true);}
+    //if val > -1 {actual_indx = val; return (val, true);}
     (i64::MAX, false)
 }
 
@@ -176,13 +216,21 @@ pub(crate) fn user_wrote_path_prnt() -> String{
 pub(crate) fn set_user_written_path_from_strn(strn: String) -> bool{
     let save_path = user_wrote_path();
     let save_path1 = user_wrote_path();
+    let save_path2 = user_wrote_path();
     let strn = crate::get_path_from_strn(strn);
-    set_ask_user(&save_path, -1); //dbg here
+   // set_ask_user(&save_path, -1); //dbg here
     let mut file_2_write_path = match File::options().create(true).open(save_path){
         Ok(p) => p,
-        Err(e) => update_user_written_path(e)
+        Err(e) => match e.kind(){
+            ErrorKind::NotFound => match File::options().create_new(true).open(save_path1){
+                Ok(f) => f,
+                _ => update_user_written_path(e)
+            }
+        _ => File::options().write(true).open(save_path2).expect("set_user_written_path_from_strn failed")
+        } 
     }; //.expect("user_wrote_path failed ");
     //let mut writer = BufWriter::new(file_2_write_path)
+    file_2_write_path.set_len(0);
     file_2_write_path.write_all(strn.as_bytes()).expect("user_wrote_path failed write in");
     crate::globs18::unblock_fd(file_2_write_path.as_raw_fd());
     let written_path = read_user_written_path();
@@ -194,7 +242,7 @@ pub(crate) fn set_user_written_path_from_prnt() -> String{
     let save_path = user_wrote_path();
     let save_path1 = user_wrote_path();
     let path_from_prnt = get_path_from_prnt();
-    set_ask_user(&save_path, -1); //dbg here
+    //set_ask_user(&save_path, -1); //dbg here
     let mut file_2_write_path = match File::options().create_new(true).open(save_path){
         Ok(p) => p,
         Err(e) => update_user_written_path(e)
@@ -209,28 +257,16 @@ pub(crate) fn set_user_written_path_from_prnt() -> String{
 }
 
 pub(crate) fn user_writing_path(key: String) -> bool{
-    let mut save_path = user_wrote_path();
-    let mut save_path1 = user_wrote_path();
-    set_ask_user(&save_path, -1); //dbg here
+    unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
+    let mut cur_cur_pos = crate::read_prnt().chars().count();
+    let shift = unsafe {crate::shift_cursor_of_prnt(0, -19).shift};
+    if cur_cur_pos > shift {cur_cur_pos -= shift;}
+    if position_of_slash_in_prnt() >= cur_cur_pos {unsafe {swtch_fn(-2, crate::cpy_str(&key))} return false;}
+   // set_ask_user(&save_path, -1); //dbg here
     let key = key.replace("//", "/");
-    if unsafe {drop_2_dev_null()} && key.chars().count() > 1 {save_path1 = "/dev/null".to_string(); save_path = "/dev/null".to_string();} 
-    let mut file_2_write_path = match File::options().create_new(true).append(true).open(save_path){
-        Ok(p) => p,
-        Err(e) => match e.kind(){
-          ErrorKind::AlreadyExists => match File::options().append(true).write(true).open(save_path1){
-            Ok(f) => f,
-            _ => update_user_written_path(e)
-          }
-        _ => return false
-        }
-    }; //.expect("user_wrote_path failed ");
-    //let mut writer = BufWriter::new(file_2_write_path);
-    let key = format!("{}", key);
-    file_2_write_path.write_all(key.as_bytes()).expect("user_wrote_path failed write in");
-    crate::globs18::unblock_fd(file_2_write_path.as_raw_fd());
     let mut written_path = read_user_written_path();
     let written_path_from_prnt = get_path_from_prnt();
-    if written_path_from_prnt != written_path && written_path_from_prnt != ""{written_path = written_path_from_prnt;}
+    if written_path_from_prnt.chars().count() > written_path.chars().count(){written_path = written_path_from_prnt;}
     complete_path(&written_path, "-maxdepth 1", false);
     form_cmd_line_default();
     true

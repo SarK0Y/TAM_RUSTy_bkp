@@ -2,6 +2,7 @@
 #![allow(non_snake_case)]
 #![allow(dead_code)]
 #![allow(unused)]
+// #![feature(macro_metavar_expr)]
 #![allow(unused_variables)]
 #![allow(non_upper_case_globals)]
 #![allow(while_true)]
@@ -83,18 +84,20 @@ stderr_path = format!("{}stderr", unsafe{ps18::page_struct("", ps18::MAINPATH_, 
 let path_2_list_of_found_files = format!("{}", unsafe{ps18::page_struct("", ps18::FOUND_FILES_, -1).str_});
 core18::errMsg_dbg(&stderr_path, func_id, -1.0);
 let fstderr = File::create(stderr_path).unwrap();
+let fstdout0 = File::open("/dev/null").unwrap();
 //let mut fstdout0 = io::BufReader::new(fstdout0);
 //errMsg_dbg(&in_name, func_id, -1.0);
 let run_command = Command::new("bash").arg("-c").arg(path_2_cmd)//.arg(";echo").arg(stopCode)
 //let run_command = Command::new(cmd)
     .stderr(fstderr)
-    .output()
+    .stdout(fstdout0)
+    .spawn()
     .expect("can't run command in run_cmd_viewer");
-if run_command.status.success(){
+/*if run_command.status.success(){
     io::stdout().write_all(&run_command.stdout).unwrap();
     io::stderr().write_all(&run_command.stderr).unwrap();
     return false;
-}
+}*/
 true
 }
 pub fn run_cmd(cmd: String) -> bool{

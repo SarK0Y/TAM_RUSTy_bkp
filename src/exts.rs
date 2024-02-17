@@ -49,6 +49,8 @@ use dirty;
 use getStop_code__;
 use close_termios__;
 use set_prnt_;
+use C;
+use C_;
 #[path = "core.rs"]
 mod core18;
 use core18::*;
@@ -139,6 +141,10 @@ use set_prnt_;
 }
 macro_rules! globs_uses {
     () => {
+    //use rustix::path::arg::Arg;
+    use std::path::Path;
+    use std::ffi::OsString;
+    use substring::Substring;
     use std::sync::{RwLock, Arc};
     use once_cell::unsync::Lazy;
     use ansi_term::ANSIString;
@@ -149,7 +155,8 @@ macro_rules! globs_uses {
     #[macro_use]
     #[path = "mcrs.rs"]
     mod mcrs13;
-  //  use dirty;
+   use C;
+   //use C_;
     }
 }
 macro_rules! mcrs_uses {
@@ -197,9 +204,16 @@ mod ps0;
 #[path = "pg.rs"]
 mod pg17;
 use crate::get_arg_in_cmd;
+#[macro_use]
+ #[path = "mcrs.rs"]
+mod mcrs1311;
+use C;
+use C_;
 }; }
 macro_rules! core_use {
     () => {
+use cached::proc_macro::cached;
+use cached::proc_macro::io_cached;
 use std::env;
 use std::mem::size_of;
 use std::fs::OpenOptions;
