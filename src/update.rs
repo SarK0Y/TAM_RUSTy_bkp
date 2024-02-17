@@ -35,15 +35,15 @@ pub(crate) fn main_update(){
 }
 pub(crate) fn prime(){
     crate::initSession();
-    unsafe{front_list_indx(MAIN0_)};
-    unsafe{set_main0_as_front()};
+    C!(front_list_indx(MAIN0_));
+    C!(set_main0_as_front());
     main_update();
 println!("len of main0 list {}", globs17::len_of_main0_list());
     let builder = thread::Builder::new().stack_size(8 * 1024 * 1024).name("manage_page".to_string());
 let handler = builder.spawn(|| {
 let mut ps__: crate::_page_struct = crate::init_page_struct();
 ps__.num_cols = i64::MAX; ps__.num_page = i64::MAX; ps__.num_rows = i64::MAX;
-unsafe {crate::swtch::swtch_ps(0, Some(ps__));}
+C_!(crate::swtch::swtch_ps(0, Some(ps__)););
 crate::manage_pages();
 println!("stop manage_page");
 }).unwrap();
@@ -76,9 +76,9 @@ pub(crate) fn update_dir_list(dir: &str, opts: &str, no_grep: bool){
     crate::read_midway_data_4_ls();
 }
 pub(crate) fn lets_write_path(key: String){
-    unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
+    C_!(set_ls_as_front(); front_list_indx(crate::globs18::LS_););
     let mode: i64 = crate::swtch::SWTCH_USER_WRITING_PATH;
     if mode < 0{return;}
-    unsafe {swtch_fn(mode, key)};
+    C!(swtch_fn(mode, key));
 
 }

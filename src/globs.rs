@@ -83,7 +83,7 @@ pub(crate) fn F3_key() -> String{
     unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
     let mut prnt: String = read_prnt();
     let orig_path = get_path_from_strn(crate::cpy_str(&prnt));
-    let mut ret_2_F1_key = || -> String{prnt = prnt.replace("/", ""); set_prnt(&prnt, -2317712); crate::C__!(swtch_fn(0, "".to_string())); return F1_key()};
+    let mut ret_2_F1_key = || -> String{prnt = prnt.replace("/", ""); set_prnt(&prnt, -2317712); crate::C!(swtch_fn(0, "".to_string())); return F1_key()};
     let mut path = format!("{}/", match Path::new(&orig_path).parent(){
         Some(path) => path,
         _ => return ret_2_F1_key()
