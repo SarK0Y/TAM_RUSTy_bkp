@@ -4,10 +4,19 @@ mod exts;
 use exts::*;
 use gag::RedirectError;
 
-use crate::{swtch::{user_wrote_path, user_wrote_path_prnt, read_user_written_path, path_completed}, update18::update_dir_list, shift_cursor_of_prnt};
+use crate::{swtch::{user_wrote_path, user_wrote_path_prnt, read_user_written_path, path_completed}, update18::update_dir_list, shift_cursor_of_prnt, run_cmd_str};
 
-use self::ps21::{set_ask_user, get_prnt, set_prnt, get_mainpath};
+use self::ps21::{set_ask_user, get_prnt, set_prnt, get_mainpath, get_tmp_dir};
 core_use!();
+pub(crate) fn set_front_list(list: &str){
+    let tmp_dir = get_tmp_dir(-155741);
+    if tmp_dir == "no¡"{return;}
+    let found_files = format!("{tmp_dir}/found_files");
+    let active_list = format!("{tmp_dir}/{}", list);
+    let cmd = format!("ln -sf {active_list} {found_files}");
+    run_cmd_str(&cmd);
+    mark_front_lst(list)
+}
 pub(crate) fn mark_front_lst(name: &str){
     save_file(name.to_string(), "front_list".to_string());
 }
@@ -305,6 +314,7 @@ pub(crate) fn read_midway_data_4_ls() -> bool{
     }  if dirty!(){println!("midway ended")}}
     false
 }
+//#[io_cached]
 pub(crate) fn ln_of_found_files(get_indx: usize) -> (String, usize){
      let stopCode = getStop_code__!();
         let filename = format!("{}/found_files", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_});

@@ -212,6 +212,8 @@ use C_;
 }; }
 macro_rules! core_use {
     () => {
+use cached::proc_macro::cached;
+use cached::proc_macro::io_cached;
 use std::env;
 use std::mem::size_of;
 use std::fs::OpenOptions;
