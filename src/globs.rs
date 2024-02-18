@@ -1,6 +1,6 @@
 use chrono::format;
 use num_traits::ToPrimitive;
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst, split_once, fix_num_files, i64_2_usize, cpy_str};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst, split_once, fix_num_files, i64_2_usize, cpy_str, set_front_list};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -311,6 +311,7 @@ let mut FRONT: &[String] = MAIN0.as_mut_slice();
 }*/
 let mut list = list;
 let front_list = read_file("front_list");
+set_front_list(&front_list);
 if front_list == "main0"{list = MAIN0_;}
 if front_list == "ls"{list = LS_;}
 if list == MAIN0_ {
@@ -364,7 +365,7 @@ if list == LS_ {
 if list == FRONT_ {
     if op_code == GET{
         let mut ret = String::new();
-        if FRONT.len() > indx{ret = cpy_str(&FRONT[indx])}
+        if FRONT.len() > indx && list == MAIN0_{ret = cpy_str(&FRONT[indx])}
         else{ret = ln_of_found_files(indx).0;}
         return ret.to_string()}//return FRONT.get().unwrap()[indx].to_string()}
     if op_code == LEN{return ln_of_found_files(usize::MAX).1.to_string()}//return FRONT.get().unwrap().len().to_string()}
