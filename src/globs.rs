@@ -1,6 +1,6 @@
 use chrono::format;
 use num_traits::ToPrimitive;
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst, split_once, fix_num_files};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst, split_once, fix_num_files, i64_2_usize, cpy_str};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -25,6 +25,14 @@ pub fn rm_char_from_string(indx: usize, origString: &String) -> String{
         }
     }
     ret
+}
+pub(crate) fn exclude_strn_from_list(strn: String, list: &str){
+    let list_tmp = format!("{}/{}.tmp", get_tmp_dir(18551), list);
+    let list = format!("{}/{}", get_tmp_dir(18551), list);
+    let cmd = format!("grep -Ev '{}' {} > {}", strn, list, list_tmp);
+    run_cmd_str(cmd.as_str());
+    let cmd = format!("mv {} {}", list_tmp, list);
+    run_cmd_str(cmd.as_str());
 }
 pub(crate) fn sieve_list(data: String){
     let data = data.replace("sieve ", "");
@@ -75,7 +83,7 @@ pub(crate) fn F3_key() -> String{
     unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
     let mut prnt: String = read_prnt();
     let orig_path = get_path_from_strn(crate::cpy_str(&prnt));
-    let mut ret_2_F1_key = || -> String{prnt = prnt.replace("/", ""); set_prnt(&prnt, -2317712); crate::C__!(swtch_fn(0, "".to_string())); return F1_key()};
+    let mut ret_2_F1_key = || -> String{prnt = prnt.replace("/", ""); set_prnt(&prnt, -2317712); crate::C!(swtch_fn(0, "".to_string())); return F1_key()};
     let mut path = format!("{}/", match Path::new(&orig_path).parent(){
         Some(path) => path,
         _ => return ret_2_F1_key()
@@ -293,30 +301,30 @@ pub fn set_ls_as_front() -> String{
     mark_front_lst("ls");
     unsafe{lists("", LS_, 0, SET_FRONT_LIST); return "ok".to_string();}}
 pub unsafe fn lists(val: &str, list: i64, indx: usize, op_code: i64) -> String{
-static mut MAIN0: OnceCell<Vec<String>> = OnceCell::new();
-static mut FRONT: OnceCell<&Vec<String>> = OnceCell::new();
+static mut MAIN0: Vec<String> = Vec::new();
+let mut FRONT: &[String] = MAIN0.as_mut_slice();
+//tst.to_vec().push("".to_string());
 //static mut LS: RwLock<Lazy<Vec<String>>> = RwLock::new(Lazy::new(||{vec!["".to_string()]})); // OnceCell<Vec<String>> = OnceCell::new();
-if Some(MAIN0.get()) != None{
-    let mut main0_vec: Vec<String> = Vec::new();
-    MAIN0.set(main0_vec);
-}
 /*if Some(LS.get()) != None{
     let mut ls_vec: Vec<String> = Vec::new();
     LS.set(ls_vec);
 }*/
+let mut list = list;
+let front_list = read_file("front_list");
+if front_list == "main0"{list = MAIN0_;}
+if front_list == "ls"{list = LS_;}
 if list == MAIN0_ {
     if op_code == GET{
-        let ret = &MAIN0.get().unwrap()[indx];
+        let ret = crate::cpy_str(&MAIN0[indx]);
         return ret.to_string()
     }
     if op_code == ADD{
-        MAIN0.get_mut().unwrap().push(val.to_string());
+        MAIN0.push(val.to_string());
        return "ok".to_string()
     }
-    if op_code == LEN{return MAIN0.get().unwrap().len().to_string()}
+    if op_code == LEN{return MAIN0.len().to_string()}
     if op_code == SET_FRONT_LIST {
-       FRONT.take(); FRONT.take();
-       FRONT.set(&MAIN0.get().unwrap());
+       FRONT = MAIN0.as_mut_slice();
        let main_path = get_tmp_dir(-13374);
        let main0_path = format!("{}/{}", &main_path, "main0");
        let found_files_path = format!("{}/{}", &main_path, "found_files");
@@ -354,7 +362,10 @@ if list == LS_ {
     }
 }
 if list == FRONT_ {
-    if op_code == GET{let ret = ln_of_found_files(indx).0;
+    if op_code == GET{
+        let mut ret = String::new();
+        if FRONT.len() > indx{ret = cpy_str(&FRONT[indx])}
+        else{ret = ln_of_found_files(indx).0;}
         return ret.to_string()}//return FRONT.get().unwrap()[indx].to_string()}
     if op_code == LEN{return ln_of_found_files(usize::MAX).1.to_string()}//return FRONT.get().unwrap().len().to_string()}
 }

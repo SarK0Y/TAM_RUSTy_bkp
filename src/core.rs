@@ -305,6 +305,7 @@ pub(crate) fn read_midway_data_4_ls() -> bool{
     }  if dirty!(){println!("midway ended")}}
     false
 }
+//#[io_cached]
 pub(crate) fn ln_of_found_files(get_indx: usize) -> (String, usize){
      let stopCode = getStop_code__!();
         let filename = format!("{}/found_files", unsafe{crate::ps18::page_struct("", crate::ps18::TMP_DIR_, -1).str_});
