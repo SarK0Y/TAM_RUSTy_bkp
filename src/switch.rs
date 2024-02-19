@@ -63,6 +63,10 @@ pub(crate) unsafe fn swtch_ps(indx: i64, ps: Option<crate::_page_struct>) -> cra
     if indx > -1{ps_indx = indx.to_usize().unwrap(); return dummy;}
     return crate::cpy_page_struct(&mut ps_.get_mut().unwrap()[ps_indx])
 }
+pub(crate) fn renFile(cmd: String) -> bool{
+    
+    false
+}
 fn viewer_n_adr(app: String, file: String) -> bool{
     let func_id = crate::func_id18::viewer_;
     if app == "none" {

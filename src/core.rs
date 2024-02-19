@@ -2,9 +2,9 @@
 #[path = "exts.rs"]
 mod exts;
 use exts::*;
-use gag::RedirectError;
+//use gag::RedirectError;
 
-use crate::{swtch::{user_wrote_path, user_wrote_path_prnt, read_user_written_path, path_completed}, update18::update_dir_list, shift_cursor_of_prnt, run_cmd_str};
+use crate::{swtch::{user_wrote_path, user_wrote_path_prnt, read_user_written_path, path_completed}, update18::update_dir_list, shift_cursor_of_prnt, run_cmd_str, split_once};
 
 use self::ps21::{set_ask_user, get_prnt, set_prnt, get_mainpath, get_tmp_dir};
 core_use!();
@@ -117,6 +117,17 @@ pub(crate) fn set_proper_num_pg(num_pg: i64){
     let front_list = format!("{}/{}", crate::get_tmp_dir(-371033), "front_list");
     let listName_dot_pg = format!("{}.pg", read_front_list());
     save_file(num_pg.to_string(), listName_dot_pg);
+}
+pub(crate) fn rgx_from_file(rgx: String, src: &str, out: &str){
+    let prime_path = format!("{}", get_tmp_dir(84411254));
+    let (opts, rgx) = split_once(&rgx, " ");
+    let src = format!("{prime_path}/{}", escape_symbs(&src.to_string()));
+    let out = format!("{prime_path}/{}", escape_symbs(&out.to_string()));
+    let cmd = format!("grep {opts} '{rgx}' {src} > {out}");
+    run_cmd_str(cmd.as_str());
+}
+pub(crate) fn rgx_from_prnt(rgx: String, out: &str){
+    rgx_from_file(rgx, "prnt", out)
 }
 pub(crate) fn read_front_list() -> String{
     let mut active_lst = read_file("front_list");

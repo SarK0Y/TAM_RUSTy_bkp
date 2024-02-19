@@ -365,7 +365,7 @@ if list == LS_ {
 if list == FRONT_ {
     if op_code == GET{
         let mut ret = String::new();
-        if FRONT.len() > indx{ret = cpy_str(&FRONT[indx])}
+        if FRONT.len() > indx && list == MAIN0_{ret = cpy_str(&FRONT[indx])}
         else{ret = ln_of_found_files(indx).0;}
         return ret.to_string()}//return FRONT.get().unwrap()[indx].to_string()}
     if op_code == LEN{return ln_of_found_files(usize::MAX).1.to_string()}//return FRONT.get().unwrap().len().to_string()}
