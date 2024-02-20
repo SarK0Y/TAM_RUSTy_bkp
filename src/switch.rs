@@ -1,4 +1,5 @@
 use chrono::format::format;
+use colored::Colorize;
 use num_traits::{FloatErrorKind, ToPrimitive};
 use once_cell::sync::OnceCell;
 use substring::Substring;
@@ -19,7 +20,7 @@ use std::{
 };
 pub const SWTCH_RUN_VIEWER: i64 = 0;
 pub const SWTCH_USER_WRITING_PATH: i64 = 1;
-use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front, FRONT_}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default, get_prnt, position_of_slash_in_prnt, usize_2_i64, escape_symbs, read_rgx_from_prnt};
+use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front, FRONT_}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default, get_prnt, position_of_slash_in_prnt, usize_2_i64, escape_symbs, read_rgx_from_prnt, split_once, cpy_str, raw_ren_file};
 pub(crate) unsafe fn check_mode(mode: &mut i64){
     static mut state: i64 = 0;
     if *mode == -1 {*mode = state;}
@@ -63,15 +64,45 @@ pub(crate) unsafe fn swtch_ps(indx: i64, ps: Option<crate::_page_struct>) -> cra
     if indx > -1{ps_indx = indx.to_usize().unwrap(); return dummy;}
     return crate::cpy_page_struct(&mut ps_.get_mut().unwrap()[ps_indx])
 }
-pub(crate) fn renFile(cmd: String) -> bool{
+pub(crate) fn renFile() -> bool{
     let rgx = "-Ei ren\\s+\\d+".to_string();
     let prnt = crate::read_prnt();
-    let head = read_rgx_from_prnt(rgx, "head_of_prnt");
+    let head = read_rgx_from_prnt(cpy_str(&rgx), "head_of_prnt");
     if head == ""{
         set_ask_user("example: ren <indx of file> <new name <short one or full path to>>", 1003671);
         return false
     }
-    false
+    let (_, file_indx) = split_once(&head, " ");
+    let file_indx = match i64::from_str_radix(&file_indx, 10){
+        Ok(n) => n,
+        _ => 0i64
+    };
+    let old_name = get_item_from_front_list(file_indx, true);
+    let new_name = prnt.replace(&crate::cpy_str(&rgx), "").trim_start_matches(" ").to_string();
+    if Path::new(&new_name).exists(){
+        crate::clear_screen();
+        let err_msg = format!("{} is existed. Would You like to overwrite it? Type 'Yes, I do' or n.", new_name).bold().red();
+        println!("{err_msg}");
+        let mut ans = String::new();
+        crate::io::stdin().read_line(&mut ans).expect("renFile failed to read console");
+        if ans == "Yes, I do"{raw_ren_file(old_name, new_name); return true}
+        else {return false}
+    }
+    let path_2_new = match Path::new(&new_name).parent(){
+        Some(n) => n,
+        _ => Path::new("")
+    };
+    if !path_2_new.exists(){
+        let path_2_new0 = path_2_new.to_str().unwrap().to_string();
+        crate::mkdir(cpy_str(&path_2_new0));
+        if !path_2_new.exists(){
+            let err_msg = format!("renFile failed to create {path_2_new0}");
+            errMsg(&err_msg, -1125414);
+            return false
+        }
+    }
+    raw_ren_file(old_name, new_name);
+    true
 }
 fn viewer_n_adr(app: String, file: String) -> bool{
     let func_id = crate::func_id18::viewer_;

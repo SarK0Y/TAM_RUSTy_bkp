@@ -523,3 +523,11 @@ pub(crate) fn ins_newlines(len_of_line: usize, origString: &mut String) {
         ins_last_char_to_string1_from_string1_ptr(indx, origString);
     }
 }
+pub(crate) fn raw_ren_file(src: String, dst: String){
+    let cmd = format!("mv {src} {dst}");
+    run_cmd_str(cmd.as_str());
+}
+pub(crate) fn mkdir(name: String){
+    let cmd = format!("mkdir -p {name}");
+    run_cmd_str(cmd.as_str());
+}

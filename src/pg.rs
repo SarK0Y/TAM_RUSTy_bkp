@@ -1,6 +1,6 @@
 use cli_table::TableStruct;
 
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list, Ins_key, show_ls, sieve_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx, read_user_written_path, user_writing_path}, update18::lets_write_path, ln_of_found_files, size_of_found_files, key_f12, get_path_from_prnt, get_path_from_strn, read_prnt};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list, Ins_key, show_ls, sieve_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx, read_user_written_path, user_writing_path, renFile}, update18::lets_write_path, ln_of_found_files, size_of_found_files, key_f12, get_path_from_prnt, get_path_from_strn, read_prnt};
 self::pg_uses!();
 
 fn cpy_row(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -85,7 +85,7 @@ fn build_page(ps: &mut crate::_page_struct){
     println!("{}", crate::get_ask_user(func_id));
 }
 
-fn clear_screen(){
+pub(crate) fn clear_screen(){
     if checkArg("-dbg") || checkArg("-dirty"){return;}
     let run_command = Command::new("clear")
     .output()
@@ -257,6 +257,10 @@ fn exec_cmd(cmd: String){
     }
     if cmd.as_str().substring(0, 5) == "sieve"{
         sieve_list(crate::cpy_str(&cmd));
+        return;
+    }
+    if cmd.as_str().substring(0, 4) == "ren "{
+        renFile();
         return;
     }
       if cmd.as_str().substring(0, 2) == "fp"{
