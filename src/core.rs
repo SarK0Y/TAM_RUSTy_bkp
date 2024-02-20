@@ -129,6 +129,10 @@ pub(crate) fn rgx_from_file(rgx: String, src: &str, out: &str){
 pub(crate) fn rgx_from_prnt(rgx: String, out: &str){
     rgx_from_file(rgx, "prnt", out)
 }
+pub(crate) fn read_rgx_from_prnt(rgx: String, out: &str) -> String{
+    rgx_from_prnt(rgx, out);
+    read_file(out)
+}
 pub(crate) fn read_front_list() -> String{
     let mut active_lst = read_file("front_list");
     //if active_lst != front_list {active_lst = "main0".to_string();}
