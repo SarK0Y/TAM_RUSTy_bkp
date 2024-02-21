@@ -8,9 +8,19 @@ use crate::{swtch::{user_wrote_path, user_wrote_path_prnt, read_user_written_pat
 
 use self::ps21::{set_ask_user, get_prnt, set_prnt, get_mainpath, get_tmp_dir};
 core_use!();
+pub(crate) fn bkp_tmp_dir() -> String{
+    static mut bkp: OnceCell<String> = OnceCell::new();
+  if crate::C!(bkp.get()) == None{
+    let fst: String = unsafe{crate::page_struct("", crate::TMP_DIR_, -75811245).str_};
+    let ret = fst.clone();
+    crate::C!(bkp.set(fst));
+    return ret;
+  }
+  crate::C!(bkp.get().expect("bkp_tmp_dir failed").to_string())
+}
 pub(crate) fn set_front_list(list: &str){
     let tmp_dir = get_tmp_dir(-155741);
-    if tmp_dir == "no¡"{return;}
+    if tmp_dir == ""{return;}
     let found_files = format!("{tmp_dir}/found_files");
     let active_list = format!("{tmp_dir}/{}", list);
     let cmd = format!("ln -sf {active_list} {found_files}");
@@ -69,6 +79,7 @@ let err_msg = format!("{} permission denied", path_2_found_files_list);
 let run_shell2 = Command::new("chmod").arg("700").arg(&path_2_found_files_list).output().expect(&err_msg.bold().red());
 if checkArg("-dbg"){println!("shell out = {:?}", run_shell2)};
 unsafe{crate::page_struct(&path_2_found_files_list, set(crate::TMP_DIR_), func_id);}
+bkp_tmp_dir();
 let path_2_found_files_list_dot = format!("{}/TAM_{}/.", path_2_shm, proper_timestamp);
 let err_msg = format!("{} permission denied", path_2_found_files_list_dot);
 let run_shell3 = Command::new("chmod").arg("700").arg(&path_2_found_files_list_dot).output().expect(&err_msg.bold().red());
@@ -120,6 +131,7 @@ pub(crate) fn set_proper_num_pg(num_pg: i64){
 }
 pub(crate) fn rgx_from_file(rgx: String, src: &str, out: &str){
     let prime_path = format!("{}", get_tmp_dir(84411254));
+    if prime_path == ""{set_ask_user("Sorry, No access to tmp directory.. Sorry", -5611115); return;}
     let (opts, rgx) = split_once(&rgx, " ");
     let src = format!("{prime_path}/{}", escape_symbs(&src.to_string()));
     let out = format!("{prime_path}/{}", escape_symbs(&out.to_string()));
@@ -388,7 +400,7 @@ pub(crate) fn read_file(fname: &str) -> String{
     //let err = format!("failed to read {}", fname);
     let mut file: File = match File::open(&fname){
         Ok(f) => f,
-        Err(e) => return format!("{:?}", e)
+        Err(e) => return "".to_string()//format!("{:?}", e)
     };
     let mut ret = String::new();
     file.read_to_string(&mut ret);
@@ -528,6 +540,7 @@ pub(crate) fn raw_ren_file(src: String, dst: String){
     run_cmd_str(cmd.as_str());
 }
 pub(crate) fn mkdir(name: String){
+    let name = escape_symbs(&name);
     let cmd = format!("mkdir -p {name}");
     run_cmd_str(cmd.as_str());
 }

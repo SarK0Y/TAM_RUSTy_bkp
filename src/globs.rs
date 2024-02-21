@@ -1,6 +1,6 @@
 use chrono::format;
 use num_traits::ToPrimitive;
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst, split_once, fix_num_files, i64_2_usize, cpy_str, set_front_list};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst, split_once, fix_num_files, i64_2_usize, cpy_str, set_front_list, read_front_list, save_file, TMP_DIR_};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -293,11 +293,11 @@ pub(crate) fn get_item_from_front_list(indx: i64, fixed_indx: bool) -> String{
 pub fn set_main0_as_front(){mark_front_lst("main0"); unsafe{lists("", MAIN0_, 0, SET_FRONT_LIST);}}
 pub fn set_ls_as_front() -> String{
       let mut list_id: (i64, bool) = (1i64, false);
-    for i in 0..1000{
+  //  for i in 0..1000{
         list_id = unsafe {front_list_indx(LS_)};
-        if list_id.1{break;}
-    }
-    if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    //    if list_id.1{break;}
+    //}
+    //if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
     mark_front_lst("ls");
     unsafe{lists("", LS_, 0, SET_FRONT_LIST); return "ok".to_string();}}
 pub unsafe fn lists(val: &str, list: i64, indx: usize, op_code: i64) -> String{
@@ -311,7 +311,7 @@ let mut FRONT: &[String] = MAIN0.as_mut_slice();
 }*/
 let mut list = list;
 let front_list = read_file("front_list");
-set_front_list(&front_list);
+//set_front_list(&front_list);
 if front_list == "main0"{list = MAIN0_;}
 if front_list == "ls"{list = LS_;}
 if list == MAIN0_ {
