@@ -68,7 +68,7 @@ pub(crate) fn renFile() -> bool{
     crate::save_file("".to_string(), "prev_list".to_string());
     let rgx = "-Eio ren\\s+[0-9]+".to_string();
     let prnt = crate::read_prnt();
-    let head = read_rgx_from_prnt(cpy_str(&rgx), "head_of_prnt");
+    let head = read_rgx_from_prnt(cpy_str(&rgx), "head_of_prnt").replace("\n", "");
     if head == ""{
         set_ask_user("example: ren <indx of file> <new name <short one or full path to>>", 1003671);
         return false

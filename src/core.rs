@@ -18,6 +18,15 @@ pub(crate) fn bkp_tmp_dir() -> String{
   }
   crate::C!(bkp.get().expect("bkp_tmp_dir failed").to_string())
 }
+pub(crate) fn up_front_list(){
+    let list = read_front_list();
+    let tmp_dir = get_tmp_dir(-1595741);
+    if tmp_dir == ""{return;}
+    let found_files = format!("{tmp_dir}/found_files");
+    let active_list = format!("{tmp_dir}/{}", list);
+    let cmd = format!("ln -sf {active_list} {found_files}");
+    run_cmd_str(&cmd);
+}
 pub(crate) fn set_front_list(list: &str){
     let tmp_dir = get_tmp_dir(-155741);
     if tmp_dir == ""{return;}
@@ -28,7 +37,8 @@ pub(crate) fn set_front_list(list: &str){
     mark_front_lst(list)
 }
 pub(crate) fn mark_front_lst(name: &str){
-    save_file(name.to_string(), "front_list".to_string());
+    if name != "ls"{save_file(name.to_string(), "front_list".to_string());}
+    else {save_file(name.to_string(), "ls.mode".to_string());}
 }
 pub(crate) fn initSession() -> bool{
     let func_id = 1;
@@ -145,9 +155,13 @@ pub(crate) fn read_rgx_from_prnt(rgx: String, out: &str) -> String{
     rgx_from_prnt(rgx, out);
     read_file(out)
 }
+pub(crate) fn drop_ls_mode(){
+    save_file("".to_string(), "ls.mode".to_string());
+    up_front_list()
+}
 pub(crate) fn read_front_list() -> String{
-    let mut active_lst = read_file("front_list");
-    //if active_lst != front_list {active_lst = "main0".to_string();}
+    let mut active_lst = read_file("ls.mode");
+    if active_lst != "" {active_lst = read_file("front_list");}
     active_lst
 }
 pub(crate) fn read_proper_num_pg() -> i64{
