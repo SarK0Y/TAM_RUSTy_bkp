@@ -50,7 +50,7 @@ pub(crate) fn sieve_list(data: String){
     run_cmd_str(cmd.as_str());
     let cmd = format!("mv {} {}", filter_file_path_tmp, filter_file_path);
     run_cmd_str(cmd.as_str());
-    let cmd = format!("ln -sf {} {}", filter_file_path, found_files_path);
+    let cmd = format!("#filter as front\nln -sf {} {}", filter_file_path, found_files_path);
     run_cmd_str(cmd.as_str());
     mark_front_lst("filter");
     fix_num_files(5977871);
@@ -70,7 +70,7 @@ pub(crate) fn set_valid_list_as_front(){
     let tmp_dir = get_tmp_dir(-6015);
     let active_lst = format!("{}/{}", &tmp_dir, read_file("front_list"));
     let front_list_link = format!("{}/found_files", &tmp_dir);
-    let cmd = format!("ln -sf {} {}", active_lst, front_list_link);
+    let cmd = format!("#valid list as front\nln -sf {} {}", active_lst, front_list_link);
     run_cmd_str(&cmd);
 }
 pub(crate) fn F1_key() -> String{
@@ -344,7 +344,7 @@ if list == MAIN0_ {
         let cmd = format!("touch -f {}", &main0_path);
         run_cmd_str(&cmd);
        }
-       let cmd = format!("ln -sf {} {}", main0_path, found_files_path);
+       let cmd = format!("#sets main0 as front\nln -sf {} {}", main0_path, found_files_path);
        run_cmd_str(&cmd);
        return "main0 gets set as front".to_string();
     }
@@ -368,7 +368,7 @@ if list == LS_ {
        let found_files_path = format!("{}/{}", &main_path, "found_files");
        let cmd = format!("touch -f {}", &ls_path);
        run_cmd_str(&cmd);
-       let cmd = format!("ln -sf {} {}", ls_path, found_files_path);
+       let cmd = format!("#sets ls as front\nln -sf {} {}", ls_path, found_files_path);
        run_cmd_str(&cmd);
        return "ls gets set as front".to_string();
     }

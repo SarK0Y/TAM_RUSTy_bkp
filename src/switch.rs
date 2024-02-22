@@ -81,8 +81,8 @@ pub(crate) fn renFile() -> bool{
         Ok(n) => n,
         _ => 0i64
     };
-    let old_name = get_item_from_front_list(file_indx, true);
-    let new_name = prnt.replace(&crate::cpy_str(&head), "").trim_start_matches(" ").to_string();
+    let old_name = escape_symbs(&get_item_from_front_list(file_indx, true));
+    let new_name = escape_symbs(&prnt.replace(&crate::cpy_str(&head), "").trim_start_matches(" ").to_string());
     save_file(cpy_str(&old_name), "old_name".to_string());
     save_file(cpy_str(&new_name), "new_name".to_string());
     if Path::new(&new_name).exists(){

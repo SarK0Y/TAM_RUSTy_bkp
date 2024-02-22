@@ -24,7 +24,7 @@ pub(crate) fn up_front_list(){
     if tmp_dir == ""{return;}
     let found_files = format!("{tmp_dir}/found_files");
     let active_list = format!("{tmp_dir}/{}", list);
-    let cmd = format!("ln -sf {active_list} {found_files}");
+    let cmd = format!("#up_front_list\nln -sf {active_list} {found_files}");
     run_cmd_str(&cmd);
 }
 pub(crate) fn set_front_list(list: &str){
@@ -32,7 +32,7 @@ pub(crate) fn set_front_list(list: &str){
     if tmp_dir == ""{return;}
     let found_files = format!("{tmp_dir}/found_files");
     let active_list = format!("{tmp_dir}/{}", list);
-    let cmd = format!("ln -sf {active_list} {found_files}");
+    let cmd = format!("#set_front_list\nln -sf {active_list} {found_files}");
     run_cmd_str(&cmd);
     mark_front_lst(list)
 }
@@ -161,7 +161,7 @@ pub(crate) fn drop_ls_mode(){
 }
 pub(crate) fn read_front_list() -> String{
     let mut active_lst = read_file("ls.mode");
-    if active_lst != "" {active_lst = read_file("front_list");}
+    if active_lst == "" {active_lst = read_file("front_list");}
     active_lst
 }
 pub(crate) fn read_proper_num_pg() -> i64{
@@ -185,6 +185,8 @@ pub(crate) fn escape_symbs(str0: &String) -> String{
     let strr = strr.replace("'", r"\'");
     let strr = strr.replace("`", r"\`");
     let strr = strr.replace("(", r"\(");
+    let strr = strr.replace("}", r"\}");
+    let strr = strr.replace("{", r"\{");
     let strr = strr.replace(")", r"\)");
     let strr = strr.replace("&", r"\&");
     return strr.to_string();
