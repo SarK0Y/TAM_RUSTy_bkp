@@ -560,3 +560,22 @@ pub(crate) fn mkdir(name: String){
     let cmd = format!("mkdir -p {name}");
     run_cmd_str(cmd.as_str());
 }
+pub(crate) fn raw_mkdir(name: String){
+    let out = format!("{}/raw_mkdir.out", get_tmp_dir(4512154749974)); 
+    let cmd = format!("mkdir -p {name} > {out} 2>&1");
+    run_cmd_str(cmd.as_str());
+}
+pub(crate) fn path_exists(path: String) -> bool{
+    let timestamp = Local::now();
+let proper_timestamp = format!("{}", timestamp.format("%Y-%mm-%dd_%H-%M-%S_%f"));
+let out: String = format!("{}/path_exists{}.out", get_tmp_dir(10008745), proper_timestamp);
+let cmd = format!("find -L {path} > {out}");
+run_cmd_str(cmd.as_str());
+let path = path.chars().count();
+let is_path = read_file(&out).chars().count();
+clear_screen();
+println!("{path} and {is_path}");
+getkey();
+if is_path == path{return true}
+false
+}

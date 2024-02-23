@@ -20,7 +20,7 @@ use std::{
 };
 pub const SWTCH_RUN_VIEWER: i64 = 0;
 pub const SWTCH_USER_WRITING_PATH: i64 = 1;
-use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front, FRONT_}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default, get_prnt, position_of_slash_in_prnt, usize_2_i64, escape_symbs, read_rgx_from_prnt, split_once, cpy_str, raw_ren_file, read_file, mark_front_lst, save_file};
+use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front, FRONT_}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default, get_prnt, position_of_slash_in_prnt, usize_2_i64, escape_symbs, read_rgx_from_prnt, split_once, cpy_str, raw_ren_file, read_file, mark_front_lst, save_file, path_exists};
 pub(crate) unsafe fn check_mode(mode: &mut i64){
     static mut state: i64 = 0;
     if *mode == -1 {*mode = state;}
@@ -66,6 +66,11 @@ pub(crate) unsafe fn swtch_ps(indx: i64, ps: Option<crate::_page_struct>) -> cra
 }
 pub(crate) fn renFile() -> bool{
     crate::save_file("".to_string(), "prev_list".to_string());
+    let check_front_list = read_file("front_list");
+    if check_front_list == "ls"{
+        set_ask_user(&"Wrong list was activated".bold().red().to_string(), 12154487);
+        return false;
+    }
     let rgx = "-Eio ren\\s+[0-9]+".to_string();
     let prnt = crate::read_prnt();
     let head = read_rgx_from_prnt(cpy_str(&rgx), "head_of_prnt").replace("\n", "");
@@ -82,6 +87,10 @@ pub(crate) fn renFile() -> bool{
         _ => 0i64
     };
     let old_name = escape_symbs(&get_item_from_front_list(file_indx, true));
+    if old_name.len() == 0 || Path::new(&old_name).is_dir(){
+        set_ask_user(&"file has wrong type".bold().red().to_string(), 12154487);
+        return false;
+    }
     let new_name = escape_symbs(&prnt.replace(&crate::cpy_str(&head), "").trim_start_matches(" ").to_string());
     save_file(cpy_str(&old_name), "old_name".to_string());
     save_file(cpy_str(&new_name), "new_name".to_string());
@@ -95,17 +104,20 @@ pub(crate) fn renFile() -> bool{
         else {return false}
     }
     let mut path_2_new = Path::new(&new_name);
-    if !path_2_new.is_dir(){
+    let is_dir = new_name.chars().count() - 1;
+    let is_dir = new_name.chars().nth(is_dir);
+    if is_dir.expect("failed to unwrap is_dir in renFile").to_string() != "/"{
      path_2_new = match Path::new(&new_name).parent(){
         Some(n) => n,
         _ => Path::new("")
     };
 }
-    if !path_2_new.exists(){
-        let path_2_new0 = path_2_new.to_str().unwrap().to_string();
-        crate::mkdir(cpy_str(&path_2_new0));
-        if !path_2_new.exists(){
+let path_2_new0 = path_2_new.to_str().unwrap().to_string();
+    if !path_exists(cpy_str(&path_2_new0)){
+        crate::raw_mkdir(cpy_str(&path_2_new0));
+        if !path_exists(cpy_str(&path_2_new0)){
             let err_msg = format!("renFile failed to create {path_2_new0}");
+            save_file(cpy_str(&err_msg), "renFile.err".to_string());
             errMsg(&err_msg, -1125414);
             return false
         }
