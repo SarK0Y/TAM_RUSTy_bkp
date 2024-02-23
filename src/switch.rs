@@ -91,7 +91,13 @@ pub(crate) fn renFile() -> bool{
         set_ask_user(&"file has wrong type".bold().red().to_string(), 12154487);
         return false;
     }
-    let new_name = escape_symbs(&prnt.replace(&crate::cpy_str(&head), "").trim_start_matches(" ").to_string());
+    let mut new_name = escape_symbs(&prnt.replace(&crate::cpy_str(&head), "").trim_start_matches(" ").to_string());
+    let is_last_ch_slash = new_name.chars().count() - 1;
+    let is_last_ch_slash = new_name.chars().nth(is_last_ch_slash);
+    if is_last_ch_slash.unwrap().to_string() == "/"{
+        let fname = Path::new(&old_name).file_name().unwrap().to_str().unwrap();
+        new_name = format!("{new_name}{fname}");
+    }
     save_file(cpy_str(&old_name), "old_name".to_string());
     save_file(cpy_str(&new_name), "new_name".to_string());
     if Path::new(&new_name).exists(){
@@ -100,7 +106,8 @@ pub(crate) fn renFile() -> bool{
         println!("{err_msg}");
         let mut ans = String::new();
         crate::io::stdin().read_line(&mut ans).expect("renFile failed to read console");
-        if ans == "Yes, I do"{set_ask_user("moving file..", -74554152);raw_ren_file(old_name, new_name); return true}
+        if ans == "Yes, I do"{set_ask_user("moving file..", -74554152);
+        crate::globs18::renew_lists(cpy_str(&new_name)); raw_ren_file(old_name, new_name); return true}
         else {return false}
     }
     let mut path_2_new = Path::new(&new_name);
@@ -123,6 +130,7 @@ let path_2_new0 = path_2_new.to_str().unwrap().to_string();
         }
     }
     set_ask_user("moving file..", -74554152);
+    crate::globs18::renew_lists(cpy_str(&new_name));
     raw_ren_file(old_name, new_name);
     true
 }
