@@ -4,7 +4,7 @@ mod exts;
 use exts::*;
 //use gag::RedirectError;
 
-use crate::{swtch::{user_wrote_path, user_wrote_path_prnt, read_user_written_path, path_completed}, update18::update_dir_list, shift_cursor_of_prnt, run_cmd_str, split_once};
+use crate::{swtch::{user_wrote_path, user_wrote_path_prnt, read_user_written_path, path_completed}, update18::update_dir_list, shift_cursor_of_prnt, run_cmd_str, split_once, run_cmd_out};
 
 use self::ps21::{set_ask_user, get_prnt, set_prnt, get_mainpath, get_tmp_dir};
 core_use!();
@@ -569,13 +569,14 @@ pub(crate) fn path_exists(path: String) -> bool{
     let timestamp = Local::now();
 let proper_timestamp = format!("{}", timestamp.format("%Y-%mm-%dd_%H-%M-%S_%f"));
 let out: String = format!("{}/path_exists{}.out", get_tmp_dir(10008745), proper_timestamp);
-let cmd = format!("find -L {path} > {out}");
-run_cmd_str(cmd.as_str());
-let path = path.chars().count();
-let is_path = read_file(&out).chars().count();
-clear_screen();
-println!("{path} and {is_path}");
-getkey();
+let cmd = format!("find -L {path}");
+let is_path = run_cmd_out(cmd);
+let path = path.len();//chars().count();
+//clear_screen();
+//println!("{is_path}");
+let is_path = is_path.len() + 1;//chars().count();
+//println!("{path} and {is_path}");
+//getkey();
 if is_path == path{return true}
 false
 }
