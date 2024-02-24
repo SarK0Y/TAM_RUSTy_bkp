@@ -389,13 +389,15 @@ pub(crate) fn take_list_adr(name: &str) -> String{
 pub(crate) fn renew_lists(new_item: String){
     let front_lst = take_list_adr(&read_front_list());
     let main0 = take_list_adr("main0");
-    let cmd = format!("echo '{new_item}' >> {}", front_lst);
+    let cmd = format!("echo {new_item} >> {}", front_lst);
     run_cmd_str(cmd.as_str());
-    let size = std::fs::metadata(&main0).unwrap().len() - 3;
+    let size = std::fs::metadata(&main0).unwrap().len() - 4;
     let cmd = format!("truncate -s {size} {main0}");
     run_cmd_str(cmd.as_str());
     let stop = crate::getStop_code__!();
-    let cmd = format!("echo '{new_item}\n{stop}' >> {main0}");
+    let cmd = format!("echo {new_item} >> {main0}");
+    run_cmd_str(cmd.as_str());
+    let cmd = format!("echo {stop} >> {main0}");
     run_cmd_str(cmd.as_str());
     add_2_main0_list(&new_item);
 }
