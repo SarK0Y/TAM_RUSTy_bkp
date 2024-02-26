@@ -1,7 +1,7 @@
 mod exts;
 use exts::page_struct_uses;
 
-use crate::{globs18::len_of_front_list, func_id18, swtch::{set_user_written_path_from_prnt, set_user_written_path_from_strn}, cpy_str, complete_path, get_path_from_strn, rewrite_user_written_path, file_prnt, set_proper_num_pg, read_proper_num_pg, bkp_tmp_dir};
+use crate::{globs18::{len_of_front_list, take_list_adr}, func_id18, swtch::{set_user_written_path_from_prnt, set_user_written_path_from_strn}, cpy_str, complete_path, get_path_from_strn, rewrite_user_written_path, file_prnt, set_proper_num_pg, read_proper_num_pg, bkp_tmp_dir, read_front_list, save_file};
 self::page_struct_uses!();
 pub const STOP_CODE_: i64 = 1;
 pub const KONSOLE_TITLE_: i64 = 2;
@@ -188,8 +188,16 @@ pub(crate) fn fix_num_files(func_id: i64) ->i64{
    let len_of_front = i64::from_str_radix(crate::globs18::len_of_front_list().as_str(), 10).unwrap() - 1; 
    return unsafe{page_struct_int(len_of_front, crate::set(NUM_FILES_), func_id)};}
 pub(crate) fn set_num_files(func_id: i64) ->i64{
-   let len_of_front = i64::from_str_radix(crate::globs18::len_of_front_list().as_str(), 10).unwrap(); 
+   let len_of_front = i64::from_str_radix(crate::globs18::len_of_front_list().as_str(), 10).unwrap();
+   let mut list_len_adr = read_front_list();
+   list_len_adr.push_str(".len");
+   save_file(len_of_front.to_string(), list_len_adr); 
    return unsafe{page_struct_int(len_of_front, crate::set(NUM_FILES_), func_id)};}
+pub(crate) fn set_num_files0(func_id: i64, len_of_front: usize) ->i64{
+   let mut list_len_adr = read_front_list();
+   list_len_adr.push_str(".len");
+   save_file(len_of_front.to_string(), list_len_adr); 
+   return unsafe{page_struct_int(crate::usize_2_i64(len_of_front), crate::set(NUM_FILES_), func_id)};}
 pub(crate) fn get_col_width(func_id: i64) -> i64{return unsafe{page_struct_int(0, COL_WIDTH_, func_id)}}
 pub(crate) fn set_col_width(val: i64, func_id: i64) -> i64{return unsafe{page_struct_int(val, crate::set(COL_WIDTH_), func_id)}}
 pub(crate) fn get_num_rows(func_id: i64) -> i64{return unsafe{page_struct_int(0, NUM_ROWS_, func_id)}}

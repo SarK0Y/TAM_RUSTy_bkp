@@ -194,7 +194,7 @@ fn read_midway_data() -> bool{
         let line = line.unwrap();
         let ret = globs18::add_2_front_list(&line, -1); // todo => add_2_front_list
        // let line_dbg = get_item_from_front_list(usize_2_i64(indx), false);
-        ps18::set_num_files(func_id); 
+        ps18::set_num_files0(func_id, indx); 
         if dirty!(){println!("line {}", line)}
         if line == stopCode{ps18::fix_num_files(func_id); return true}
     }  if dirty!(){println!("midway ended")}}

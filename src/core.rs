@@ -353,6 +353,7 @@ pub(crate) fn read_midway_data_4_ls() -> bool{
         let ret = crate::globs18::add_2_front_list(&line, -1); 
         //let line_dbg = get_item_from_front_list(usize_2_i64(indx), false); 
         if dirty!(){println!("line {}", line)}
+        crate::ps18::set_num_files0(func_id, indx);
         if line == stopCode{crate::ps18::fix_num_files(func_id); return true}
     }  if dirty!(){println!("midway ended")}}
     false

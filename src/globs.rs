@@ -257,14 +257,29 @@ pub fn add_2_main0_list(val: &str) -> String{
 pub fn len_of_main0_list() -> String{
     return unsafe{lists("", MAIN0_, 0, LEN)}
 }
-pub fn len_of_front_list() -> String{
+pub fn raw_len_of_front_list() -> String{
       let mut list_id: (i64, bool) = (1i64, false);
-    for i in 0..1000_000{
+    for i in 0..1000{
         list_id = unsafe {front_list_indx(i64::MAX)};
         if list_id.1{break;}
     }
     if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    let front_list = read_front_list();
+    if front_list == "main0"{return len_of_main0_list()}
     return unsafe{lists("", list_id.0, 0, LEN)}
+}
+pub fn len_of_front_list() -> String{
+      let mut list_id: (i64, bool) = (1i64, false);
+    for i in 0..1000{
+        list_id = unsafe {front_list_indx(i64::MAX)};
+        if list_id.1{break;}
+    }
+    if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    let mut front_list = read_front_list();
+    front_list.push_str(".len");
+    let num = read_file(&front_list);
+    if num == ""{return "0".to_string()}
+    return num;
 }
 pub(crate) fn get_proper_indx(indx: i64, fixed_indx: bool) -> (usize, i64){
     let last_pg = where_is_last_pg();
@@ -321,10 +336,10 @@ let mut FRONT: &[String] = MAIN0.as_mut_slice();
     LS.set(ls_vec);
 }*/
 let mut list = list;
-let front_list = read_file("front_list");
+//let front_list = read_file("front_list");
 //set_front_list(&front_list);
-if front_list == "main0"{list = MAIN0_;}
-if front_list == "ls"{list = LS_;}
+//if front_list == "main0"{list = MAIN0_;}
+//if front_list == "ls"{list = LS_;}
 if list == MAIN0_ {
     if op_code == GET{
         let ret = crate::cpy_str(&MAIN0[indx]);
