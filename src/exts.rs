@@ -168,6 +168,7 @@ macro_rules! mcrs_uses {
 }
 macro_rules! update_uses {
     () => {
+use std::time::Duration;
 use std::env;
 use colored::Colorize;
 use substring::Substring;

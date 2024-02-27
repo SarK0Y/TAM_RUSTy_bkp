@@ -1,5 +1,5 @@
-use crate::{exts::update_uses, globs18::{set_main0_as_front, MAIN0_}, swtch::{front_list_indx, swtch_fn, SWTCH_USER_WRITING_PATH}, read_midway_data, complete_path};
-use self::{func_id17::{find_files, read_midway_data_}, globs17::set_ls_as_front};
+use crate::{exts::update_uses, globs18::{set_main0_as_front, MAIN0_}, swtch::{front_list_indx, swtch_fn, SWTCH_USER_WRITING_PATH}, read_midway_data, complete_path, save_file};
+use self::{func_id17::{find_files, read_midway_data_}, globs17::{set_ls_as_front, take_list_adr, len_of_front_list_wc, len_of_main0_list}};
 update_uses!();
 pub(crate) fn main_update(){
     let func_id = crate::func_id18::main_update;
@@ -49,6 +49,7 @@ println!("stop manage_page");
 }).unwrap();
     handler.join().unwrap();
     println!("len of main0 list {}", globs17::len_of_main0_list());
+background_fixing();
 }
 pub(crate) fn update_dir_list(dir: &str, opts: &str, no_grep: bool){
     let mut head = String::new();
@@ -81,4 +82,20 @@ pub(crate) fn lets_write_path(key: String){
     if mode < 0{return;}
     C!(swtch_fn(mode, key));
 
+}
+pub(crate) fn background_fixing(){
+        let builder = thread::Builder::new().stack_size(8 * 1024 * 1024).name("background_fixing".to_string());
+let handler = builder.spawn(|| {
+let mut check_main0_len = String::new();
+let main0_len_adr = take_list_adr("main0.len");
+loop {
+
+     thread::sleep(Duration::from_millis(5000));
+     let main0_len = len_of_main0_list();
+     if check_main0_len != main0_len{
+        check_main0_len = main0_len;
+        save_file(crate::cpy_str(&check_main0_len), crate::cpy_str(&main0_len_adr));
+     }
+}
+});
 }

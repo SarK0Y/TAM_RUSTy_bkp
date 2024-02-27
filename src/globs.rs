@@ -334,7 +334,7 @@ pub(crate) fn get_item_from_front_list(indx: i64, fixed_indx: bool) -> String{
     let main_path = get_tmp_dir(-13314);
     return unsafe{lists("", list_id.0, proper_indx.0, GET)}
 }
-pub fn set_main0_as_front(){mark_front_lst("main0"); unsafe{lists("", MAIN0_, 0, SET_FRONT_LIST);}}
+pub fn set_main0_as_front(){crate::drop_ls_mode(); mark_front_lst("main0"); unsafe{lists("", MAIN0_, 0, SET_FRONT_LIST);}}
 pub fn set_ls_as_front() -> String{
       let mut list_id: (i64, bool) = (1i64, false);
   //  for i in 0..1000{
