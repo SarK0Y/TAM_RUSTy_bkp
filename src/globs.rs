@@ -1,6 +1,6 @@
 use chrono::format;
 use num_traits::ToPrimitive;
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst, split_once, fix_num_files, i64_2_usize, cpy_str, set_front_list, read_front_list, save_file, TMP_DIR_, where_is_last_pg};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst, split_once, fix_num_files, i64_2_usize, cpy_str, set_front_list, read_front_list, save_file, TMP_DIR_, where_is_last_pg, run_cmd_out};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -53,7 +53,8 @@ pub(crate) fn sieve_list(data: String){
     let cmd = format!("#filter as front\nln -sf {} {}", filter_file_path, found_files_path);
     run_cmd_str(cmd.as_str());
     mark_front_lst("filter");
-    fix_num_files(5977871);
+    let dbg = fix_num_files(5977871);
+    let dbg1 = dbg;
 }
 pub(crate) fn show_ls(){
     unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
@@ -281,6 +282,22 @@ pub fn len_of_front_list() -> String{
     if num == ""{return "0".to_string()}
     return num;
 }
+pub fn len_of_front_list_wc() -> String{
+      let mut list_id: (i64, bool) = (1i64, false);
+    for i in 0..1000{
+        list_id = unsafe {front_list_indx(i64::MAX)};
+        if list_id.1{break;}
+    }
+    if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    let mut front_list = read_front_list();
+    let front_list_adr = take_list_adr(&front_list);
+    let cmd = format!("wc -l {front_list_adr}");
+    let len_front_list = crate::run_cmd_out_sync(cmd);
+    front_list.push_str(".len");
+    let (len_front_list, _) = split_once(&len_front_list, " ");
+    save_file(cpy_str(&len_front_list), front_list);
+    return len_front_list;
+}
 pub(crate) fn get_proper_indx(indx: i64, fixed_indx: bool) -> (usize, i64){
     let last_pg = where_is_last_pg();
     if indx < 0{
@@ -314,6 +331,7 @@ pub(crate) fn get_item_from_front_list(indx: i64, fixed_indx: bool) -> String{
         if list_id.1{break;}
     }
     if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    let main_path = get_tmp_dir(-13314);
     return unsafe{lists("", list_id.0, proper_indx.0, GET)}
 }
 pub fn set_main0_as_front(){mark_front_lst("main0"); unsafe{lists("", MAIN0_, 0, SET_FRONT_LIST);}}
@@ -324,6 +342,13 @@ pub fn set_ls_as_front() -> String{
     //    if list_id.1{break;}
     //}
     //if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    let tmp_dir = get_tmp_dir(-66774125);
+    let ls_path = format!("{}/{}", &tmp_dir, "ls");
+    let found_files_path = format!("{}/{}", &tmp_dir, "found_files");
+    let cmd = format!("touch -f {}", &ls_path);
+    run_cmd_str(&cmd);
+    let cmd = format!("#sets ls as front\nln -sf {} {}", ls_path, found_files_path);
+    run_cmd_str(&cmd);
     mark_front_lst("ls");
     unsafe{lists("", LS_, 0, SET_FRONT_LIST); return "ok".to_string();}}
 pub unsafe fn lists(val: &str, list: i64, indx: usize, op_code: i64) -> String{
@@ -336,10 +361,10 @@ let mut FRONT: &[String] = MAIN0.as_mut_slice();
     LS.set(ls_vec);
 }*/
 let mut list = list;
-//let front_list = read_file("front_list");
+let front_list = read_front_list();
 //set_front_list(&front_list);
-//if front_list == "main0"{list = MAIN0_;}
-//if front_list == "ls"{list = LS_;}
+if front_list == "main0"{list = MAIN0_;}
+if front_list == "ls"{list = LS_;}
 if list == MAIN0_ {
     if op_code == GET{
         let ret = crate::cpy_str(&MAIN0[indx]);
@@ -378,13 +403,7 @@ if list == LS_ {
     }
     if op_code == LEN{return ln_of_found_files(usize::MAX).1.to_string()}
     if op_code == SET_FRONT_LIST {
-       let main_path = get_tmp_dir(-13314);
-       let ls_path = format!("{}/{}", &main_path, "ls");
-       let found_files_path = format!("{}/{}", &main_path, "found_files");
-       let cmd = format!("touch -f {}", &ls_path);
-       run_cmd_str(&cmd);
-       let cmd = format!("#sets ls as front\nln -sf {} {}", ls_path, found_files_path);
-       run_cmd_str(&cmd);
+       
        return "ls gets set as front".to_string();
     }
 }
