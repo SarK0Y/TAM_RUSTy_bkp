@@ -32,8 +32,6 @@ fn build_page(ps: &mut crate::_page_struct){
     let mut row: Vec<CellStruct> = Vec::new(); let mut row_cpy: Vec<String> = Vec::new();
     //let mut row: OnceCell<Vec<CellStruct>> = OnceCell::new(); row.set(row_nested);
    // pg.table().forecolor(Color::red());
-    crate::swtch::print_viewers();
-    crate::swtch::print_pg_info();
     println!("Full path: {}", crate::get_full_path(func_id));
     for j in 0..num_rows{
         for i in 0..num_cols{
@@ -180,6 +178,8 @@ let mut bal =String::new();
         let mut data = "".to_string();
         let num_pg = get_num_page(-5555555121);
         let num_pgs = where_is_last_pg();
+        crate::swtch::print_viewers();
+        crate::swtch::print_pg_info();
         if num_pg < num_pgs || num_pgs ==0 {build_page(&mut ps);}
         println!("{}", get_prnt(-1));
         exec_cmd(custom_input());

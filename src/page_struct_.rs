@@ -164,7 +164,7 @@ bkp0.to_string()
   }
 pub(crate) fn get_prnt(func_id: i64) -> String{return unsafe{page_struct("", PRNT_, func_id).str_}}
 pub(crate) fn set_prnt(val: &str, func_id: i64) -> String{
-  let get_prnt_dbg = get_prnt;
+  file_prnt(val.to_string());
   return unsafe{page_struct(val, crate::set(PRNT_), func_id).str_}}
 pub(crate) fn get_ask_user(func_id: i64) -> String{return unsafe{page_struct("", ASK_USER_, func_id).str_}}
 pub(crate) fn set_ask_user(val: &str, func_id: i64) -> String{return unsafe{page_struct(val, crate::set(ASK_USER_), func_id).str_}}

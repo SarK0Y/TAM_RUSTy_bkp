@@ -214,6 +214,7 @@ use C_;
 macro_rules! core_use {
     () => {
 use std::env;
+use std::time::Duration;
 use std::mem::size_of;
 use std::fs::OpenOptions;
 use std::io;

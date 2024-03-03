@@ -581,3 +581,16 @@ let is_path = is_path.len() + 1;//chars().count();
 if is_path == path{return true}
 false
 }
+pub(crate) fn link_list_2_front(name: &str){
+    let front = take_list_adr("found_files");
+    let list = take_list_adr(name);
+    let cmd = format!("ln -sf {list} {name}");
+    run_cmd_str(cmd.as_str());
+}
+pub(crate) fn from_ls_2_front(){
+    let front = read_front_list();
+    let ls_mode = take_list_adr("ls.mode");
+    rm_file(&ls_mode);
+    link_list_2_front(front.as_str());
+    C!(crate::swtch::swtch_fn(0, "".to_string()));
+}
