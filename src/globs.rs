@@ -221,6 +221,7 @@ let mut ansi_str2 = str2.bytes(); //ANSIString::from(str2);
 let str1_len = str1.len();
 let str2_len = str2.len();
 if str1_len == 0 || str2_len == 0{return i64::MIN}
+if str1_len != str2_len{return i64::MAX}
 // Loop over the strings and compare each character
 let mut result: i64 = 0;
 let mut i: usize = 0;

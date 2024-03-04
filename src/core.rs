@@ -584,7 +584,7 @@ false
 pub(crate) fn link_list_2_front(name: &str){
     let front = take_list_adr("found_files");
     let list = take_list_adr(name);
-    let cmd = format!("ln -sf {list} {name}");
+    let cmd = format!("ln -sf {list} {front}");
     run_cmd_str(cmd.as_str());
 }
 pub(crate) fn from_ls_2_front(){

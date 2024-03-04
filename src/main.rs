@@ -45,6 +45,10 @@ let path_2_cmd = format!("{}/cmd{}.sh", unsafe{ps18::page_struct("", ps18::TMP_D
 let err_msg = format!("failed create {}", &path_2_cmd);
 let mut make_cmd_file = File::create(&path_2_cmd).expect(&err_msg.bold().red());
 core18::errMsg_dbg(&path_2_cmd, func_id, -1.0);
+let mut cmd = cmd;
+if !checkArg("-dbg"){
+    cmd = format!("{cmd};rm -f {}", path_2_cmd);
+}
 make_cmd_file.write_all(&cmd.as_bytes());
 Command::new("chmod").arg("700").arg(&path_2_cmd).output().expect("");
 core18::errMsg_dbg(&cmd, func_id, -1.0);
@@ -159,7 +163,7 @@ true
 }
 pub fn run_cmd_spawn(cmd: String) -> bool{
 let func_id = 5;
-let fstdout: String; 
+let fstdout: String;
 let path_2_cmd = mk_cmd_file(cmd);
 let mut stderr_path = "stderr".to_string();
 stderr_path = format!("{}stderr", unsafe{ps18::page_struct("", ps18::MAINPATH_, -1).str_});
