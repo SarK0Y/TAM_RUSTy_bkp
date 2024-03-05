@@ -1,6 +1,6 @@
 use cli_table::TableStruct;
 
-use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list, Ins_key, show_ls, sieve_list}, split_once, swtch::{run_viewer, swtch_fn, local_indx, read_user_written_path, user_writing_path}, update18::lets_write_path, ln_of_found_files, size_of_found_files, key_f12, get_path_from_prnt, get_path_from_strn, read_prnt};
+use crate::{exts::pg_uses, ps18::{set_prnt, get_cur_cur_pos, set_prompt, get_prnt, shift_cursor_of_prnt, set_full_path, set_ask_user, get_col_width, where_is_last_pg, get_num_files, child2run}, core18::{achtung, errMsg_dbg, ins_newlines, checkArg, popup_msg, calc_num_files_up2_cur_pg}, globs18::{ins_last_char_to_string1_from_string1, rm_char_from_string, ins_last_char_to_string1_from_string1_ptr, len_of_front_list, Ins_key, show_ls, sieve_list, get_proper_indx}, split_once, swtch::{run_viewer, swtch_fn, local_indx, read_user_written_path, user_writing_path, renFile}, update18::lets_write_path, ln_of_found_files, size_of_found_files, key_f12, get_path_from_prnt, get_path_from_strn, read_prnt, read_file, get_num_page};
 self::pg_uses!();
 
 fn cpy_row(row: &mut Vec<String>) -> Vec<CellStruct>{
@@ -32,8 +32,6 @@ fn build_page(ps: &mut crate::_page_struct){
     let mut row: Vec<CellStruct> = Vec::new(); let mut row_cpy: Vec<String> = Vec::new();
     //let mut row: OnceCell<Vec<CellStruct>> = OnceCell::new(); row.set(row_nested);
    // pg.table().forecolor(Color::red());
-    crate::swtch::print_viewers();
-    crate::swtch::print_pg_info();
     println!("Full path: {}", crate::get_full_path(func_id));
     for j in 0..num_rows{
         for i in 0..num_cols{
@@ -85,7 +83,7 @@ fn build_page(ps: &mut crate::_page_struct){
     println!("{}", crate::get_ask_user(func_id));
 }
 
-fn clear_screen(){
+pub(crate) fn clear_screen(){
     if checkArg("-dbg") || checkArg("-dirty"){return;}
     let run_command = Command::new("clear")
     .output()
@@ -132,7 +130,11 @@ fn hotKeys() -> String{
         crate::globs18::F3_key();
         return "dontPass".to_string();
     }
-    if "/" == Key.as_str() {let mut Key_cpy =String::from(&Key); let mut Key_ = String::from(&Key); lets_write_path(Key_cpy); crate::INS(&Key_);
+    if "/" == Key.as_str() {
+        let prev_list = crate::read_front_list();
+        let prev = read_file("prev_list");
+        if prev == ""{crate::save_file(prev_list, "prev_list".to_string());}
+        let mut Key_cpy =String::from(&Key); let mut Key_ = String::from(&Key); lets_write_path(Key_cpy); crate::INS(&Key_);
     return "/".to_string();}
     if crate::globs18::eq_ansi_str(&kcode::Alt_0, Key.as_str()) == 0 {
     unsafe {
@@ -174,7 +176,11 @@ let mut bal =String::new();
         //set_prnt(&bal, -1);
         let mut ps: crate::_page_struct = unsafe {crate::swtch::swtch_ps(-1, None)};
         let mut data = "".to_string();
-        build_page(&mut ps);
+        let num_pg = get_num_page(-5555555121);
+        let num_pgs = where_is_last_pg();
+        crate::swtch::print_viewers();
+        crate::swtch::print_pg_info();
+        if num_pg < num_pgs || num_pgs ==0 {build_page(&mut ps);}
         println!("{}", get_prnt(-1));
         exec_cmd(custom_input());
         clear_screen();
@@ -252,11 +258,16 @@ fn exec_cmd(cmd: String){
             Ok(val) => val,
             _ => {set_ask_user("wrong use of go2: go2 <indx of page>", func_id); return}
         };
-        crate::set_num_page(pg_num, func_id);
+        let pg_num = get_proper_indx(pg_num, true);
+        crate::set_num_page(pg_num.1, func_id);
         return;
     }
     if cmd.as_str().substring(0, 5) == "sieve"{
         sieve_list(crate::cpy_str(&cmd));
+        return;
+    }
+    if cmd.as_str().substring(0, 4) == "ren "{
+        renFile();
         return;
     }
       if cmd.as_str().substring(0, 2) == "fp"{

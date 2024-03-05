@@ -168,6 +168,7 @@ macro_rules! mcrs_uses {
 }
 macro_rules! update_uses {
     () => {
+use std::time::Duration;
 use std::env;
 use colored::Colorize;
 use substring::Substring;
@@ -212,15 +213,14 @@ use C_;
 }; }
 macro_rules! core_use {
     () => {
-use cached::proc_macro::cached;
-use cached::proc_macro::io_cached;
 use std::env;
+use std::time::Duration;
 use std::mem::size_of;
 use std::fs::OpenOptions;
 use std::io;
 use std::{i64, usize};
 use std::io::{Read, Write, Seek, SeekFrom};
-use gag::Redirect;
+//use gag::Redirect;
 use colored::Colorize;
 use substring::Substring;
 use std::str::{self, from_utf8};

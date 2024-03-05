@@ -1,7 +1,7 @@
 mod exts;
 use exts::page_struct_uses;
 
-use crate::{globs18::len_of_front_list, func_id18, swtch::{set_user_written_path_from_prnt, set_user_written_path_from_strn}, cpy_str, complete_path, get_path_from_strn, rewrite_user_written_path, file_prnt, set_proper_num_pg, read_proper_num_pg};
+use crate::{globs18::{len_of_front_list, take_list_adr}, func_id18, swtch::{set_user_written_path_from_prnt, set_user_written_path_from_strn}, cpy_str, complete_path, get_path_from_strn, rewrite_user_written_path, file_prnt, set_proper_num_pg, read_proper_num_pg, bkp_tmp_dir, read_front_list, save_file};
 self::page_struct_uses!();
 pub const STOP_CODE_: i64 = 1;
 pub const KONSOLE_TITLE_: i64 = 2;
@@ -139,10 +139,32 @@ pub(crate) fn press_DEL(val: &str) -> page_struct_ret{crate::globs18::set_valid_
 pub(crate) fn press_BKSP() -> page_struct_ret{crate::globs18::set_valid_list_as_front(); return unsafe{page_struct("prnt", 0, __BKSP)}}
 /*------------------------------------------------------------------------------------------------------------------------ */
 pub(crate) fn get_mainpath(func_id: i64) -> String{return unsafe{page_struct("", MAINPATH_, func_id).str_}}
-pub(crate) fn get_tmp_dir(func_id: i64) -> String{return unsafe{page_struct("", TMP_DIR_, func_id).str_}}
+pub(crate) fn get_tmp_dir(func_id: i64) -> String{
+  static mut bkp: OnceCell<String> = OnceCell::new();
+  if crate::C!(bkp.get()) == None{
+    let fst: String = unsafe{page_struct("", TMP_DIR_, func_id).str_};
+    let ret = fst.clone();
+    crate::C!(bkp.set(fst));
+    return ret;
+  }
+  let mut bkp0: &String = &String::new();
+  for i in 0..1000{
+    bkp0 = crate::C!(bkp.get().expect("Can't get TMP_DIR #0"));
+    if bkp0 != ""{return bkp0.to_string();}
+    let bkp1 = cpy_str(&bkp_tmp_dir());
+    if bkp1 != ""{return bkp1;}
+  } 
+  if bkp0 == ""{
+    let fst: String = unsafe{page_struct("", TMP_DIR_, func_id).str_};
+    if fst == ""{panic!("Can't get TMP_DIR #1")}
+    return fst;
+  }
+
+bkp0.to_string()
+  }
 pub(crate) fn get_prnt(func_id: i64) -> String{return unsafe{page_struct("", PRNT_, func_id).str_}}
 pub(crate) fn set_prnt(val: &str, func_id: i64) -> String{
-  let get_prnt_dbg = get_prnt;
+  file_prnt(val.to_string());
   return unsafe{page_struct(val, crate::set(PRNT_), func_id).str_}}
 pub(crate) fn get_ask_user(func_id: i64) -> String{return unsafe{page_struct("", ASK_USER_, func_id).str_}}
 pub(crate) fn set_ask_user(val: &str, func_id: i64) -> String{return unsafe{page_struct(val, crate::set(ASK_USER_), func_id).str_}}
@@ -163,11 +185,20 @@ pub(crate) fn set_num_page(val: i64, func_id: i64) -> i64{
 pub(crate) fn get_num_pages(func_id: i64) -> i64{return unsafe{page_struct_int(0, COUNT_PAGES_, func_id)}}
 pub(crate) fn get_num_files(func_id: i64) ->i64{return unsafe{page_struct_int(0, NUM_FILES_, func_id)}}
 pub(crate) fn fix_num_files(func_id: i64) ->i64{
-   let len_of_front = i64::from_str_radix(crate::globs18::len_of_front_list().as_str(), 10).unwrap() - 1; 
+   let mut len_of_front = i64::from_str_radix(crate::globs18::len_of_front_list().as_str(), 10).unwrap() - 1; 
+   if len_of_front == -1{len_of_front = i64::from_str_radix(crate::globs18::len_of_front_list_wc().as_str(), 10).unwrap() - 1; }
    return unsafe{page_struct_int(len_of_front, crate::set(NUM_FILES_), func_id)};}
 pub(crate) fn set_num_files(func_id: i64) ->i64{
-   let len_of_front = i64::from_str_radix(crate::globs18::len_of_front_list().as_str(), 10).unwrap(); 
+   let len_of_front = i64::from_str_radix(crate::globs18::len_of_front_list().as_str(), 10).unwrap();
+   let mut list_len_adr = read_front_list();
+   list_len_adr.push_str(".len");
+   save_file(len_of_front.to_string(), list_len_adr); 
    return unsafe{page_struct_int(len_of_front, crate::set(NUM_FILES_), func_id)};}
+pub(crate) fn set_num_files0(func_id: i64, len_of_front: usize) ->i64{
+   let mut list_len_adr = read_front_list();
+   list_len_adr.push_str(".len");
+   save_file(len_of_front.to_string(), list_len_adr); 
+   return unsafe{page_struct_int(crate::usize_2_i64(len_of_front), crate::set(NUM_FILES_), func_id)};}
 pub(crate) fn get_col_width(func_id: i64) -> i64{return unsafe{page_struct_int(0, COL_WIDTH_, func_id)}}
 pub(crate) fn set_col_width(val: i64, func_id: i64) -> i64{return unsafe{page_struct_int(val, crate::set(COL_WIDTH_), func_id)}}
 pub(crate) fn get_num_rows(func_id: i64) -> i64{return unsafe{page_struct_int(0, NUM_ROWS_, func_id)}}
@@ -339,8 +370,12 @@ pub(crate) unsafe fn page_struct(val: &str, id_of_val: i64, id_of_caller: i64) -
     if id_of_val == crate::set(MAINPATH_) {MAINPATH.take(); let _ = MAINPATH.set(val.to_string());  ps_ret.str_= "ok".to_string(); return ps_ret;}
     if id_of_val == FOUND_FILES_ {ps_ret.str_ = FOUND_FILES.get().unwrap().to_string(); return ps_ret;}
     if id_of_val == crate::set(FOUND_FILES_) {FOUND_FILES.take(); let _ = FOUND_FILES.set(val.to_string());  ps_ret.str_= "ok".to_string(); return ps_ret;}
-    if id_of_val == TMP_DIR_ {ps_ret.str_ = TMP_DIR.get().unwrap().to_string(); return ps_ret;}
-    if id_of_val == crate::set(TMP_DIR_) {TMP_DIR.take(); let _ = TMP_DIR.set(val.to_string()); ps_ret.str_= "ok".to_string(); return ps_ret;}
+    if id_of_val == TMP_DIR_ {ps_ret.str_ = match TMP_DIR.get(){
+      Some(s) => s,
+      _ => ""
+
+    }.to_string(); return ps_ret;}
+    if id_of_val == crate::set(TMP_DIR_) {KONSOLE_TITLE.take(); TMP_DIR.set(val.to_string()); ps_ret.str_= "ok".to_string(); return ps_ret;}
     if id_of_val == KONSOLE_TITLE_ {ps_ret.str_ =KONSOLE_TITLE.get().unwrap().to_string(); return ps_ret;}
     if id_of_val == crate::set(KONSOLE_TITLE_) {KONSOLE_TITLE.take(); let _ = KONSOLE_TITLE.set(val.to_string()); ps_ret.str_= "ok".to_string(); return ps_ret;}
      ps_ret.str_= "none".to_string(); return ps_ret;
