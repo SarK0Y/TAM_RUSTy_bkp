@@ -604,10 +604,13 @@ pub(crate) fn tailOFF(strn: &mut String, delim: &str) -> bool{
             Some(ch) => ch,
             _ => empty.chars().nth(0).unwrap()
         };
-        if ch == delim{ret = "".to_string(); continue;}
+        if ch == delim && i < len - 1{ret = "".to_string(); continue;}
         ret.push(ch);
     }
     if ret.len() == 0{return false}
-    *strn = strn.replace(&ret, "").trim_end_matches(delim).to_string();
+    //*strn = strn.replace(&ret, "").trim_end_matches(delim).to_string();
+    let ret_delim = format!("{ret}{delim}");
+    *strn = strn.replace(&ret_delim, "");
+    *strn = strn.replace(&ret, ""); 
     true
 }

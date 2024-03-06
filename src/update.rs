@@ -83,9 +83,7 @@ pub(crate) fn lets_write_path(key: String){
     C!(swtch_fn(mode, key));
 
 }
-pub(crate) fn background_fixing(){
-    popup_msg("tst0000000");
-        
+pub(crate) fn background_fixing(){        
  //loop {
 let builder = thread::Builder::new().stack_size(2 * 1024 * 1024).name("background_fixing".to_string());
  builder.spawn(|| {
@@ -94,13 +92,14 @@ background_fixing_()
  //}
 }
 fn background_fixing_(){
-    let mut check_main0_len = String::new();
+    //return;
+    let mut check_main0_len = len_of_main0_list();
 let mut drop_ls = true;
 let ls_mode = take_list_adr("ls.mode");
 loop {
      thread::sleep(Duration::from_millis(5000));
      let main0_len = len_of_main0_list();
-     if check_main0_len != main0_len{
+     if check_main0_len != main0_len && check_main0_len != "0"{
         check_main0_len = main0_len;
         save_file(crate::cpy_str(&check_main0_len), "main0.len".to_string());
         //else{drop_ls = !drop_ls}
