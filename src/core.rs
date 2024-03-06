@@ -587,10 +587,27 @@ pub(crate) fn link_list_2_front(name: &str){
     let cmd = format!("ln -sf {list} {front}");
     run_cmd_str(cmd.as_str());
 }
-pub(crate) fn from_ls_2_front(){
+pub(crate) fn from_ls_2_front(ls_mode: String){
     let front = read_front_list();
-    let ls_mode = take_list_adr("ls.mode");
+    //let ls_mode = take_list_adr("ls.mode");
     rm_file(&ls_mode);
     link_list_2_front(front.as_str());
     C!(crate::swtch::swtch_fn(0, "".to_string()));
+}
+pub(crate) fn tailOFF(strn: &mut String, delim: &str) -> bool{
+    let len = strn.chars().count();
+    let mut ret = String::new();
+    let empty = String::new();
+    let delim = delim.to_string().chars().nth(0).unwrap();
+    for i in 0..len{
+        let ch = match strn.chars().nth(i){
+            Some(ch) => ch,
+            _ => empty.chars().nth(0).unwrap()
+        };
+        if ch == delim{ret = "".to_string(); continue;}
+        ret.push(ch);
+    }
+    if ret.len() == 0{return false}
+    *strn = strn.replace(&ret, "").trim_end_matches(delim).to_string();
+    true
 }

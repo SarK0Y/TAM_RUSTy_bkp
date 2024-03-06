@@ -1,6 +1,6 @@
 use chrono::format;
 use num_traits::ToPrimitive;
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst, split_once, fix_num_files, i64_2_usize, cpy_str, set_front_list, read_front_list, save_file, TMP_DIR_, where_is_last_pg, run_cmd_out};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst, split_once, fix_num_files, i64_2_usize, cpy_str, set_front_list, read_front_list, save_file, TMP_DIR_, where_is_last_pg, run_cmd_out, tailOFF};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -36,11 +36,14 @@ pub(crate) fn exclude_strn_from_list(strn: String, list: &str){
 }
 pub(crate) fn sieve_list(data: String){
     let data = data.replace("sieve ", "");
-    let (opts, data) = split_once(&data, " ");
+    let (mut opts, mut data) = split_once(&data, " ");
     if opts == "none".to_string() || data == "none".to_string(){
         set_ask_user("example: sieve -Ei some\\shere", 5977871);
-        return 
     }
+    if opts == "none"{return}
+    if data == "none"{
+        data = opts;
+        opts = "-Ei".to_string()}
     let found_files_path = format!("{}/found_files", get_tmp_dir(18441));
     let filter_file_path_tmp = format!("{}/filter.tmp", get_tmp_dir(18441));
     let filter_file_path = format!("{}/filter", get_tmp_dir(18441));
@@ -81,8 +84,12 @@ pub(crate) fn F1_key() -> String{
 format!("go2 {}", read_file("main0.pg"))
 }
 pub(crate) fn F3_key() -> String{
-    crate::C_!(set_ls_as_front(); front_list_indx(crate::globs18::LS_););
     let mut prnt: String = read_prnt();
+    if tailOFF(&mut prnt, " "){
+        crate::set_prnt(&prnt, -1);
+    return prnt    
+    }
+    crate::C_!(set_ls_as_front(); front_list_indx(crate::globs18::LS_););
     let orig_path = get_path_from_strn(crate::cpy_str(&prnt));
     let mut ret_2_F1_key = || -> String{prnt = prnt.replace("/", ""); set_prnt(&prnt, -2317712); crate::C!(swtch_fn(0, "".to_string())); return F1_key()};
     let mut path = format!("{}/", match Path::new(&orig_path).parent(){
@@ -257,7 +264,9 @@ pub fn add_2_main0_list(val: &str) -> String{
     return unsafe{lists(val, MAIN0_, 0, ADD)}
 }
 pub fn len_of_main0_list() -> String{
-    return unsafe{lists("", MAIN0_, 0, LEN)}
+    let fst_var = unsafe{lists("", MAIN0_, 0, LEN)};
+    if fst_var != "0"|| fst_var != ""{return fst_var}
+    return len_of_list_wc("main0");
 }
 pub fn raw_len_of_front_list() -> String{
       let mut list_id: (i64, bool) = (1i64, false);
@@ -282,6 +291,15 @@ pub fn len_of_front_list() -> String{
     let num = read_file(&front_list);
     if num == ""{return "0".to_string()}
     return num;
+}
+pub fn len_of_list_wc(name: &str) -> String{
+    let mut list_adr = take_list_adr(&name);
+    let cmd = format!("wc -l {list_adr}");
+    let len_list = crate::run_cmd_out_sync(cmd);
+    list_adr.push_str(".len");
+    let (len_list, _) = split_once(&len_list, " ");
+    save_file(cpy_str(&len_list), name.to_string());
+    return len_list;
 }
 pub fn len_of_front_list_wc() -> String{
       let mut list_id: (i64, bool) = (1i64, false);

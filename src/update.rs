@@ -96,6 +96,7 @@ background_fixing_()
 fn background_fixing_(){
     let mut check_main0_len = String::new();
 let mut drop_ls = true;
+let ls_mode = take_list_adr("ls.mode");
 loop {
      thread::sleep(Duration::from_millis(5000));
      let main0_len = len_of_main0_list();
@@ -105,7 +106,7 @@ loop {
         //else{drop_ls = !drop_ls}
      }
      let check_ls_mode = get_path_from_prnt();
-     if check_ls_mode == ""{from_ls_2_front();}
+     if check_ls_mode == ""{from_ls_2_front(ls_mode.clone());}
      save_file(check_ls_mode, "dbg_ls.mode".to_string());
 }
 }
