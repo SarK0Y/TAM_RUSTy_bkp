@@ -164,6 +164,10 @@ pub(crate) fn read_front_list() -> String{
     if active_lst == "" {active_lst = read_file("front_list");}
     active_lst
 }
+pub(crate) fn read_front_list_but_ls() -> String{
+    let active_lst = read_file("front_list");
+    active_lst
+}
 pub(crate) fn read_proper_num_pg() -> i64{
     let front_list = format!("{}/{}", crate::get_tmp_dir(-371011), "front_list");
     let num_pg = format!("{}.pg", read_front_list());
@@ -590,7 +594,7 @@ pub(crate) fn link_list_2_front(name: &str){
     run_cmd_str(cmd.as_str());
 }
 pub(crate) fn from_ls_2_front(ls_mode: String){
-    let front = read_front_list();
+    let front = read_front_list_but_ls();
     //let ls_mode = take_list_adr("ls.mode");
     rm_file(&ls_mode);
     link_list_2_front(front.as_str());

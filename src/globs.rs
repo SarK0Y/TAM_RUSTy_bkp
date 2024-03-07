@@ -1,6 +1,6 @@
 use chrono::format;
 use num_traits::ToPrimitive;
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst, split_once, fix_num_files, i64_2_usize, cpy_str, set_front_list, read_front_list, save_file, TMP_DIR_, where_is_last_pg, run_cmd_out, tailOFF};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst, split_once, fix_num_files, i64_2_usize, cpy_str, set_front_list, read_front_list, save_file, TMP_DIR_, where_is_last_pg, run_cmd_out, tailOFF, get_path_from_prnt, from_ls_2_front};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -142,14 +142,18 @@ pub fn unblock_fd(fd: RawFd) -> io::Result<()> {
     Ok(())
 }
 pub fn bksp() -> String{
-       let mut len = get_prnt(-3).chars().count(); if len == 0 {return get_prnt(-3).to_string();}
+       let mut len = get_prnt(-3).chars().count(); if len == 0 {return len.to_string();}
      let mut ret = String::new();
      let prnt = get_prnt(-3);
      if len > 0 {len -= 1;}
     let mut indx = unsafe {shift_cursor_of_prnt(2, -2).shift};
     if indx <= len {indx = len - indx;}
-    ret = rm_char_from_string(indx, &get_prnt(-3));
+    ret = rm_char_from_string(indx, &prnt);
+    if len == 0{save_file("".to_string(), "prnt".to_string());}
         ////println!("ret {}", ret);
+    let ls_mode = take_list_adr("ls.mode");
+    let is_path = get_path_from_prnt();
+    if is_path == ""{from_ls_2_front(ls_mode)}
     ret
 }
 pub fn ins_last_char_to_string1_from_string1(indx: usize, origString: String) -> String{
