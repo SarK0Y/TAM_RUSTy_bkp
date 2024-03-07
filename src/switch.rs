@@ -1,4 +1,5 @@
 use chrono::format::format;
+use colored::Colorize;
 use num_traits::{FloatErrorKind, ToPrimitive};
 use once_cell::sync::OnceCell;
 use substring::Substring;
@@ -19,7 +20,7 @@ use std::{
 };
 pub const SWTCH_RUN_VIEWER: i64 = 0;
 pub const SWTCH_USER_WRITING_PATH: i64 = 1;
-use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front, FRONT_}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default, get_prnt, position_of_slash_in_prnt, usize_2_i64, escape_symbs};
+use crate::{core18::{errMsg, get_path_from_prnt, update_user_written_path}, ps18::{set_ask_user, get_full_path, get_num_page, get_num_files, page_struct_ret, init_page_struct, child2run}, globs18::{get_item_from_front_list, set_ls_as_front, FRONT_, F3_key}, func_id18::{viewer_, mk_cmd_file_, where_is_last_pg_}, update18::update_dir_list, complete_path, pg18::form_cmd_line_default, get_prnt, position_of_slash_in_prnt, usize_2_i64, escape_symbs, read_rgx_from_prnt, split_once, cpy_str, raw_ren_file, read_file, mark_front_lst, save_file, path_exists, drop_ls_mode};
 pub(crate) unsafe fn check_mode(mode: &mut i64){
     static mut state: i64 = 0;
     if *mode == -1 {*mode = state;}
@@ -63,6 +64,76 @@ pub(crate) unsafe fn swtch_ps(indx: i64, ps: Option<crate::_page_struct>) -> cra
     if indx > -1{ps_indx = indx.to_usize().unwrap(); return dummy;}
     return crate::cpy_page_struct(&mut ps_.get_mut().unwrap()[ps_indx])
 }
+pub(crate) fn renFile() -> bool{
+    crate::save_file("".to_string(), "prev_list".to_string());
+    let check_front_list = read_file("front_list");
+    if check_front_list == "ls"{
+        set_ask_user(&"Wrong list was activated".bold().red().to_string(), 12154487);
+        return false;
+    }
+    let rgx = "-Eio ren\\s+[0-9]+".to_string();
+    let prnt = crate::read_prnt();
+    let head = read_rgx_from_prnt(cpy_str(&rgx), "head_of_prnt").replace("\n", "");
+    if head == ""{
+        set_ask_user("example: ren <indx of file> <new name <short one or full path to>>", 1003671);
+        return false
+    }
+    let (_, file_indx) = split_once(&head, " ");
+    let file_indx = file_indx.trim_start_matches(" ");
+    let file_indx = file_indx.trim_end_matches("\n");
+    let file_indx = file_indx.trim_end_matches(" ");
+    let file_indx = match i64::from_str_radix(&file_indx, 10){
+        Ok(n) => n,
+        _ => 0i64
+    };
+    let old_name = escape_symbs(&get_item_from_front_list(file_indx, true));
+    if old_name.len() == 0 || Path::new(&old_name).is_dir(){
+        set_ask_user(&"file has wrong type".bold().red().to_string(), 12154487);
+        return false;
+    }
+    let mut new_name = escape_symbs(&prnt.replace(&crate::cpy_str(&head), "").trim_start_matches(" ").to_string());
+    let is_last_ch_slash = new_name.chars().count() - 1;
+    let is_last_ch_slash = new_name.chars().nth(is_last_ch_slash);
+    if is_last_ch_slash.unwrap().to_string() == "/"{
+        let fname = Path::new(&old_name).file_name().unwrap().to_str().unwrap();
+        new_name = format!("{new_name}{fname}");
+    }
+    save_file(cpy_str(&old_name), "old_name".to_string());
+    save_file(cpy_str(&new_name), "new_name".to_string());
+    if Path::new(&new_name).exists(){
+        crate::clear_screen();
+        let err_msg = format!("{} is existed. Would You like to overwrite it? Type 'Yes, I do' or n.", new_name).bold().red();
+        println!("{err_msg}");
+        let mut ans = String::new();
+        crate::io::stdin().read_line(&mut ans).expect("renFile failed to read console");
+        if ans == "Yes, I do"{set_ask_user("moving file..", -74554152);
+        crate::globs18::renew_lists(cpy_str(&new_name)); raw_ren_file(old_name, new_name); return true}
+        else {return false}
+    }
+    let mut path_2_new = Path::new(&new_name);
+    let is_dir = new_name.chars().count() - 1;
+    let is_dir = new_name.chars().nth(is_dir);
+    if is_dir.expect("failed to unwrap is_dir in renFile").to_string() != "/"{
+     path_2_new = match Path::new(&new_name).parent(){
+        Some(n) => n,
+        _ => Path::new("")
+    };
+}
+let path_2_new0 = path_2_new.to_str().unwrap().to_string();
+    if !path_exists(cpy_str(&path_2_new0)){
+        crate::raw_mkdir(cpy_str(&path_2_new0));
+        if !path_exists(cpy_str(&path_2_new0)){
+            let err_msg = format!("renFile failed to create {path_2_new0}");
+            save_file(cpy_str(&err_msg), "renFile.err".to_string());
+            errMsg(&err_msg, -1125414);
+            return false
+        }
+    }
+    set_ask_user("moving file..", -74554152);
+    crate::globs18::renew_lists(cpy_str(&new_name));
+    raw_ren_file(old_name, new_name);
+    true
+}
 fn viewer_n_adr(app: String, file: String) -> bool{
     let func_id = crate::func_id18::viewer_;
     if app == "none" {
@@ -81,12 +152,23 @@ fn viewer_n_adr(app: String, file: String) -> bool{
 }
 pub(crate) fn run_viewer(cmd: String) -> bool{
     let func_id = crate::func_id18::viewer_;
-    let  (app_indx, file_indx) = crate::split_once(&cmd, " ");
-    if file_indx.as_str().substring(0, 1) == "/"{return viewer_n_adr(app_indx, file_indx);}
+    if cmd.as_str().substring(0, 1) == "/"{
+        let app_indx = "0".to_string();
+        let file_indx = cmd;
+        return viewer_n_adr(app_indx, file_indx);}
+    let  (mut app_indx, mut file_indx) = crate::split_once(&cmd, " ");
     if app_indx == "none" || file_indx == "none"{
-        crate::core18::errMsg("To run file w/ viewer, You need to type '<indx of viewer> <index of file>'", func_id);
-        return false
+        set_ask_user("To run file w/ viewer, You need to type '<indx of viewer> <index of file>'", func_id);
     }
+    if file_indx == "none"{
+        file_indx = app_indx;
+        app_indx = 0.to_string();
+    }
+    if file_indx.as_str().substring(0, 1) == "/"{return viewer_n_adr(app_indx, file_indx);}
+    if app_indx.as_str().substring(0, 1) == "/"{
+        file_indx = app_indx;
+        app_indx = 0.to_string();
+        return viewer_n_adr(app_indx, file_indx);}
     let msg = || -> bool{crate::core18::errMsg("To run file w/ viewer, You need to type '<indx of viewer> <index of file>'", func_id); return false};
     let app_indx = match usize::from_str_radix(app_indx.as_str(), 10){
         Ok(v) => v,
@@ -233,12 +315,12 @@ pub(crate) fn set_user_written_path_from_strn(strn: String) -> bool{
     file_2_write_path.set_len(0);
     file_2_write_path.write_all(strn.as_bytes()).expect("user_wrote_path failed write in");
     crate::globs18::unblock_fd(file_2_write_path.as_raw_fd());
-    let written_path = read_user_written_path();
+    let written_path = escape_symbs(&read_user_written_path());
+   // save_file(written_path.to_string(), "written_path.dbg".to_string());
     update_dir_list(&written_path, "-maxdepth 1", false);
     true
 }
 pub(crate) fn set_user_written_path_from_prnt() -> String{
-    set_ls_as_front();
     let save_path = user_wrote_path();
     let save_path1 = user_wrote_path();
     let path_from_prnt = get_path_from_prnt();
@@ -252,7 +334,10 @@ pub(crate) fn set_user_written_path_from_prnt() -> String{
     file_2_write_path.write_all(path_from_prnt.as_bytes()).expect("user_wrote_path failed write in");
     crate::globs18::unblock_fd(file_2_write_path.as_raw_fd());
     let written_path = read_user_written_path();
-    update_dir_list(&written_path, "-maxdepth 1", false);
+    if written_path == "" {drop_ls_mode(); F3_key();}
+    else{set_ls_as_front();}
+    save_file(written_path.to_string(), "written_path_prnt.dbg".to_string());
+    update_dir_list(&escape_symbs(&written_path), "-maxdepth 1", false);
     written_path
 }
 

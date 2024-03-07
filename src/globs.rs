@@ -1,6 +1,6 @@
 use chrono::format;
 use num_traits::ToPrimitive;
-use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst, split_once, fix_num_files, i64_2_usize, cpy_str, set_front_list};
+use crate::{exts::globs_uses, run_cmd0, ps18::{shift_cursor_of_prnt, get_prnt, set_ask_user}, swtch::{local_indx, front_list_indx, check_mode, SWTCH_USER_WRITING_PATH, SWTCH_RUN_VIEWER, swtch_fn, set_user_written_path_from_prnt, set_user_written_path_from_strn, user_wrote_path}, core18::calc_num_files_up2_cur_pg, func_id18, ln_of_found_files, read_prnt, get_path_from_strn, repeat_char, set_prnt, rm_file, file_prnt, get_mainpath, run_cmd_str, get_tmp_dir, read_file, mark_front_lst, split_once, fix_num_files, i64_2_usize, cpy_str, set_front_list, read_front_list, save_file, TMP_DIR_, where_is_last_pg, run_cmd_out, tailOFF, get_path_from_prnt, from_ls_2_front};
 self::globs_uses!();
 pub const MAIN0_: i64 =  1;
 pub const FRONT_: i64 =  2;
@@ -36,11 +36,14 @@ pub(crate) fn exclude_strn_from_list(strn: String, list: &str){
 }
 pub(crate) fn sieve_list(data: String){
     let data = data.replace("sieve ", "");
-    let (opts, data) = split_once(&data, " ");
+    let (mut opts, mut data) = split_once(&data, " ");
     if opts == "none".to_string() || data == "none".to_string(){
         set_ask_user("example: sieve -Ei some\\shere", 5977871);
-        return 
     }
+    if opts == "none"{return}
+    if data == "none"{
+        data = opts;
+        opts = "-Ei".to_string()}
     let found_files_path = format!("{}/found_files", get_tmp_dir(18441));
     let filter_file_path_tmp = format!("{}/filter.tmp", get_tmp_dir(18441));
     let filter_file_path = format!("{}/filter", get_tmp_dir(18441));
@@ -50,10 +53,11 @@ pub(crate) fn sieve_list(data: String){
     run_cmd_str(cmd.as_str());
     let cmd = format!("mv {} {}", filter_file_path_tmp, filter_file_path);
     run_cmd_str(cmd.as_str());
-    let cmd = format!("ln -sf {} {}", filter_file_path, found_files_path);
+    let cmd = format!("#filter as front\nln -sf {} {}", filter_file_path, found_files_path);
     run_cmd_str(cmd.as_str());
     mark_front_lst("filter");
-    fix_num_files(5977871);
+    let dbg = fix_num_files(5977871);
+    let dbg1 = dbg;
 }
 pub(crate) fn show_ls(){
     unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
@@ -70,7 +74,7 @@ pub(crate) fn set_valid_list_as_front(){
     let tmp_dir = get_tmp_dir(-6015);
     let active_lst = format!("{}/{}", &tmp_dir, read_file("front_list"));
     let front_list_link = format!("{}/found_files", &tmp_dir);
-    let cmd = format!("ln -sf {} {}", active_lst, front_list_link);
+    let cmd = format!("#valid list as front\nln -sf {} {}", active_lst, front_list_link);
     run_cmd_str(&cmd);
 }
 pub(crate) fn F1_key() -> String{
@@ -80,9 +84,13 @@ pub(crate) fn F1_key() -> String{
 format!("go2 {}", read_file("main0.pg"))
 }
 pub(crate) fn F3_key() -> String{
-    unsafe{set_ls_as_front(); front_list_indx(crate::globs18::LS_);}
     let mut prnt: String = read_prnt();
     let orig_path = get_path_from_strn(crate::cpy_str(&prnt));
+    if orig_path.len() == 0 {if tailOFF(&mut prnt, " "){
+        crate::set_prnt(&prnt, -1);
+    return prnt    
+    }}
+    crate::C_!(set_ls_as_front(); front_list_indx(crate::globs18::LS_););
     let mut ret_2_F1_key = || -> String{prnt = prnt.replace("/", ""); set_prnt(&prnt, -2317712); crate::C!(swtch_fn(0, "".to_string())); return F1_key()};
     let mut path = format!("{}/", match Path::new(&orig_path).parent(){
         Some(path) => path,
@@ -123,6 +131,7 @@ pub(crate) fn Enter(){
     unsafe{check_mode(&mut mode)}
     if mode == SWTCH_USER_WRITING_PATH{mode = SWTCH_RUN_VIEWER}
     unsafe {crate::swtch::swtch_fn(mode, "".to_string());}
+    crate::drop_ls_mode();
 }
 pub fn unblock_fd(fd: RawFd) -> io::Result<()> {
     let flags = unsafe { fcntl(fd, F_GETFL, 0) };
@@ -133,14 +142,18 @@ pub fn unblock_fd(fd: RawFd) -> io::Result<()> {
     Ok(())
 }
 pub fn bksp() -> String{
-       let mut len = get_prnt(-3).chars().count(); if len == 0 {return get_prnt(-3).to_string();}
+       let mut len = get_prnt(-3).chars().count(); if len == 0 {return len.to_string();}
      let mut ret = String::new();
      let prnt = get_prnt(-3);
      if len > 0 {len -= 1;}
     let mut indx = unsafe {shift_cursor_of_prnt(2, -2).shift};
     if indx <= len {indx = len - indx;}
-    ret = rm_char_from_string(indx, &get_prnt(-3));
+    ret = rm_char_from_string(indx, &prnt);
+    if len == 0{save_file("".to_string(), "prnt".to_string());}
         ////println!("ret {}", ret);
+    let ls_mode = take_list_adr("ls.mode");
+    let is_path = get_path_from_prnt();
+    if is_path == ""{from_ls_2_front(ls_mode)}
     ret
 }
 pub fn ins_last_char_to_string1_from_string1(indx: usize, origString: String) -> String{
@@ -219,6 +232,7 @@ let mut ansi_str2 = str2.bytes(); //ANSIString::from(str2);
 let str1_len = str1.len();
 let str2_len = str2.len();
 if str1_len == 0 || str2_len == 0{return i64::MIN}
+if str1_len != str2_len{return i64::MAX}
 // Loop over the strings and compare each character
 let mut result: i64 = 0;
 let mut i: usize = 0;
@@ -254,18 +268,70 @@ pub fn add_2_main0_list(val: &str) -> String{
     return unsafe{lists(val, MAIN0_, 0, ADD)}
 }
 pub fn len_of_main0_list() -> String{
-    return unsafe{lists("", MAIN0_, 0, LEN)}
+    let fst_var = unsafe{lists("", MAIN0_, 0, LEN)};
+    if fst_var != "0"|| fst_var != ""{return fst_var}
+    return len_of_list_wc("main0");
 }
-pub fn len_of_front_list() -> String{
+pub fn raw_len_of_front_list() -> String{
       let mut list_id: (i64, bool) = (1i64, false);
-    for i in 0..1000_000{
+    for i in 0..1000{
         list_id = unsafe {front_list_indx(i64::MAX)};
         if list_id.1{break;}
     }
     if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    let front_list = read_front_list();
+    if front_list == "main0"{return len_of_main0_list()}
     return unsafe{lists("", list_id.0, 0, LEN)}
 }
+pub fn len_of_front_list() -> String{
+      let mut list_id: (i64, bool) = (1i64, false);
+    for i in 0..1000{
+        list_id = unsafe {front_list_indx(i64::MAX)};
+        if list_id.1{break;}
+    }
+    if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    let mut front_list = read_front_list();
+    front_list.push_str(".len");
+    let num = read_file(&front_list);
+    if num == ""{return "0".to_string()}
+    return num;
+}
+pub fn len_of_list_wc(name: &str) -> String{
+    let mut list_adr = take_list_adr(&name);
+    let cmd = format!("wc -l {list_adr}");
+    let len_list = crate::run_cmd_out_sync(cmd);
+    list_adr.push_str(".len");
+    let (len_list, _) = split_once(&len_list, " ");
+    save_file(cpy_str(&len_list), name.to_string());
+    return len_list;
+}
+pub fn len_of_front_list_wc() -> String{
+      let mut list_id: (i64, bool) = (1i64, false);
+    for i in 0..1000{
+        list_id = unsafe {front_list_indx(i64::MAX)};
+        if list_id.1{break;}
+    }
+    if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    let mut front_list = read_front_list();
+    let front_list_adr = take_list_adr(&front_list);
+    let cmd = format!("wc -l {front_list_adr}");
+    let len_front_list = crate::run_cmd_out_sync(cmd);
+    front_list.push_str(".len");
+    let (len_front_list, _) = split_once(&len_front_list, " ");
+    save_file(cpy_str(&len_front_list), front_list);
+    return len_front_list;
+}
 pub(crate) fn get_proper_indx(indx: i64, fixed_indx: bool) -> (usize, i64){
+    let last_pg = where_is_last_pg();
+    if indx < 0{
+        let mut indx = indx * -1;
+        if last_pg < indx{
+            indx = last_pg - (indx/last_pg) * last_pg;
+            return (i64_2_usize(indx), indx); 
+        }
+        let indx = last_pg - indx + 1;
+        return (i64_2_usize(indx), indx);
+    }
     let mut fix_inputed_indx = indx;
     if !unsafe {local_indx(false)} && fixed_indx {fix_inputed_indx += calc_num_files_up2_cur_pg();}
     let indx = fix_inputed_indx;
@@ -288,16 +354,24 @@ pub(crate) fn get_item_from_front_list(indx: i64, fixed_indx: bool) -> String{
         if list_id.1{break;}
     }
     if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    let main_path = get_tmp_dir(-13314);
     return unsafe{lists("", list_id.0, proper_indx.0, GET)}
 }
-pub fn set_main0_as_front(){mark_front_lst("main0"); unsafe{lists("", MAIN0_, 0, SET_FRONT_LIST);}}
+pub fn set_main0_as_front(){crate::drop_ls_mode(); mark_front_lst("main0"); unsafe{lists("", MAIN0_, 0, SET_FRONT_LIST);}}
 pub fn set_ls_as_front() -> String{
       let mut list_id: (i64, bool) = (1i64, false);
-    for i in 0..1000{
+  //  for i in 0..1000{
         list_id = unsafe {front_list_indx(LS_)};
-        if list_id.1{break;}
-    }
-    if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    //    if list_id.1{break;}
+    //}
+    //if !list_id.1{set_ask_user("Can't access to Front list", -1); return "!!no¡".to_string()}
+    let tmp_dir = get_tmp_dir(-66774125);
+    let ls_path = format!("{}/{}", &tmp_dir, "ls");
+    let found_files_path = format!("{}/{}", &tmp_dir, "found_files");
+    let cmd = format!("touch -f {}", &ls_path);
+    run_cmd_str(&cmd);
+    let cmd = format!("#sets ls as front\nln -sf {} {}", ls_path, found_files_path);
+    run_cmd_str(&cmd);
     mark_front_lst("ls");
     unsafe{lists("", LS_, 0, SET_FRONT_LIST); return "ok".to_string();}}
 pub unsafe fn lists(val: &str, list: i64, indx: usize, op_code: i64) -> String{
@@ -310,8 +384,8 @@ let mut FRONT: &[String] = MAIN0.as_mut_slice();
     LS.set(ls_vec);
 }*/
 let mut list = list;
-let front_list = read_file("front_list");
-set_front_list(&front_list);
+let front_list = read_front_list();
+//set_front_list(&front_list);
 if front_list == "main0"{list = MAIN0_;}
 if front_list == "ls"{list = LS_;}
 if list == MAIN0_ {
@@ -333,7 +407,7 @@ if list == MAIN0_ {
         let cmd = format!("touch -f {}", &main0_path);
         run_cmd_str(&cmd);
        }
-       let cmd = format!("ln -sf {} {}", main0_path, found_files_path);
+       let cmd = format!("#sets main0 as front\nln -sf {} {}", main0_path, found_files_path);
        run_cmd_str(&cmd);
        return "main0 gets set as front".to_string();
     }
@@ -352,13 +426,7 @@ if list == LS_ {
     }
     if op_code == LEN{return ln_of_found_files(usize::MAX).1.to_string()}
     if op_code == SET_FRONT_LIST {
-       let main_path = get_tmp_dir(-13314);
-       let ls_path = format!("{}/{}", &main_path, "ls");
-       let found_files_path = format!("{}/{}", &main_path, "found_files");
-       let cmd = format!("touch -f {}", &ls_path);
-       run_cmd_str(&cmd);
-       let cmd = format!("ln -sf {} {}", ls_path, found_files_path);
-       run_cmd_str(&cmd);
+       
        return "ls gets set as front".to_string();
     }
 }
@@ -371,4 +439,22 @@ if list == FRONT_ {
     if op_code == LEN{return ln_of_found_files(usize::MAX).1.to_string()}//return FRONT.get().unwrap().len().to_string()}
 }
 "wrong".to_string()
+}
+pub(crate) fn take_list_adr(name: &str) -> String{
+    return format!("{}/{name}", get_tmp_dir(6774154783));
+}
+pub(crate) fn renew_lists(new_item: String){
+    let front_lst = take_list_adr(&read_front_list());
+    let main0 = take_list_adr("main0");
+    let cmd = format!("echo {new_item} >> {}", front_lst);
+    run_cmd_str(cmd.as_str());
+    let size = std::fs::metadata(&main0).unwrap().len() - 4;
+    let cmd = format!("truncate -s {size} {main0}");
+    run_cmd_str(cmd.as_str());
+    let stop = crate::getStop_code__!();
+    let cmd = format!("echo {new_item} >> {main0}");
+    run_cmd_str(cmd.as_str());
+    let cmd = format!("echo {stop} >> {main0}");
+    run_cmd_str(cmd.as_str());
+    add_2_main0_list(&new_item);
 }

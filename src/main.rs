@@ -45,12 +45,16 @@ let path_2_cmd = format!("{}/cmd{}.sh", unsafe{ps18::page_struct("", ps18::TMP_D
 let err_msg = format!("failed create {}", &path_2_cmd);
 let mut make_cmd_file = File::create(&path_2_cmd).expect(&err_msg.bold().red());
 core18::errMsg_dbg(&path_2_cmd, func_id, -1.0);
+let mut cmd = cmd;
+if !checkArg("-dbg"){
+    cmd = format!("{cmd};rm -f {}", path_2_cmd);
+}
 make_cmd_file.write_all(&cmd.as_bytes());
 Command::new("chmod").arg("700").arg(&path_2_cmd).output().expect("");
 core18::errMsg_dbg(&cmd, func_id, -1.0);
 path_2_cmd.to_string()
 }
-pub(crate) fn run_cmd_str(cmd: &str) ->bool{return run_cmd0(cmd.to_string());} 
+pub(crate) fn run_cmd_str(cmd: &str) ->bool{return run_cmd_spawn(cmd.to_string());} 
 pub fn run_cmd0(cmd: String) -> bool{
 let func_id = 5;
 let fstdout: String; 
@@ -73,6 +77,35 @@ if run_command.status.success(){
     return false;
 }
 true
+}
+pub fn run_cmd_out(cmd: String) -> String{
+let func_id = 5;
+let fstdout: String; 
+let path_2_cmd = mk_cmd_file(cmd);
+let mut stderr_path = "stderr".to_string();
+stderr_path = format!("{}stderr", unsafe{ps18::page_struct("", ps18::MAINPATH_, -1).str_});
+let path_2_list_of_found_files = format!("{}", unsafe{ps18::page_struct("", ps18::FOUND_FILES_, -1).str_});
+core18::errMsg_dbg(&stderr_path, func_id, -1.0);
+let fstderr = File::create(stderr_path).unwrap();
+//let mut fstdout0 = io::BufReader::new(fstdout0);
+//errMsg_dbg(&in_name, func_id, -1.0);
+let run_command = Command::new("bash").arg("-c").arg(path_2_cmd)//.arg(";echo").arg(stopCode)
+//let run_command = Command::new(cmd)
+    .stderr(fstderr)
+    .output()
+    .expect("can't run command in run_cmd");
+if run_command.status.success(){
+    io::stdout().write_all(&run_command.stdout).unwrap();
+    io::stderr().write_all(&run_command.stderr).unwrap();
+    return match from_utf8(&run_command.stdout){
+        Ok(s) => s.to_string(),
+        _ => "".to_string()
+    };
+}
+return match from_utf8(&run_command.stdout){
+        Ok(s) => s.to_string(),
+        _ => "".to_string()
+    };
 }
 pub(crate) fn run_cmd_viewer(cmd: String) -> bool{
 let func_id = func_id18::run_cmd_viewer_;
@@ -128,6 +161,52 @@ if run_command.status.success(){
 }
 true
 }
+pub fn run_cmd_spawn(cmd: String) -> bool{
+let func_id = 5;
+let fstdout: String;
+let path_2_cmd = mk_cmd_file(cmd);
+let mut stderr_path = "stderr".to_string();
+stderr_path = format!("{}stderr", unsafe{ps18::page_struct("", ps18::MAINPATH_, -1).str_});
+let path_2_list_of_found_files = format!("{}", unsafe{ps18::page_struct("", ps18::FOUND_FILES_, -1).str_});
+fstdout = String::from(path_2_list_of_found_files); 
+core18::errMsg_dbg(&stderr_path, func_id, -1.0);
+core18::errMsg_dbg(&fstdout, func_id, -1.0);
+let fstderr = File::create(stderr_path).unwrap();
+let fstdout0 = File::create(fstdout).unwrap();
+globs18::unblock_fd(fstdout0.as_raw_fd());
+//let mut fstdout0 = io::BufReader::new(fstdout0);
+//errMsg_dbg(&in_name, func_id, -1.0);
+let run_command = Command::new("bash").arg("-c").arg(path_2_cmd)//.arg(";echo").arg(stopCode)
+//let run_command = Command::new(cmd)
+    .stdout(fstdout0)
+    .stderr(fstderr)
+    .spawn()
+    .expect("can't run command in run_cmd");
+true
+}
+pub(crate) fn run_cmd_out_sync(cmd: String) -> String{
+let func_id = 5;
+let fstdout: String; 
+let path_2_cmd = mk_cmd_file(cmd);
+let mut stderr_path = "stderr".to_string();
+stderr_path = format!("{}stderr", unsafe{ps18::page_struct("", ps18::MAINPATH_, -1).str_});
+let path_2_list_of_found_files = format!("{}", unsafe{ps18::page_struct("", ps18::FOUND_FILES_, -1).str_});
+fstdout = String::from(path_2_list_of_found_files); 
+core18::errMsg_dbg(&stderr_path, func_id, -1.0);
+core18::errMsg_dbg(&fstdout, func_id, -1.0);
+let fstderr = File::create(stderr_path).unwrap();
+//let mut fstdout0 = io::BufReader::new(fstdout0);
+//errMsg_dbg(&in_name, func_id, -1.0);
+let run_command = Command::new("bash").arg("-c").arg(path_2_cmd)//.arg(";echo").arg(stopCode)
+//let run_command = Command::new(cmd)
+    .stderr(fstderr)
+    .output()
+    .expect("can't run command in run_cmd_out_sync");
+return match from_utf8(&run_command.stdout){
+    Ok(utf) => utf,
+    _ => "0 0"
+}.to_string()
+}
 fn read_midway_data() -> bool{
     let func_id = func_id18::read_midway_data_;
     let mut added_indx = 0usize;
@@ -141,8 +220,8 @@ fn read_midway_data() -> bool{
         added_indx = indx;
         let line = line.unwrap();
         let ret = globs18::add_2_front_list(&line, -1); // todo => add_2_front_list
-        let line_dbg = get_item_from_front_list(usize_2_i64(indx), false);
-        ps18::set_num_files(func_id); 
+       // let line_dbg = get_item_from_front_list(usize_2_i64(indx), false);
+        ps18::set_num_files0(func_id, indx); 
         if dirty!(){println!("line {}", line)}
         if line == stopCode{ps18::fix_num_files(func_id); return true}
     }  if dirty!(){println!("midway ended")}}

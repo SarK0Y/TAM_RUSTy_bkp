@@ -4,21 +4,41 @@ mod exts;
 use exts::*;
 //use gag::RedirectError;
 
-use crate::{swtch::{user_wrote_path, user_wrote_path_prnt, read_user_written_path, path_completed}, update18::update_dir_list, shift_cursor_of_prnt, run_cmd_str};
+use crate::{swtch::{user_wrote_path, user_wrote_path_prnt, read_user_written_path, path_completed}, update18::update_dir_list, shift_cursor_of_prnt, run_cmd_str, split_once, run_cmd_out};
 
 use self::ps21::{set_ask_user, get_prnt, set_prnt, get_mainpath, get_tmp_dir};
 core_use!();
-pub(crate) fn set_front_list(list: &str){
-    let tmp_dir = get_tmp_dir(-155741);
-    if tmp_dir == "no¡"{return;}
+pub(crate) fn bkp_tmp_dir() -> String{
+    static mut bkp: OnceCell<String> = OnceCell::new();
+  if crate::C!(bkp.get()) == None{
+    let fst: String = unsafe{crate::page_struct("", crate::TMP_DIR_, -75811245).str_};
+    let ret = fst.clone();
+    crate::C!(bkp.set(fst));
+    return ret;
+  }
+  crate::C!(bkp.get().expect("bkp_tmp_dir failed").to_string())
+}
+pub(crate) fn up_front_list(){
+    let list = read_front_list();
+    let tmp_dir = get_tmp_dir(-1595741);
+    if tmp_dir == ""{return;}
     let found_files = format!("{tmp_dir}/found_files");
     let active_list = format!("{tmp_dir}/{}", list);
-    let cmd = format!("ln -sf {active_list} {found_files}");
+    let cmd = format!("#up_front_list\nln -sf {active_list} {found_files}");
+    run_cmd_str(&cmd);
+}
+pub(crate) fn set_front_list(list: &str){
+    let tmp_dir = get_tmp_dir(-155741);
+    if tmp_dir == ""{return;}
+    let found_files = format!("{tmp_dir}/found_files");
+    let active_list = format!("{tmp_dir}/{}", list);
+    let cmd = format!("#set_front_list\nln -sf {active_list} {found_files}");
     run_cmd_str(&cmd);
     mark_front_lst(list)
 }
 pub(crate) fn mark_front_lst(name: &str){
-    save_file(name.to_string(), "front_list".to_string());
+    if name != "ls"{save_file(name.to_string(), "front_list".to_string());}
+    else {save_file(name.to_string(), "ls.mode".to_string());}
 }
 pub(crate) fn initSession() -> bool{
     let func_id = 1;
@@ -69,6 +89,7 @@ let err_msg = format!("{} permission denied", path_2_found_files_list);
 let run_shell2 = Command::new("chmod").arg("700").arg(&path_2_found_files_list).output().expect(&err_msg.bold().red());
 if checkArg("-dbg"){println!("shell out = {:?}", run_shell2)};
 unsafe{crate::page_struct(&path_2_found_files_list, set(crate::TMP_DIR_), func_id);}
+bkp_tmp_dir();
 let path_2_found_files_list_dot = format!("{}/TAM_{}/.", path_2_shm, proper_timestamp);
 let err_msg = format!("{} permission denied", path_2_found_files_list_dot);
 let run_shell3 = Command::new("chmod").arg("700").arg(&path_2_found_files_list_dot).output().expect(&err_msg.bold().red());
@@ -118,9 +139,29 @@ pub(crate) fn set_proper_num_pg(num_pg: i64){
     let listName_dot_pg = format!("{}.pg", read_front_list());
     save_file(num_pg.to_string(), listName_dot_pg);
 }
+pub(crate) fn rgx_from_file(rgx: String, src: &str, out: &str){
+    let prime_path = format!("{}", get_tmp_dir(84411254));
+    if prime_path == ""{set_ask_user("Sorry, No access to tmp directory.. Sorry", -5611115); return;}
+    let (opts, rgx) = split_once(&rgx, " ");
+    let src = format!("{prime_path}/{}", escape_symbs(&src.to_string()));
+    let out = format!("{prime_path}/{}", escape_symbs(&out.to_string()));
+    let cmd = format!("grep {opts} '{rgx}' {src} > {out}");
+    run_cmd_str(cmd.as_str());
+}
+pub(crate) fn rgx_from_prnt(rgx: String, out: &str){
+    rgx_from_file(rgx, "prnt", out)
+}
+pub(crate) fn read_rgx_from_prnt(rgx: String, out: &str) -> String{
+    rgx_from_prnt(rgx, out);
+    read_file(out)
+}
+pub(crate) fn drop_ls_mode(){
+    save_file("".to_string(), "ls.mode".to_string());
+    up_front_list()
+}
 pub(crate) fn read_front_list() -> String{
-    let mut active_lst = read_file("front_list");
-    //if active_lst != front_list {active_lst = "main0".to_string();}
+    let mut active_lst = read_file("ls.mode");
+    if active_lst == "" {active_lst = read_file("front_list");}
     active_lst
 }
 pub(crate) fn read_proper_num_pg() -> i64{
@@ -144,7 +185,11 @@ pub(crate) fn escape_symbs(str0: &String) -> String{
     let strr = strr.replace("'", r"\'");
     let strr = strr.replace("`", r"\`");
     let strr = strr.replace("(", r"\(");
+    let strr = strr.replace("}", r"\}");
+    let strr = strr.replace("{", r"\{");
     let strr = strr.replace(")", r"\)");
+    let strr = strr.replace("]", r"\]");
+    let strr = strr.replace("[", r"\[");
     let strr = strr.replace("&", r"\&");
     return strr.to_string();
 }
@@ -310,6 +355,7 @@ pub(crate) fn read_midway_data_4_ls() -> bool{
         let ret = crate::globs18::add_2_front_list(&line, -1); 
         //let line_dbg = get_item_from_front_list(usize_2_i64(indx), false); 
         if dirty!(){println!("line {}", line)}
+        crate::ps18::set_num_files0(func_id, indx);
         if line == stopCode{crate::ps18::fix_num_files(func_id); return true}
     }  if dirty!(){println!("midway ended")}}
     false
@@ -373,7 +419,7 @@ pub(crate) fn read_file(fname: &str) -> String{
     //let err = format!("failed to read {}", fname);
     let mut file: File = match File::open(&fname){
         Ok(f) => f,
-        Err(e) => return format!("{:?}", e)
+        Err(e) => return "".to_string()//format!("{:?}", e)
     };
     let mut ret = String::new();
     file.read_to_string(&mut ret);
@@ -507,4 +553,68 @@ pub(crate) fn ins_newlines(len_of_line: usize, origString: &mut String) {
         origString.push('\n');
         ins_last_char_to_string1_from_string1_ptr(indx, origString);
     }
+}
+pub(crate) fn raw_ren_file(src: String, dst: String){
+    let cmd = format!("mv {src} {dst}");
+    run_cmd_str(cmd.as_str());
+}
+pub(crate) fn mkdir(name: String){
+    let name = escape_symbs(&name);
+    let cmd = format!("mkdir -p {name}");
+    run_cmd_str(cmd.as_str());
+}
+pub(crate) fn raw_mkdir(name: String){
+    let out = format!("{}/raw_mkdir.out", get_tmp_dir(4512154749974)); 
+    let cmd = format!("mkdir -p {name} > {out} 2>&1");
+    run_cmd_str(cmd.as_str());
+}
+pub(crate) fn path_exists(path: String) -> bool{
+    let timestamp = Local::now();
+let proper_timestamp = format!("{}", timestamp.format("%Y-%mm-%dd_%H-%M-%S_%f"));
+let out: String = format!("{}/path_exists{}.out", get_tmp_dir(10008745), proper_timestamp);
+let cmd = format!("find -L {path}");
+let is_path = run_cmd_out(cmd);
+let path = path.len();//chars().count();
+//clear_screen();
+//println!("{is_path}");
+let is_path = is_path.len() + 1;//chars().count();
+//println!("{path} and {is_path}");
+//getkey();
+if is_path == path{return true}
+false
+}
+pub(crate) fn link_list_2_front(name: &str){
+    let front = take_list_adr("found_files");
+    let list = take_list_adr(name);
+    let cmd = format!("ln -sf {list} {front}");
+    run_cmd_str(cmd.as_str());
+}
+pub(crate) fn from_ls_2_front(ls_mode: String){
+    let front = read_front_list();
+    //let ls_mode = take_list_adr("ls.mode");
+    rm_file(&ls_mode);
+    link_list_2_front(front.as_str());
+    C!(crate::swtch::swtch_fn(0, "".to_string()));
+}
+pub(crate) fn tailOFF(strn: &mut String, delim: &str) -> bool{
+    let len = strn.chars().count();
+    let mut ret = String::new();
+    let empty = String::new();
+    let delim = delim.to_string().chars().nth(0).unwrap();
+    for i in 0..len{
+        let ch = match strn.chars().nth(i){
+            Some(ch) => ch,
+            _ => empty.chars().nth(0).unwrap()
+        };
+        if ch == delim && i < len - 1{ret = "".to_string(); continue;}
+        ret.push(ch);
+    }
+    if ret.len() == 0{return false}
+    //*strn = strn.replace(&ret, "").trim_end_matches(delim).to_string();
+    let ret_delim = format!("{ret}{delim}sss");
+    strn.push_str("sss");
+    ret.push_str("sss");
+    *strn = strn.replace(&ret_delim, "");
+    *strn = strn.replace(&ret, ""); 
+    true
 }

@@ -168,6 +168,7 @@ macro_rules! mcrs_uses {
 }
 macro_rules! update_uses {
     () => {
+use std::time::Duration;
 use std::env;
 use colored::Colorize;
 use substring::Substring;
@@ -213,6 +214,7 @@ use C_;
 macro_rules! core_use {
     () => {
 use std::env;
+use std::time::Duration;
 use std::mem::size_of;
 use std::fs::OpenOptions;
 use std::io;
