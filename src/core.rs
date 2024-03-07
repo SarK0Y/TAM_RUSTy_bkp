@@ -188,6 +188,8 @@ pub(crate) fn escape_symbs(str0: &String) -> String{
     let strr = strr.replace("}", r"\}");
     let strr = strr.replace("{", r"\{");
     let strr = strr.replace(")", r"\)");
+    let strr = strr.replace("]", r"\]");
+    let strr = strr.replace("[", r"\[");
     let strr = strr.replace("&", r"\&");
     return strr.to_string();
 }
@@ -609,7 +611,6 @@ pub(crate) fn tailOFF(strn: &mut String, delim: &str) -> bool{
     }
     if ret.len() == 0{return false}
     //*strn = strn.replace(&ret, "").trim_end_matches(delim).to_string();
-    let ret_delim = format!("{ret}{delim}");
     let ret_delim = format!("{ret}{delim}sss");
     strn.push_str("sss");
     ret.push_str("sss");

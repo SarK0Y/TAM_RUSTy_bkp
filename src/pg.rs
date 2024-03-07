@@ -165,7 +165,9 @@ fn hotKeys() -> String{
        // enter();
        let user_written_path = read_user_written_path().replace("//", "/");
        if user_written_path != "/" && Path::new(&user_written_path).exists() && ln_of_found_files(usize::MAX).1 < 2usize {return get_prnt(func_id);}
-return Key.to_string();
+        let path = get_path_from_prnt();
+        if path.len() == 0{return "dontPass".to_string();}
+        return Key.to_string();
 //return get_prnt(func_id);
 }
 pub fn manage_pages(){
